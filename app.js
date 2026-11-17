@@ -357,10 +357,10 @@
     const query = encodeURIComponent((raw || (groupPrefix + 'African Kitenge tailoring fashion')).trim());
 
     const urls = {
-      google: `https://google.com{query}`,
-      pinterest: `https://pinterest.com{query}`,
-      instagram: `https://google.com{query}`,
-      jumia: `https://jumia.co.ke{query}`
+      google: "https://google.com" + query,
+      pinterest: "https://pinterest.com" + query,
+      instagram: "https://google.com+" + query,
+      jumia: "https://jumia.co.ke" + query
     };
     if (urls[platform]) window.open(urls[platform], '_blank', 'noopener');
   });
