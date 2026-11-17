@@ -164,10 +164,17 @@
       <div class="card">
         <h2>Add Client &amp; Body Measurements</h2>
         <form id="client-form">
-          <div style="background:#eef7ff;border:1px solid #bae6fd;border-radius:12px;padding:10px;margin-bottom:10px;">
-            <label for="ocr-meas-photo" style="display:block;font-weight:800;font-size:.8rem;color:#1e3a8a;margin-bottom:5px;">📷 Snap or Upload Measurement Photo (Auto-Transcribe)</label>
+          <div style="background:linear-gradient(135deg,#eef7ff 0%,#f5f3ff 100%);border:1.5px solid #38bdf8;border-radius:13px;padding:11px;margin-bottom:11px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <label for="ocr-meas-photo" style="font-weight:800;font-size:.82rem;color:#1e3a8a;margin:0;">📷 Smart Measurement Photo Scanner</label>
+              <button type="button" id="ocr-rescan-btn" class="btn-sm" style="display:none;padding:3px 9px;font-size:.72rem;">↻ Re-Scan</button>
+            </div>
             <input type="file" id="ocr-meas-photo" accept="image/*" capture="environment" style="background:#fff;" />
-            <div id="ocr-status" style="font-size:.75rem;color:#475569;margin-top:5px;font-weight:600;">Take a clear photo of written measurements to auto-fill fields below.</div>
+            <div id="ocr-preview-wrap" style="display:none;margin-top:8px;align-items:center;gap:10px;">
+              <img id="ocr-preview-img" src="" alt="Measurement note" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #bae6fd;" />
+              <div id="ocr-status" style="font-size:.76rem;color:#0f172a;font-weight:600;line-height:1.35;">Ready to scan handwritten or printed measurements.</div>
+            </div>
+            <div id="ocr-idle-hint" style="font-size:.74rem;color:#475569;margin-top:5px;">Supports shorthand (B/Chest, W/Waist, H/Hips, Sh, Sl, L, Tr, Nk) &amp; fractions (e.g. 36 1/2).</div>
           </div>
           <div class="grid-2">
             <div class="field"><label for="cli-name">Full Name</label><input type="text" id="cli-name" placeholder="Client full name" required /></div>

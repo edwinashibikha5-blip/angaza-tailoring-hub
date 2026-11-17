@@ -627,3 +627,172 @@
     });
   }
 })();
+
+(() => {
+  const ocrInput = document.getElementById('ocr-meas-photo');
+  const ocrStatus = document.getElementById('ocr-status');
+  const idleHint = document.getElementById('ocr-idle-hint');
+  const previewWrap = document.getElementById('ocr-preview-wrap');
+  const previewImg = document.getElementById('ocr-preview-img');
+  const rescanBtn = document.getElementById('ocr-rescan-btn');
+  if (!ocrInput || !ocrStatus) return;
+
+  let lastFile = null;
+
+  // 1. High-Contrast Adaptive Image Pre-Processor for Handwritten Notebooks
+  function preprocessForOCR(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const targetW = Math.min(1800, Math.max(1000, img.width * 1.5));
+          const scale = targetW / img.width;
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const d = imgData.data;
+          let sum = 0;
+          const grays = new Uint8Array(d.length / 4);
+
+          for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+            const g = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
+            grays[p] = g;
+            sum += g;
+          }
+
+          const mean = sum / grays.length;
+          const threshold = Math.max(95, Math.min(185, mean * 0.88));
+
+          for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+            const v = grays[p] < threshold ? 0 : 255;
+            d[i] = v;
+            d[i + 1] = v;
+            d[i + 2] = v;
+            d[i + 3] = 255;
+          }
+
+          ctx.putImageData(imgData, 0, 0);
+          resolve({ processedUrl: canvas.toDataURL('image/png'), rawUrl: reader.result });
+        };
+        img.onerror = () => resolve({ processedUrl: reader.result, rawUrl: reader.result });
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 2. Smart Fraction & Tailoring Shorthand Parser
+  function normalizeText(raw) {
+    return raw
+      .replace(/½/g, '.5')
+      .replace(/¼/g, '.25')
+      .replace(/¾/g, '.75')
+      .replace(/(\d+)\s+1\s*\/\s*2/g, '$1.5')
+      .replace(/(\d+)\s+1\s*\/\s*4/g, '$1.25')
+      .replace(/(\d+)\s+3\s*\/\s*4/g, '$1.75')
+      .replace(/(\d+)[oO]\b/g, '$10')
+      .replace(/\b[lI](\d)\b/g, '1$1');
+  }
+
+  function extractMeasurements(rawText) {
+    const clean = normalizeText(rawText);
+    const findNum = (aliases) => {
+      for (const alias of aliases) {
+        const rx = new RegExp('(?:^|\\b|\\n)' + alias + '\\s*[:\\-=.xX]?\\s*(\\d{1,2}(?:\\.\\d{1,2})?)', 'i');
+        const m = clean.match(rx);
+        if (m && m) return m;
+      }
+      return '';
+    };
+
+    const fields = {
+      'm-chest': findNum(['bust', 'chest', 'ch', 'b']),
+      'm-waist': findNum(['waist', 'wst', 'w']),
+      'm-hips': findNum(['hips', 'hip', 'hp', 'h']),
+      'm-shoulder': findNum(['shoulder', 'shldr', 'shd', 'sh', 's']),
+      'm-sleeve': findNum(['sleeve', 'slv', 'arm', 'sl']),
+      'm-length': findNum(['dress\\s*len', 'top\\s*len', 'length', 'len', 'full\\s*len', 'l']),
+      'm-outseam': findNum(['trouser', 'skirt', 'outseam', 'inseam', 'pant', 'tr', 'sk']),
+      'm-neck': findNum(['neck', 'collar', 'thigh', 'nk'])
+    };
+
+    let filled = 0;
+    Object.entries(fields).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el && val) {
+        el.value = val;
+        el.style.borderColor = '#16a34a';
+        el.style.background = '#f0fdf4';
+        filled++;
+      }
+    });
+
+    // Auto-extract Kenyan phone number if written on the page
+    const phoneMatch = clean.match(/(?:\+?254|0)\s*7\d{2}[\s\-]?\d{3}[\s\-]?\d{3}/);
+    const phoneEl = document.getElementById('cli-phone');
+    if (phoneMatch && phoneEl && !phoneEl.value.trim()) {
+      phoneEl.value = phoneMatch.replace(/[\s\-]/g, '');
+    }
+
+    return { filled, clean };
+  }
+
+  async function runSmartScan(file) {
+    if (!file) return;
+    lastFile = file;
+    if (idleHint) idleHint.style.display = 'none';
+    if (previewWrap) previewWrap.style.display = 'flex';
+    if (rescanBtn) rescanBtn.style.display = 'inline-block';
+
+    if (typeof Tesseract === 'undefined') {
+      ocrStatus.textContent = '⚠️ Connect to internet once to initialize the OCR engine, then it caches for offline use.';
+      return;
+    }
+
+    ocrStatus.textContent = '🔍 Enhancing handwriting contrast & reading measurements...';
+    try {
+      const { processedUrl, rawUrl } = await preprocessForOCR(file);
+      if (previewImg) previewImg.src = rawUrl;
+
+      const result = await Tesseract.recognize(processedUrl, 'eng', {
+        tessedit_pageseg_mode: '6'
+      });
+
+      const rawText = (result?.data?.text || '').trim();
+      const conf = Math.round(result?.data?.confidence || 0);
+
+      if (!rawText) {
+        ocrStatus.textContent = '⚠️ No clear text detected. Hold camera steady in bright light and tap Re-Scan.';
+        return;
+      }
+
+      const { filled, clean } = extractMeasurements(rawText);
+      const notesEl = document.getElementById('cli-notes');
+      if (notesEl) {
+        notesEl.value = 'Scanned Note:\n' + clean;
+      }
+
+      ocrStatus.innerHTML = filled > 0
+        ? `✅ <strong>Auto-filled ${filled} field(s)</strong> (${conf}% clarity). Green boxes show detected values—verify &amp; save.`
+        : `✅ <strong>Text transcribed</strong> (${conf}% clarity) into Fit &amp; Style Notes below.`;
+    } catch {
+      ocrStatus.textContent = '⚠️ Scan interrupted. Tap Re-Scan or try a brighter photo.';
+    }
+  }
+
+  ocrInput.addEventListener('change', (e) => {
+    const f = e.target.files.item(0);
+    if (f) runSmartScan(f);
+  }, true);
+
+  if (rescanBtn) {
+    rescanBtn.addEventListener('click', () => {
+      if (lastFile) runSmartScan(lastFile);
+    });
+  }
+})();
