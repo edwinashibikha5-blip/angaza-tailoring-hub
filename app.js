@@ -495,3 +495,30 @@
     window.open(targetUrl.toString(), '_blank', 'noopener,noreferrer');
   }, true);
 })();
+
+(() => {
+  function attachDownloadButtons() {
+    document.querySelectorAll('.gal-item').forEach((card) => {
+      if (card.querySelector('[data-dl-img]')) return;
+      const img = card.querySelector('img');
+      const title = card.querySelector('.item-title')?.textContent?.trim() || 'angaza-style';
+      const delBtn = card.querySelector('[data-del-gal]');
+      if (!img || !delBtn) return;
+
+      const dlBtn = document.createElement('a');
+      dlBtn.href = img.src;
+      dlBtn.download = title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.png';
+      dlBtn.className = 'btn-sm';
+      dlBtn.dataset.dlImg = '1';
+      dlBtn.textContent = '⬇ Save';
+      dlBtn.style.marginRight = '4px';
+      delBtn.parentElement.insertBefore(dlBtn, delBtn);
+    });
+  }
+
+  attachDownloadButtons();
+  const galList = document.getElementById('gallery-list');
+  if (galList) {
+    new MutationObserver(attachDownloadButtons).observe(galList, { childList: true, subtree: true });
+  }
+})();
