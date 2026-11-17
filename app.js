@@ -203,3 +203,66 @@
   populateOrderPresets();
   renderAll();
 })();
+
+(() => {
+  const toast = document.createElement('div');
+  toast.className = 'toast-msg';
+  document.body.appendChild(toast);
+  let toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+
+  function goToTab(tabId) {
+    const btn = document.querySelector(`.nav button[data-nav="${tabId}"]`);
+    if (btn) btn.click();
+  }
+
+  // Make top dashboard KPI cards interactive shortcuts
+  const kpiCards = document.querySelectorAll('.kpi-card');
+  const kpiTargets = ['tab-orders', 'tab-orders', 'tab-repairs', 'tab-clients'];
+  kpiCards.forEach((card, idx) => {
+    card.title = 'Tap to open section';
+    card.addEventListener('click', () => {
+      if (kpiTargets[idx]) goToTab(kpiTargets[idx]);
+    });
+  });
+
+  // Auto-select garment category when picking a client
+  document.getElementById('ord-client').addEventListener('change', (e) => {
+    try {
+      const vault = JSON.parse(localStorage.getItem('angaza_atelier_vault_v2') || '{}');
+      const cli = (vault.clients || []).find((c) => c.id === e.target.value);
+      if (cli && cli.group) {
+        const catEl = document.getElementById('ord-category');
+        catEl.value = cli.group;
+        catEl.dispatchEvent(new Event('change'));
+      }
+    } catch {}
+  });
+
+  // Tap any garment card in Catalog to start a pre-filled order
+  document.getElementById('garment-catalog-grid').addEventListener('click', (e) => {
+    const card = e.target.closest('.cat-card');
+    if (!card) return;
+    const group = card.querySelector('.badge')?.textContent?.trim();
+    const title = card.querySelector('h4')?.textContent?.trim();
+    if (group && title) {
+      const catEl = document.getElementById('ord-category');
+      catEl.value = group;
+      catEl.dispatchEvent(new Event('change'));
+      document.getElementById('ord-style').value = title;
+      goToTab('tab-orders');
+      showToast(`Selected: ${title} (${group})`);
+    }
+  });
+
+  // Instant toast feedback on saves & actions
+  ['order-form', 'repair-form', 'client-form', 'gallery-form', 'exp-form'].forEach((id) => {
+    const f = document.getElementById(id);
+    if (f) f.addEventListener('submit', () => showToast('Saved to Atelier Vault ✓'));
+  });
+})();

@@ -69,3 +69,9 @@ input:focus,select:focus,textarea:focus { outline:none; border-color:var(--indig
 .nav button { background:transparent; color:#e6dff2; border:none; padding:13px 4px; font-size:.76rem; font-weight:700; cursor:pointer; }
 .nav button.active { background:rgba(212,163,56,.22); color:#f8d47c; border-top:3px solid var(--gold); }
 @media print { body * { visibility:hidden; } #print-receipt-area,#print-receipt-area * { visibility:visible; } #print-receipt-area { display:block!important; position:fixed; left:0; top:0; width:100%; padding:20px; background:#fff; color:#000; } }
+.kpi-card { cursor:pointer; transition:transform .16s ease, background .2s ease; }
+.kpi-card:active { transform:scale(0.96); background:rgba(255,255,255,.16); }
+.cat-card { cursor:pointer; transition:transform .16s ease, border-color .2s ease; }
+.cat-card:hover, .cat-card:active { transform:translateY(-2px); border-color:var(--gold); }
+.toast-msg { position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-20px); background:linear-gradient(135deg,var(--royal-blue),var(--royal-purple)); color:#f8d47c; border:1px solid var(--gold); padding:10px 18px; border-radius:999px; font-size:.82rem; font-weight:700; box-shadow:0 8px 20px rgba(23,34,77,.35); opacity:0; pointer-events:none; transition:all .25s ease; z-index:999; }
+.toast-msg.show { opacity:1; transform:translateX(-50%) translateY(0); }
