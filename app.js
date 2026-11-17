@@ -438,3 +438,28 @@
     window.print();
   });
 })();
+
+(() => {
+  const dashPanel = document.querySelector('.dashboard-panel');
+  const kpiGrid = dashPanel?.querySelector('.kpi-grid');
+  const toggleBtn = document.getElementById('toggle-dash-btn');
+  if (!dashPanel || !kpiGrid || !toggleBtn) return;
+
+  function setDashCollapsed(collapsed) {
+    kpiGrid.style.display = collapsed ? 'none' : 'grid';
+    dashPanel.style.padding = collapsed ? '9px 14px' : '14px';
+    dashPanel.querySelector('.dash-header').style.marginBottom = collapsed ? '0' : '10px';
+    toggleBtn.textContent = collapsed ? 'Show' : 'Hide';
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    const isHidden = kpiGrid.style.display === 'none';
+    setDashCollapsed(!isHidden);
+  });
+
+  document.querySelectorAll('.nav button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      setDashCollapsed(btn.dataset.nav !== 'tab-orders');
+    });
+  });
+})();
