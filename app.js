@@ -346,3 +346,22 @@
     });
   }
 })();
+
+(() => {
+  document.body.addEventListener('click', (e) => {
+    const platform = e.target.dataset.webSearch;
+    if (!platform) return;
+    const raw = (document.getElementById('online-style-query')?.value || '').trim();
+    const activeChip = document.querySelector('#catalog-chips .chip.active')?.dataset.cat;
+    const groupPrefix = activeChip && activeChip !== 'ALL' ? activeChip + ' ' : '';
+    const query = encodeURIComponent((raw || (groupPrefix + 'African Kitenge tailoring fashion')).trim());
+
+    const urls = {
+      google: `https://google.com{query}`,
+      pinterest: `https://pinterest.com{query}`,
+      instagram: `https://google.com{query}`,
+      jumia: `https://jumia.co.ke{query}`
+    };
+    if (urls[platform]) window.open(urls[platform], '_blank', 'noopener');
+  });
+})();
