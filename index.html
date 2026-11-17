@@ -1,0 +1,33 @@
+            <div><label>Monthly Overhead</label><input type="number" id="p-ovh" value="18000" /></div>
+          </div>
+          <div id="proj-res" style="margin-top:8px;padding:9px;background:#0f172a;border-radius:7px;font-size:12px;"></div>
+        </div>
+        <div class="card">
+          <h2>Material &amp; Trim Expenses + Change PIN</h2>
+          <form id="exp-form" class="grid-2" style="margin-bottom:8px;">
+            <input id="exp-item" placeholder="Thread, Zipper, Lining..." required />
+            <input type="number" id="exp-cost" placeholder="KES" required />
+            <button type="submit" class="btn btn-dark">+ Log Cost</button>
+          </form>
+          <div id="exp-list" style="margin-bottom:10px;"></div>
+          <div style="display:flex;gap:6px;max-width:250px;">
+            <input type="password" id="new-pin" placeholder="New Owner PIN" inputmode="numeric" />
+            <button type="button" id="save-pin" class="btn">Set PIN</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="print-receipt-area" style="display:none;"></div>
+
+  <nav class="nav">
+    <button type="button" class="active" data-nav="tab-orders">Orders</button>
+    <button type="button" data-nav="tab-clients">Clients &amp; OCR</button>
+    <button type="button" data-nav="tab-gallery">Gallery &amp; Fabrics</button>
+    <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
