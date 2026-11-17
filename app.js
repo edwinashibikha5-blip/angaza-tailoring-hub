@@ -796,3 +796,61 @@
     });
   }
 })();
+
+(() => {
+  // Automatically save the scanned measurement photo onto the client profile card
+  const form = document.getElementById('client-form');
+  const previewImg = document.getElementById('ocr-preview-img');
+  if (!form || !previewImg) return;
+
+  form.addEventListener('submit', () => {
+    const src = previewImg.getAttribute('src');
+    if (!src || !src.startsWith('data:image')) return;
+
+    setTimeout(() => {
+      try {
+        const v = JSON.parse(localStorage.getItem('angaza_atelier_vault_v2') || '{}');
+        if (Array.isArray(v.clients) && v.clients.length > 0) {
+          const newest = v.clients[v.clients.length - 1];
+          // Resize thumbnail cleanly so storage stays light
+          const c = document.createElement('canvas');
+          const scale = Math.min(1, 360 / (previewImg.naturalWidth || 360));
+          c.width = Math.round((previewImg.naturalWidth || 360) * scale);
+          c.height = Math.round((previewImg.naturalHeight || 360) * scale);
+          c.getContext('2d').drawImage(previewImg, 0, 0, c.width, c.height);
+          newest.measPhoto = c.toDataURL('image/jpeg', 0.65);
+          localStorage.setItem('angaza_atelier_vault_v2', JSON.stringify(v));
+        }
+        previewImg.removeAttribute('src');
+        const wrap = document.getElementById('ocr-preview-wrap');
+        if (wrap) wrap.style.display = 'none';
+      } catch {}
+    }, 80);
+  });
+
+  // Render saved measurement photo thumbnail inside Saved Clients list
+  const cliList = document.getElementById('clients-list');
+  if (cliList) {
+    new MutationObserver(() => {
+      const v = JSON.parse(localStorage.getItem('angaza_atelier_vault_v2') || '{}');
+      const map = new Map((v.clients || []).map((c) => [c.id, c.measPhoto]));
+      cliList.querySelectorAll('.list-item').forEach((card) => {
+        if (card.querySelector('.meas-saved-thumb')) return;
+        const delBtn = card.querySelector('[data-del-client]');
+        const photo = delBtn ? map.get(delBtn.dataset.delClient) : '';
+        if (photo) {
+          const img = document.createElement('img');
+          img.src = photo;
+          img.className = 'thumb meas-saved-thumb';
+          img.title = 'Tap to view full measurement photo';
+          img.style.cursor = 'pointer';
+          img.addEventListener('click', () => {
+            const w = window.open('');
+            if (w) w.document.write(`<img src="${photo}" style="max-width:100%;height:auto;" />`);
+          });
+          card.querySelector('.item-top')?.appendChild(img);
+        }
+      });
+    }).observe(cliList, { childList: true });
+  }
+})();
