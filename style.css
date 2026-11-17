@@ -94,3 +94,37 @@ input:focus,select:focus,textarea:focus { outline:none; border-color:var(--sky-b
 .toast-msg.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
 @media print { body * { visibility:hidden; } #print-receipt-area,#print-receipt-area * { visibility:visible; } #print-receipt-area { display:block!important; position:fixed; left:0; top:0; width:100%; padding:20px; background:#fff; color:#000; } }
+
+/* RESPONSIVE EXPANSION FOR TABLETS, LAPTOPS & DESKTOPS */
+@media (min-width: 768px) {
+  .container { max-width: 1180px; padding: 20px 24px; }
+  .topbar { padding: 18px 28px; }
+  .brand-wrap h1 { font-size: 1.32rem; }
+  .brand-wrap p { font-size: 0.84rem; }
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-val { font-size: 1.45rem; }
+  .tab-section.active {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  #tab-finance.active {
+    display: block;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+  .meas-grid { grid-template-columns: repeat(4, 1fr); }
+  .catalog-grid, .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+  .nav {
+    max-width: 680px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 14px;
+    border-radius: 999px;
+    border: 2px solid var(--sky-light);
+    overflow: hidden;
+    box-shadow: 0 10px 28px rgba(30, 58, 138, 0.28);
+  }
+  body { padding-bottom: 96px; }
+}
