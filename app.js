@@ -330,14 +330,10 @@
   const shareBtn = document.getElementById('btn-share-app');
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
-      const appUrl = 'https://onrender.com';
+      const appUrl = 'https://angaza-tailoring-hub.onrender.com';
       if (navigator.share) {
         try {
-          await navigator.share({
-            title: 'ANGAZA TAILORING HUB',
-            text: 'Open ANGAZA TAILORING HUB directly:',
-            url: appUrl
-          });
+          await navigator.share({ title: "ANGAZA TAILORING HUB", url: "https://angaza-tailoring-hub.onrender.com" });
           return;
         } catch {}
       }
