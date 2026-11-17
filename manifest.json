@@ -1,0 +1,19 @@
+{
+  "name": "ANGAZA TAILORING HUB",
+  "short_name": "Angaza Hub",
+  "description": "Custom Tailoring, Repairs & Offline Atelier Vault",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f8fc",
+  "theme_color": "#17224d",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

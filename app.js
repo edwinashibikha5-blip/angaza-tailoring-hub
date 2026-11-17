@@ -322,3 +322,31 @@
     });
   }
 })();
+
+(() => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+  const shareBtn = document.getElementById('btn-share-app');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const appUrl = 'https://onrender.com';
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'ANGAZA TAILORING HUB',
+            text: 'Open ANGAZA TAILORING HUB directly:',
+            url: appUrl
+          });
+          return;
+        } catch {}
+      }
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(appUrl);
+        alert('Copied full app link: ' + appUrl);
+      } else {
+        prompt('Copy this full app link:', appUrl);
+      }
+    });
+  }
+})();
