@@ -48,21 +48,13 @@
   }
 
   function renderDashboard(v) {
-    document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-    const billed = v.orders.reduce((s, o) => s + Number(o.price || 0), 0);
-    const paid = v.orders.reduce((s, o) => s + Number(o.deposit || 0), 0);
-    const bal = Math.max(0, billed - paid);
-    const active = v.orders.filter((o) => o.status !== 'Delivered').length;
-    const repTotal = v.repairs.reduce((s, r) => s + Number(r.amount || 0), 0);
-    const expTotal = v.expenses.reduce((s, e) => s + Number(e.cost || 0), 0);
-    const totalIn = paid + repTotal;
-    document.getElementById('kpi-custom-rev').textContent = fmtKES(paid);
-    document.getElementById('kpi-active-orders').textContent = `${active} active • Billed ${fmtKES(billed)}`;
-    document.getElementById('kpi-repair-rev').textContent = fmtKES(repTotal);
-    document.getElementById('kpi-repair-count').textContent = `${v.repairs.length} repair entries`;
-    document.getElementById('kpi-balances').textContent = fmtKES(bal);
-    document.getElementById('kpi-total-in').textContent = fmtKES(totalIn);
-    document.getElementById('kpi-net-profit').textContent = `Net after expenses: ${fmtKES(totalIn - expTotal)}`;
+    document.getElementById("dash-date").textContent = new Date().toLocaleDateString("en-KE", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+    const active = v.orders.filter((o) => o.status !== "Delivered" && o.status !== "Ready").length;
+    const ready = v.orders.filter((o) => o.status === "Ready").length;
+    document.getElementById("kpi-active-orders").textContent = active;
+    document.getElementById("kpi-ready-orders").textContent = ready;
+    document.getElementById("kpi-repair-count").textContent = v.repairs.length;
+    document.getElementById("kpi-clients-count").textContent = v.clients.length;
   }
 
   function renderClients(v) {

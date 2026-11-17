@@ -12,9 +12,6 @@
       <h1>ANGAZA TAILORING HUB</h1>
       <p>+254 106 35228 • +254 725 240629 • Offline Atelier Vault</p>
     </div>
-    <div class="header-actions">
-      <button type="button" id="btn-backup" class="btn-gold">Backup JSON</button>
-    </div>
   </header>
 
   <main class="container">
@@ -25,24 +22,24 @@
       </div>
       <div class="kpi-grid">
         <div class="kpi-card kpi-gold">
-          <span class="kpi-label">Custom Orders</span>
-          <strong id="kpi-custom-rev" class="kpi-val">KES 0</strong>
-          <small id="kpi-active-orders" class="kpi-sub">0 active orders</small>
+          <span class="kpi-label">Active Orders</span>
+          <strong id="kpi-active-orders" class="kpi-val">0</strong>
+          <small class="kpi-sub">In workshop progress</small>
         </div>
         <div class="kpi-card kpi-ember">
-          <span class="kpi-label">Repair Money</span>
-          <strong id="kpi-repair-rev" class="kpi-val">KES 0</strong>
-          <small id="kpi-repair-count" class="kpi-sub">0 repairs logged</small>
+          <span class="kpi-label">Ready for Pickup</span>
+          <strong id="kpi-ready-orders" class="kpi-val">0</strong>
+          <small class="kpi-sub">Completed garments</small>
         </div>
         <div class="kpi-card kpi-brown">
-          <span class="kpi-label">Pending Balances</span>
-          <strong id="kpi-balances" class="kpi-val">KES 0</strong>
-          <small class="kpi-sub">Uncollected dues</small>
+          <span class="kpi-label">Repairs Logged</span>
+          <strong id="kpi-repair-count" class="kpi-val">0</strong>
+          <small class="kpi-sub">Alterations &amp; fixes</small>
         </div>
         <div class="kpi-card kpi-cream">
-          <span class="kpi-label">Total Collected</span>
-          <strong id="kpi-total-in" class="kpi-val">KES 0</strong>
-          <small id="kpi-net-profit" class="kpi-sub">Net: KES 0</small>
+          <span class="kpi-label">Saved Clients</span>
+          <strong id="kpi-clients-count" class="kpi-val">0</strong>
+          <small class="kpi-sub">Measurement profiles</small>
         </div>
       </div>
     </section>
@@ -239,7 +236,7 @@
     <section id="tab-finance" class="tab-section">
       <div id="fin-lock" class="card lock-card">
         <h2>Owner Finance Vault</h2>
-        <p>Enter your 4+ digit Owner PIN to view income, repairs, and expenses. (Default PIN: <strong>1234</strong>)</p>
+        <p>Enter your 4+ digit Owner PIN to view income, repairs, expenses, and backups. (Default PIN: <strong>1234</strong>)</p>
         <div class="pin-row">
           <input type="password" id="pin-input" inputmode="numeric" placeholder="Enter PIN" />
           <button type="button" id="pin-unlock-btn" class="btn-primary">Unlock</button>
@@ -250,7 +247,10 @@
         <div class="card">
           <div class="card-head-row">
             <h2>Financial Breakdown</h2>
-            <button type="button" id="pin-lock-btn" class="btn-dark">Lock Vault</button>
+            <div style="display:flex;gap:6px;">
+              <button type="button" id="btn-backup" class="btn-gold">Backup JSON</button>
+              <button type="button" id="pin-lock-btn" class="btn-dark">Lock</button>
+            </div>
           </div>
           <div id="fin-summary-box" class="fin-grid"></div>
         </div>
