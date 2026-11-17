@@ -266,3 +266,59 @@
     if (f) f.addEventListener('submit', () => showToast('Saved to Atelier Vault ✓'));
   });
 })();
+
+(() => {
+  // Partial Balance Payment on Orders
+  document.body.addEventListener('click', (e) => {
+    const id = e.target.dataset.payPart;
+    if (!id) return;
+    const vault = JSON.parse(localStorage.getItem('angaza_atelier_vault_v2') || '{}');
+    const ord = (vault.orders || []).find((o) => o.id === id);
+    if (!ord) return;
+    const bal = Math.max(0, Number(ord.price) - Number(ord.deposit));
+    const amtStr = prompt(`Enter payment received from ${ord.clientName} (Balance: KES ${bal}):`);
+    const amt = Number(amtStr);
+    if (amt > 0) {
+      ord.deposit = Math.min(Number(ord.price), Number(ord.deposit) + amt);
+      localStorage.setItem('angaza_atelier_vault_v2', JSON.stringify(vault));
+      document.getElementById('filter-order-cat').dispatchEvent(new Event('change'));
+    }
+  });
+
+  // Inject "+ Pay Part" button next to "Clear Balance" whenever orders render
+  const obs = new MutationObserver(() => {
+    document.querySelectorAll('[data-pay-bal]').forEach((btn) => {
+      if (btn.parentElement.querySelector('[data-pay-part]')) return;
+      const partBtn = document.createElement('button');
+      partBtn.type = 'button';
+      partBtn.className = 'btn-sm';
+      partBtn.dataset.payPart = btn.dataset.payBal;
+      partBtn.textContent = '+ Pay Part';
+      btn.parentElement.insertBefore(partBtn, btn);
+    });
+  });
+  const ordList = document.getElementById('orders-list');
+  if (ordList) obs.observe(ordList, { childList: true });
+
+  // Restore JSON Backup inside PIN-protected Finance tab
+  const restoreInput = document.getElementById('restore-json-input');
+  if (restoreInput) {
+    restoreInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!data || typeof data !== 'object') throw new Error();
+          localStorage.setItem('angaza_atelier_vault_v2', JSON.stringify(data));
+          alert('Atelier Vault backup restored! Reloading...');
+          location.reload();
+        } catch {
+          alert('Invalid backup JSON file.');
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+})();
