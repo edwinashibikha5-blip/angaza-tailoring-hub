@@ -522,3 +522,73 @@
     new MutationObserver(attachDownloadButtons).observe(galList, { childList: true, subtree: true });
   }
 })();
+
+(() => {
+  const ocrInput = document.getElementById('ocr-meas-photo');
+  const ocrStatus = document.getElementById('ocr-status');
+  if (!ocrInput || !ocrStatus) return;
+
+  function parseMeasurements(text) {
+    const clean = text.replace(/\r/g, '\n');
+    const findVal = (patterns) => {
+      for (const p of patterns) {
+        const m = clean.match(new RegExp(p + '\\s*[:\\-=]?\\s*([0-9]+(?:\\.[0-9]+)?)', 'i'));
+        if (m && m[1]) return m[1];
+      }
+      return '';
+    };
+
+    const map = {
+      'm-chest': findVal(['chest', 'bust', 'b']),
+      'm-waist': findVal(['waist', 'w']),
+      'm-hips': findVal(['hips', 'hip', 'h']),
+      'm-shoulder': findVal(['shoulder', 'shldr', 'sh', 's']),
+      'm-sleeve': findVal(['sleeve', 'slv', 'arm']),
+      'm-length': findVal(['length', 'dress', 'top', 'len', 'l']),
+      'm-outseam': findVal(['trouser', 'skirt', 'outseam', 'inseam', 'pant']),
+      'm-neck': findVal(['neck', 'collar', 'thigh'])
+    };
+
+    let filled = 0;
+    Object.entries(map).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el && val) {
+        el.value = val;
+        filled++;
+      }
+    });
+    return filled;
+  }
+
+  ocrInput.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (typeof Tesseract === 'undefined') {
+      ocrStatus.textContent = 'Offline mode: Connect to internet once to load the OCR scanner, or type measurements below.';
+      return;
+    }
+
+    ocrStatus.textContent = '⏳ Reading measurements from photo... Please wait a few seconds.';
+    try {
+      const result = await Tesseract.recognize(file, 'eng');
+      const rawText = (result?.data?.text || '').trim();
+      if (!rawText) {
+        ocrStatus.textContent = 'Could not detect clear text. Try a brighter, closer photo.';
+        return;
+      }
+
+      const filledCount = parseMeasurements(rawText);
+      const notesEl = document.getElementById('cli-notes');
+      if (notesEl) {
+        notesEl.value = (notesEl.value ? notesEl.value + '\n' : '') + 'Scanned Notes:\n' + rawText;
+      }
+
+      ocrStatus.textContent = filledCount > 0
+        ? `✅ Transcribed! Auto-filled ${filledCount} measurement box(es) and saved full text to Notes.`
+        : '✅ Text transcribed into Fit & Style Notes below. Review and adjust numbers as needed.';
+    } catch {
+      ocrStatus.textContent = 'Scan failed. Please try a clearer photo with good lighting.';
+    }
+  });
+})();
