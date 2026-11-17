@@ -592,3 +592,38 @@
     }
   });
 })();
+
+(() => {
+  if ('serviceWorker' in navigator) {
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+
+    const checkUpdate = () => {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (reg) reg.update().catch(() => {});
+      });
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkUpdate();
+    });
+    setInterval(checkUpdate, 60000);
+  }
+
+  const syncBtn = document.getElementById('btn-sync-app');
+  if (syncBtn) {
+    syncBtn.addEventListener('click', async () => {
+      syncBtn.textContent = '⏳';
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) await reg.update().catch(() => {});
+      }
+      window.location.reload();
+    });
+  }
+})();
