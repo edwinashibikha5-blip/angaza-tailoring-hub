@@ -365,3 +365,76 @@
     if (urls[platform]) window.open(urls[platform], '_blank', 'noopener');
   });
 })();
+
+(() => {
+  const auditBtn = document.getElementById('btn-audit-pdf');
+  if (!auditBtn) return;
+
+  auditBtn.addEventListener('click', () => {
+    const v = JSON.parse(localStorage.getItem('angaza_atelier_vault_v2') || '{}');
+    const orders = v.orders || [];
+    const repairs = v.repairs || [];
+    const expenses = v.expenses || [];
+    const clients = v.clients || [];
+
+    const billed = orders.reduce((s, o) => s + Number(o.price || 0), 0);
+    const paid = orders.reduce((s, o) => s + Number(o.deposit || 0), 0);
+    const pending = Math.max(0, billed - paid);
+    const repTotal = repairs.reduce((s, r) => s + Number(r.amount || 0), 0);
+    const expTotal = expenses.reduce((s, e) => s + Number(e.cost || 0), 0);
+    const net = paid + repTotal - expTotal;
+    const fmt = (n) => 'KES ' + Number(n || 0).toLocaleString('en-KE');
+    const nowStr = new Date().toLocaleString('en-KE');
+
+    const orderRows = orders.length
+      ? orders.map((o, i) => {
+          const bal = Math.max(0, Number(o.price) - Number(o.deposit));
+          return `<tr><td>${i + 1}</td><td>${o.clientName}</td><td>${o.style} (${o.category})</td><td>${o.status}</td><td>${fmt(o.price)}</td><td>${fmt(o.deposit)}</td><td>${fmt(bal)}</td></tr>`;
+        }).join('')
+      : '<tr><td colspan="7">No custom orders recorded.</td></tr>';
+
+    const repairRows = repairs.length
+      ? repairs.map((r, i) => `<tr><td>${i + 1}</td><td>${r.date || '-'}</td><td>${r.client}</td><td>${r.group || '-'}</td><td>${r.notes || '-'}</td><td>${fmt(r.amount)}</td></tr>`).join('')
+      : '<tr><td colspan="6">No repair records logged.</td></tr>';
+
+    const expRows = expenses.length
+      ? expenses.map((e, i) => `<tr><td>${i + 1}</td><td>${e.item}</td><td>${fmt(e.cost)}</td></tr>`).join('')
+      : '<tr><td colspan="3">No expenses logged.</td></tr>';
+
+    const area = document.getElementById('print-receipt-area');
+    area.innerHTML = `
+      <div style="font-family:sans-serif;color:#111;line-height:1.45;">
+        <div style="border-bottom:3px solid #1e3a8a;padding-bottom:8px;margin-bottom:12px;">
+          <h1 style="margin:0;font-size:20px;color:#1e3a8a;">ANGAZA TAILORING HUB — AUDIT REPORT</h1>
+          <p style="margin:3px 0 0;font-size:12px;">Contact: Naomi (+254 106 35228 / +254 725 240629) • Generated: ${nowStr}</p>
+        </div>
+
+        <h3 style="margin:10px 0 6px;font-size:14px;color:#581c87;">1. Financial &amp; Shop Summary</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;" border="1" cellpadding="6">
+          <tr><td><strong>Saved Clients:</strong> ${clients.length}</td><td><strong>Total Orders:</strong> ${orders.length}</td><td><strong>Total Repairs:</strong> ${repairs.length}</td></tr>
+          <tr><td><strong>Custom Orders Billed:</strong> ${fmt(billed)}</td><td><strong>Custom Deposits Paid:</strong> ${fmt(paid)}</td><td><strong>Pending Balances:</strong> ${fmt(pending)}</td></tr>
+          <tr><td><strong>Repair Money Total:</strong> ${fmt(repTotal)}</td><td><strong>Material Expenses:</strong> ${fmt(expTotal)}</td><td><strong>Net Cash In Hand:</strong> ${fmt(net)}</td></tr>
+        </table>
+
+        <h3 style="margin:10px 0 6px;font-size:14px;color:#581c87;">2. Custom Tailoring Orders Ledger</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;" border="1" cellpadding="5">
+          <tr style="background:#eef7ff;"><th>#</th><th>Client</th><th>Garment</th><th>Status</th><th>Price</th><th>Paid</th><th>Balance</th></tr>
+          ${orderRows}
+        </table>
+
+        <h3 style="margin:10px 0 6px;font-size:14px;color:#581c87;">3. Repair Money Ledger</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;" border="1" cellpadding="5">
+          <tr style="background:#eef7ff;"><th>#</th><th>Date</th><th>Customer / Garment</th><th>Group</th><th>Notes</th><th>Amount</th></tr>
+          ${repairRows}
+        </table>
+
+        <h3 style="margin:10px 0 6px;font-size:14px;color:#581c87;">4. Material &amp; Trim Expenses</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;" border="1" cellpadding="5">
+          <tr style="background:#eef7ff;"><th>#</th><th>Expense Item</th><th>Cost</th></tr>
+          ${expRows}
+        </table>
+      </div>
+    `;
+    window.print();
+  });
+})();
