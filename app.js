@@ -463,3 +463,35 @@
     });
   });
 })();
+
+(() => {
+  const ENGINES = {
+    google: { base: 'https://google.com', param: 'q', extra: { tbm: 'isch' } },
+    pinterest: { base: 'https://pinterest.com', param: 'q' },
+    instagram: { base: 'https://google.com', param: 'q', prefix: 'site:instagram.com ' },
+    jumia: { base: 'https://jumia.co.ke', param: 'q' }
+  };
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-web-search]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    const cfg = ENGINES[btn.dataset.webSearch];
+    if (!cfg) return;
+
+    const raw = (document.getElementById('online-style-query')?.value || '').trim();
+    const activeCat = document.querySelector('#catalog-chips .chip.active')?.dataset.cat;
+    const catWord = activeCat && activeCat !== 'ALL' ? activeCat + ' ' : '';
+    const searchTerm = (cfg.prefix || '') + (raw || (catWord + 'African Kitenge tailoring fashion')).trim();
+
+    const targetUrl = new URL(cfg.base);
+    targetUrl.searchParams.set(cfg.param, searchTerm);
+    if (cfg.extra) {
+      Object.entries(cfg.extra).forEach(([k, v]) => targetUrl.searchParams.set(k, v));
+    }
+
+    window.open(targetUrl.toString(), '_blank', 'noopener,noreferrer');
+  }, true);
+})();
