@@ -1,33 +1,186 @@
-            <div><label>Monthly Overhead</label><input type="number" id="p-ovh" value="18000" /></div>
-          </div>
-          <div id="proj-res" style="margin-top:8px;padding:9px;background:#0f172a;border-radius:7px;font-size:12px;"></div>
-        </div>
-        <div class="card">
-          <h2>Material &amp; Trim Expenses + Change PIN</h2>
-          <form id="exp-form" class="grid-2" style="margin-bottom:8px;">
-            <input id="exp-item" placeholder="Thread, Zipper, Lining..." required />
-            <input type="number" id="exp-cost" placeholder="KES" required />
-            <button type="submit" class="btn btn-dark">+ Log Cost</button>
-          </form>
-          <div id="exp-list" style="margin-bottom:10px;"></div>
-          <div style="display:flex;gap:6px;max-width:250px;">
-            <input type="password" id="new-pin" placeholder="New Owner PIN" inputmode="numeric" />
-            <button type="button" id="save-pin" class="btn">Set PIN</button>
-          </div>
-        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>ANGAZA TAILORING HUB | Bespoke Atelier & Studio Vault</title>
+<script src="https://jsdelivr.net"></script>
+<style>
+:root{--bg:#f6f3ee;--card:#ffffff;--ink:#1c1917;--muted:#78716c;--gold:#b45309;--gold-soft:#fef3c7;--emerald:#065f46;--border:#e7e5e4;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif;}
+body{background:var(--bg);color:var(--ink);padding-bottom:84px;line-height:1.4;}
+header{background:linear-gradient(135deg,#1c1917 0%,#292524 65%,#78350f 100%);color:#fff;padding:16px 14px;border-bottom:3px solid #d97706;}
+.brand-row{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+h1{font-size:1.15rem;letter-spacing:.05em;color:#fde68a;}
+.sub{font-size:.78rem;color:#e7e5e4;margin-top:3px;}
+main{max-width:760px;margin:0 auto;padding:12px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+h2{font-size:.98rem;margin-bottom:10px;color:#292524;border-left:3px solid var(--gold);padding-left:8px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+input,select{width:100%;padding:9px 10px;border:1px solid #d6d3d1;border-radius:9px;font-size:.88rem;background:#fafaf9;}
+input:focus,select:focus{outline:none;border-color:var(--gold);background:#fff;}
+label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:3px;font-weight:600;}
+.btn{padding:9px 12px;border:none;border-radius:9px;font-weight:600;font-size:.84rem;cursor:pointer;background:#e7e5e4;color:var(--ink);}
+.btn-gold{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;}
+.btn-dark{background:#1c1917;color:#fde68a;}
+.btn-sm{padding:6px 9px;font-size:.76rem;}
+.tab{display:none;}.tab.active{display:block;}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#1c1917;display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid #b45309;z-index:50;}
+.nav button{background:none;border:none;color:#d6d3d1;padding:12px 4px;font-size:.76rem;font-weight:600;cursor:pointer;}
+.nav button.active{color:#fde68a;background:rgba(217,119,6,.2);}
+.item-card{border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;background:#fafaf9;}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:700;background:var(--gold-soft);color:#92400e;}
+.gal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.gal-card{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;}
+.gal-card img{width:100%;height:140px;object-fit:cover;display:block;}
+.swatch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.swatch{border-radius:10px;overflow:hidden;border:1px solid var(--border);font-size:.74rem;}
+.swatch-box{height:46px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;}
+.kpi{background:#fafaf9;border:1px solid var(--border);border-radius:10px;padding:10px;}
+.kpi strong{display:block;font-size:1rem;color:var(--emerald);}
+@media print{body *{visibility:hidden;}#print-receipt-area,#print-receipt-area *{visibility:visible;}#print-receipt-area{display:block!important;position:fixed;inset:0;background:#fff;padding:20px;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand-row">
+    <div>
+      <h1>ANGAZA TAILORING HUB</h1>
+      <div class="sub">+254 106 35228 &bull; +254 725 240629 &bull; Offline Atelier Vault</div>
+    </div>
+    <button type="button" id="btn-backup" class="btn btn-sm btn-gold">Backup JSON</button>
+  </div>
+</header>
+<main>
+<section id="tab-orders" class="tab active">
+  <div class="card">
+    <h2>New Bespoke Order</h2>
+    <form id="order-form">
+      <div class="grid-2" style="margin-bottom:8px;">
+        <div><label>Client</label><select id="ord-client" required></select></div>
+        <div><label>Garment Style</label><input id="ord-garment" placeholder="Kitenge Dress / Suit..." required /></div>
       </div>
-    </section>
-  </main>
+      <div class="grid-3" style="margin-bottom:8px;">
+        <div><label>Price (KES)</label><input type="number" id="ord-price" required /></div>
+        <div><label>Deposit (KES)</label><input type="number" id="ord-deposit" value="0" /></div>
+        <div><label>Due Date</label><input type="date" id="ord-due" required /></div>
+      </div>
+      <div class="grid-2" style="margin-bottom:8px;">
+        <div><label>Status</label><select id="ord-status"><option>Cutting</option><option>Sewing</option><option>Fitting</option><option>Ready for Pickup</option><option>Delivered</option></select></div>
+        <div><label>Fabric Photo</label><input type="file" id="ord-photo" accept="image/*" /></div>
+      </div>
+      <button type="submit" class="btn btn-gold" style="width:100%;">+ Save Tailoring Order</button>
+    </form>
+  </div>
+  <div class="card"><h2>Active Orders &amp; WhatsApp Alerts</h2><div id="orders-list"></div></div>
+</section>
 
-  <div id="print-receipt-area" style="display:none;"></div>
+<section id="tab-clients" class="tab">
+  <div class="card">
+    <h2>Client Profile &amp; Body Measurements (Inches)</h2>
+    <form id="client-form">
+      <div class="grid-2" style="margin-bottom:8px;">
+        <div><label>Full Name</label><input id="cl-name" placeholder="Client Name" required /></div>
+        <div><label>Phone (WhatsApp)</label><input id="cl-phone" placeholder="2547..." required /></div>
+      </div>
+      <div class="grid-3" style="margin-bottom:8px;">
+        <div><label>Neck</label><input id="m-neck" placeholder="15" /></div>
+        <div><label>Shoulder</label><input id="m-shoulder" placeholder="17" /></div>
+        <div><label>Bust/Chest</label><input id="m-bust" placeholder="38" /></div>
+        <div><label>Waist</label><input id="m-waist" placeholder="32" /></div>
+        <div><label>Hips</label><input id="m-hips" placeholder="41" /></div>
+        <div><label>Sleeve</label><input id="m-sleeve" placeholder="24" /></div>
+        <div><label>Top Len</label><input id="m-top" placeholder="27" /></div>
+        <div><label>Bottom Len</label><input id="m-bottom" placeholder="40" /></div>
+        <div><label>Dress Len</label><input id="m-dress" placeholder="44" /></div>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label>Scan Handwritten Measurement Book (OCR)</label>
+        <input type="file" id="ocr-photo" accept="image/*" />
+        <div id="ocr-msg" style="font-size:.75rem;color:var(--gold);margin-top:4px;"></div>
+      </div>
+      <button type="submit" class="btn btn-dark" style="width:100%;">Save Client &amp; Measurements</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Saved Clients</h2>
+    <input id="client-search" placeholder="Search client name or phone..." style="margin-bottom:8px;" />
+    <div id="clients-list"></div>
+  </div>
+</section>
 
-  <nav class="nav">
-    <button type="button" class="active" data-nav="tab-orders">Orders</button>
-    <button type="button" data-nav="tab-clients">Clients &amp; OCR</button>
-    <button type="button" data-nav="tab-gallery">Gallery &amp; Fabrics</button>
-    <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
-  </nav>
-
-  <script src="app.js"></script>
+<section id="tab-gallery" class="tab">
+  <div class="card">
+    <h2>Finished Clothes Showcase (IndexedDB HD)</h2>
+    <div class="grid-2" style="margin-bottom:8px;">
+      <input id="gal-title" placeholder="Outfit Title (e.g. Royal Ankara)" />
+      <input type="file" id="gal-photo" accept="image/*" />
+    </div>
+    <div id="gal-grid" class="gal-grid"></div>
+  </div>
+  <div class="card">
+    <h2>HD Fabric Swatch &amp; Color Palette</h2>
+    <div class="grid-3" style="margin-bottom:8px;">
+      <input id="fab-name" placeholder="Fabric Name" />
+      <input type="color" id="fab-hex" value="#b45309" style="height:38px;padding:2px;" />
+      <input type="file" id="fab-photo" accept="image/*" />
+    </div>
+    <div id="fab-palette" class="swatch-grid" style="margin-bottom:8px;"></div>
+    <div id="fab-grid" class="swatch-grid"></div>
+  </div>
+</section>
+<section id="tab-finance" class="tab">
+  <div id="fin-lock" class="card" style="text-align:center;padding:24px 14px;">
+    <h2>Owner Finance Vault Locked</h2>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:10px;">Enter Owner PIN to unlock revenue, expenses &amp; 12-month growth projections.</p>
+    <div style="display:flex;gap:8px;max-width:260px;margin:0 auto;">
+      <input type="password" id="pin-in" placeholder="PIN (1234)" inputmode="numeric" />
+      <button type="button" id="pin-btn" class="btn btn-gold">Unlock</button>
+    </div>
+  </div>
+  <div id="fin-open" style="display:none;">
+    <div class="card">
+      <div class="brand-row" style="margin-bottom:8px;">
+        <h2>Financial Overview</h2>
+        <button type="button" id="pin-lock-btn" class="btn btn-sm">Lock Vault</button>
+      </div>
+      <div id="fin-kpis" class="kpi-grid"></div>
+    </div>
+    <div class="card">
+      <h2>12-Month Atelier Expansion Simulator</h2>
+      <div class="grid-2" style="margin-bottom:8px;">
+        <div><label>Orders / Month</label><input type="number" id="p-ord" value="25" /></div>
+        <div><label>Avg Price (KES)</label><input type="number" id="p-price" value="3500" /></div>
+        <div><label>Fabric Cost / Order</label><input type="number" id="p-cost" value="1100" /></div>
+        <div><label>Monthly Overhead</label><input type="number" id="p-ovh" value="18000" /></div>
+      </div>
+      <div id="proj-res" style="font-size:.84rem;background:#fef3c7;padding:10px;border-radius:9px;"></div>
+    </div>
+    <div class="card">
+      <h2>Material &amp; Trim Expenses + Change PIN</h2>
+      <form id="exp-form" class="grid-3" style="margin-bottom:8px;">
+        <input id="exp-item" placeholder="Thread, Zipper..." required />
+        <input type="number" id="exp-cost" placeholder="KES" required />
+        <button type="submit" class="btn btn-dark">+ Log</button>
+      </form>
+      <div id="exp-list" style="margin-bottom:10px;"></div>
+      <div style="display:flex;gap:6px;max-width:250px;">
+        <input type="password" id="new-pin" placeholder="New Owner PIN" inputmode="numeric" />
+        <button type="button" id="save-pin" class="btn">Set PIN</button>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<div id="print-receipt-area" style="display:none;"></div>
+<nav class="nav">
+  <button type="button" class="active" data-nav="tab-orders">Orders</button>
+  <button type="button" data-nav="tab-clients">Clients &amp; OCR</button>
+  <button type="button" data-nav="tab-gallery">Gallery &amp; Fabrics</button>
+  <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
+</nav>
+<script src="app.js"></script>
 </body>
 </html>
