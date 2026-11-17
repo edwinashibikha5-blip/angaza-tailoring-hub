@@ -263,7 +263,7 @@
   // Instant toast feedback on saves & actions
   ['order-form', 'repair-form', 'client-form', 'gallery-form', 'exp-form'].forEach((id) => {
     const f = document.getElementById(id);
-    if (f) f.addEventListener('submit', () => showToast('Saved to Atelier Vault ✓'));
+    if (f) f.addEventListener('submit', () => showToast('Saved to Tailoring Vault ✓'));
   });
 })();
 
@@ -312,7 +312,7 @@
           const data = JSON.parse(reader.result);
           if (!data || typeof data !== 'object') throw new Error();
           localStorage.setItem('angaza_atelier_vault_v2', JSON.stringify(data));
-          alert('Atelier Vault backup restored! Reloading...');
+          alert('Tailoring Vault backup restored! Reloading...');
           location.reload();
         } catch {
           alert('Invalid backup JSON file.');
