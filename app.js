@@ -1899,3 +1899,28 @@
     }, 300000);
   }
 })();
+
+// === V28: COLLAPSIBLE SHOP OVERVIEW & CLEAR REFRESH FEEDBACK ===
+(function initV28Polish() {
+  const toggleOvBtn = document.getElementById('toggle-overview-collapse-btn');
+  const ovBody = document.getElementById('overview-collapse-body');
+  if (toggleOvBtn && ovBody) {
+    toggleOvBtn.addEventListener('click', () => {
+      const hidden = ovBody.style.display === 'none';
+      ovBody.style.display = hidden ? 'block' : 'none';
+      toggleOvBtn.textContent = hidden ? 'Hide' : 'Show';
+    });
+  }
+
+  // Show confirmation toast if reloaded via Refresh button
+  if (window.location.search.includes('v=')) {
+    const toast = document.createElement('div');
+    toast.className = 'sync-toast';
+    toast.textContent = '✅ App Refreshed & Up to Date';
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.remove(); }, 2600);
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+})();

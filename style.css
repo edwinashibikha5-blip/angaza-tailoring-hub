@@ -635,3 +635,27 @@ header {
   background: #e0f2fe;
   color: #0369a1;
 }
+
+/* === V28 EXACT FORM COLLAPSE & HIGH-CONTRAST OVERVIEW === */
+form#order-form:not(.is-open) {
+  display: none !important;
+}
+#shop-overview-card,
+#shop-overview-card strong,
+#shop-overview-card label {
+  color: #0f172a !important;
+}
+.sync-toast {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #166534;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}

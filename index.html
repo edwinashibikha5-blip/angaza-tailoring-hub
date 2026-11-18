@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=27" />
+  <link rel="stylesheet" href="style.css?v=28" />
 </head>
 <body>
   <header class="topbar">
@@ -39,7 +39,41 @@
         </div>
         <p class="naomi-quote" id="naomi-daily-quote">"Every stitch, resize, and design brings beauty and confidence to your clients."</p>
       
-        <div id="shop-stock-summary" class="shop-stock-summary">
+        </div>
+
+</div>
+
+      <div class="hub-actions-grid" id="hub-actions-grid">
+        <button type="button" class="hub-tile tile-blue" data-jump="orders-form">
+          <span class="hub-icon">✂️</span>
+          <strong>Custom Tailoring</strong>
+          <small>New outfits & suits</small>
+        </button>
+        <button type="button" class="hub-tile tile-purple" data-jump="tab-gallery">
+          <span class="hub-icon">👗</span>
+          <strong>Fashion Design</strong>
+          <small>Styles, yardage & gallery</small>
+        </button>
+        <button type="button" class="hub-tile tile-sky" data-jump="tab-repairs">
+          <span class="hub-icon">🪡</span>
+          <strong>Resizing & Fixes</strong>
+          <small>Alterations, hems & zips</small>
+        </button>
+        <button type="button" class="hub-tile tile-gold" data-jump="accessories-panel">
+          <span class="hub-icon">🧵</span>
+          <strong>Sewing Accessories</strong>
+          <small>Threads, zips, buttons & stock</small>
+        </button>
+      </div>
+
+      
+      <div class="card" id="shop-overview-card" style="padding:11px 12px;margin-bottom:10px;">
+        <div class="card-head" style="margin-bottom:4px;">
+          <h4 style="margin:0;color:#1e3a8a;font-size:0.92rem;">📊 Shop Overview & Stock</h4>
+          <button type="button" class="btn-small" id="toggle-overview-collapse-btn">Hide</button>
+        </div>
+        <div id="overview-collapse-body">
+          <div id="shop-stock-summary" class="shop-stock-summary">
           <div class="shop-summary-pills" id="shop-summary-pills"></div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
             <strong style="font-size:0.82rem;color:#1e3a8a;">Shop Clothes, Fabrics & Items for Sale</strong>
@@ -74,31 +108,8 @@
             <button type="submit" class="btn-primary">+ Save to Shop Stock</button>
           </form>
           <div id="sell-items-list" class="stack-list" style="margin-top:8px;"></div>
+        
         </div>
-
-</div>
-
-      <div class="hub-actions-grid" id="hub-actions-grid">
-        <button type="button" class="hub-tile tile-blue" data-jump="orders-form">
-          <span class="hub-icon">✂️</span>
-          <strong>Custom Tailoring</strong>
-          <small>New outfits & suits</small>
-        </button>
-        <button type="button" class="hub-tile tile-purple" data-jump="tab-gallery">
-          <span class="hub-icon">👗</span>
-          <strong>Fashion Design</strong>
-          <small>Styles, yardage & gallery</small>
-        </button>
-        <button type="button" class="hub-tile tile-sky" data-jump="tab-repairs">
-          <span class="hub-icon">🪡</span>
-          <strong>Resizing & Fixes</strong>
-          <small>Alterations, hems & zips</small>
-        </button>
-        <button type="button" class="hub-tile tile-gold" data-jump="accessories-panel">
-          <span class="hub-icon">🧵</span>
-          <strong>Sewing Accessories</strong>
-          <small>Threads, zips, buttons & stock</small>
-        </button>
       </div>
 
       <div class="card" id="accessories-panel" style="display:none;">
@@ -459,6 +470,6 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=27" defer></script>
+  <script src="app.js?v=28" defer></script>
 </body>
 </html>
