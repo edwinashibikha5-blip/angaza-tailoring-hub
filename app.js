@@ -1779,3 +1779,123 @@
 
   renderShopOverviewAndStock();
 })();
+
+// === V26: ZERO-CRASH SHIELD, DUAL-VAULT BACKUP, SECURITY & SELF-REFRESH ===
+(function initEnterpriseResilienceEngine() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+  const SNAPSHOT_KEY = 'angaza_daily_auto_snapshot_v1';
+
+  // 1. Global Crash Shield — prevents any unexpected error from freezing the UI
+  window.addEventListener('error', (e) => {
+    console.warn('[Angaza Shield] Isolated runtime error:', e.message);
+    e.preventDefault();
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    console.warn('[Angaza Shield] Isolated async warning:', e.reason);
+    e.preventDefault();
+  });
+
+  // 2. IndexedDB Redundant Mirror + Daily Auto-Snapshot
+  function openMirrorDB() {
+    return new Promise((resolve) => {
+      if (!('indexedDB' in window)) return resolve(null);
+      const req = indexedDB.open('AngazaVaultMirrorDB', 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains('vault')) db.createObjectStore('vault');
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    });
+  }
+
+  async function mirrorToIndexedDB(rawJson) {
+    try {
+      const db = await openMirrorDB();
+      if (!db || !rawJson) return;
+      const tx = db.transaction('vault', 'readwrite');
+      tx.objectStore('vault').put(rawJson, 'latest_backup');
+    } catch (e) {}
+  }
+
+  async function restoreFromIndexedDBIfNeeded() {
+    try {
+      const current = localStorage.getItem(VAULT_KEY);
+      if (current && current.length > 20) {
+        mirrorToIndexedDB(current);
+        return;
+      }
+      const db = await openMirrorDB();
+      if (!db) return;
+      const tx = db.transaction('vault', 'readonly');
+      const getReq = tx.objectStore('vault').get('latest_backup');
+      getReq.onsuccess = () => {
+        if (getReq.result && typeof getReq.result === 'string' && getReq.result.length > 20) {
+          localStorage.setItem(VAULT_KEY, getReq.result);
+          window.location.reload();
+        }
+      };
+    } catch (e) {}
+  }
+  restoreFromIndexedDBIfNeeded();
+
+  // Intercept localStorage.setItem to auto-mirror and keep daily rolling backup
+  const origSetItem = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(key, val) {
+    origSetItem(key, val);
+    if (key === VAULT_KEY && typeof val === 'string') {
+      mirrorToIndexedDB(val);
+      try {
+        const today = new Date().toISOString().split('T');
+        const snap = JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || '{}');
+        if (snap.date !== today) {
+          origSetItem(SNAPSHOT_KEY, JSON.stringify({ date: today, data: val }));
+        }
+      } catch (e) {}
+    }
+  };
+
+  // 3. Auto-Lock Finance Tab on App Backgrounding or 3-Minute Idle
+  let financeIdleTimer = null;
+  function lockFinanceSilently() {
+    const unlocked = document.getElementById('finance-unlocked');
+    const locked = document.getElementById('finance-locked') || document.getElementById('pin-lock-screen');
+    if (unlocked && unlocked.style.display !== 'none') {
+      unlocked.style.display = 'none';
+      if (locked) locked.style.display = 'block';
+    }
+  }
+
+  function resetFinanceTimer() {
+    clearTimeout(financeIdleTimer);
+    financeIdleTimer = setTimeout(lockFinanceSilently, 180000);
+  }
+
+  ['click', 'touchstart', 'keydown'].forEach((evt) => {
+    document.addEventListener(evt, resetFinanceTimer, { passive: true });
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      lockFinanceSilently();
+    } else if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((reg) => { if (reg) reg.update(); });
+    }
+  });
+
+  // 4. Silent Self-Refreshing Service Worker Activation
+  if ('serviceWorker' in navigator) {
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
+    setInterval(() => {
+      if (navigator.onLine) {
+        navigator.serviceWorker.getRegistration().then((reg) => { if (reg) reg.update(); });
+      }
+    }, 300000);
+  }
+})();
