@@ -2337,3 +2337,53 @@ window.computeAngazaMaterial = function computeAngazaMaterial() {
   }
 });
 window.computeAngazaMaterial();
+
+
+// === V64: EXCLUSIVE SINGLE-VIEW SWITCHER (HOME NEVER CROWDS OTHER TABS) ===
+window.openExclusiveView = function openExclusiveView(targetId) {
+  const acc = document.getElementById('accessories-panel');
+  const sections = document.querySelectorAll('.tab-section, section[id^="tab-"]');
+  const navBtns = document.querySelectorAll('nav button, .nav button, [data-target], [data-tab]');
+
+  if (targetId === 'accessories-panel') {
+    sections.forEach((s) => s.classList.remove('active'));
+    if (acc) {
+      acc.style.display = 'block';
+      acc.classList.add('active');
+    }
+    navBtns.forEach((b) => b.classList.remove('active'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  if (acc) {
+    acc.style.display = 'none';
+    acc.classList.remove('active');
+  }
+
+  sections.forEach((s) => {
+    const match = s.id === targetId;
+    s.classList.toggle('active', match);
+  });
+
+  const shortName = targetId.replace(/^tab-/, '');
+  navBtns.forEach((b) => {
+    const key = (b.getAttribute('data-target') || b.getAttribute('data-tab') || b.textContent || '').toLowerCase();
+    const isHome = shortName === 'orders' && (key.includes('orders') || key.includes('home'));
+    b.classList.toggle('active', isHome || key.includes(shortName));
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+document.addEventListener('click', (e) => {
+  const navBtn = e.target.closest('nav button, .nav button');
+  if (!navBtn) return;
+  const raw = (navBtn.getAttribute('data-target') || navBtn.getAttribute('data-tab') || navBtn.textContent || '').trim().toLowerCase();
+  let target = 'tab-orders';
+  if (raw.includes('repair')) target = 'tab-repairs';
+  else if (raw.includes('client')) target = 'tab-clients';
+  else if (raw.includes('catalog') || raw.includes('gallery')) target = 'tab-gallery';
+  else if (raw.includes('finance')) target = 'tab-finance';
+  window.openExclusiveView(target);
+}, true);

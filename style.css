@@ -712,3 +712,18 @@ section[id^="tab-"]:not(.active) {
   display: flex !important;
   flex-direction: column !important;
 }
+
+
+/* === V64: STRICT EXCLUSIVE SINGLE-TAB VISIBILITY === */
+.tab-section,
+section[id^="tab-"] {
+  display: none !important;
+}
+.tab-section.active,
+section[id^="tab-"].active {
+  display: block !important;
+}
+#tab-orders.active {
+  display: flex !important;
+  flex-direction: column !important;
+}
