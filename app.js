@@ -2020,3 +2020,31 @@
     }
   }, true);
 })();
+
+// === V32: LIVE VERSION BADGE & AUTOMATIC DEPLOYMENT DETECTOR ===
+(function initAutoDeployWatcher() {
+  const CURRENT_VER = 'v32';
+
+  // Display subtle version tag beside live date or header so you always know which build is active
+  const datePill = document.getElementById('live-date-pill');
+  if (datePill && !datePill.textContent.includes(CURRENT_VER)) {
+    datePill.textContent = datePill.textContent + ' · ' + CURRENT_VER;
+  }
+
+  // Poll index.html with cache-bypass every 25s when online; auto-reload the instant Render publishes a newer build
+  setInterval(async () => {
+    if (!navigator.onLine) return;
+    try {
+      const res = await fetch('./index.html?ping=' + Date.now(), { cache: 'no-store' });
+      const text = await res.text();
+      const match = text.match(/style\.css\?v=(\d+)/);
+      if (match && ('v' + match) !== CURRENT_VER) {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+        window.location.replace(window.location.pathname + '?v=' + match + '&t=' + Date.now());
+      }
+    } catch (e) {}
+  }, 25000);
+})();
