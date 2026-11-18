@@ -1457,3 +1457,31 @@
     }, 120);
   });
 })();
+
+// === ZERO-LAG LAZY OCR LOADER & INSTANT REFRESH ===
+(function initSpeedBoost() {
+  const ocrInput = document.getElementById('ocr-meas-photo');
+  if (ocrInput && typeof window.loadTesseractLazy === 'function') {
+    ocrInput.addEventListener('click', () => { window.loadTesseractLazy(); }, { passive: true });
+    ocrInput.addEventListener('change', async () => {
+      if (!window.Tesseract) await window.loadTesseractLazy();
+    }, true);
+  }
+
+  // Fast background reload on sync button without hanging on network timeouts
+  const syncBtn = document.getElementById('btn-sync-app');
+  if (syncBtn) {
+    const freshBtn = syncBtn.cloneNode(true);
+    syncBtn.parentNode.replaceChild(freshBtn, syncBtn);
+    freshBtn.addEventListener('click', async () => {
+      freshBtn.textContent = '⚡';
+      try {
+        if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg) await reg.update();
+        }
+      } catch (e) {}
+      setTimeout(() => { window.location.reload(); }, 150);
+    });
+  }
+})();
