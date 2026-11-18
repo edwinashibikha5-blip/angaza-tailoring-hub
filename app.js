@@ -1485,3 +1485,25 @@
     });
   }
 })();
+
+// === HARD PWA CACHE-BUST ON SYNC BUTTON ===
+(function bindHardRefresh() {
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('#btn-sync-app');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    btn.textContent = '⚡';
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+    } catch (err) {}
+    window.location.href = window.location.pathname + '?v=' + Date.now();
+  }, true);
+})();

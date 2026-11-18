@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=20" />
 </head>
 <body>
   <header class="topbar">
@@ -24,9 +24,7 @@
     <div style="display:flex;gap:5px;align-items:center;"><button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
         <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;">↻</button><button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button></div>
   </header>
-
-  <main class="container">
-    <div class="naomi-welcome-card" id="naomi-welcome-card">
+<div class="naomi-welcome-card" id="naomi-welcome-card">
         <div class="naomi-welcome-top">
           <span class="naomi-greeting" id="naomi-greeting">Karibu, Naomi ✨</span>
           <span class="naomi-badge">Tailoring · Design · Accessories</span>
@@ -84,7 +82,10 @@
       <div class="dash-header">
         <span class="dash-title">Shop Overview</span>
         <div style="display:flex;align-items:center;gap:6px;"><span id="dash-date" class="dash-date"></span><button type="button" id="toggle-dash-btn" class="btn-sm" style="padding:2px 8px;font-size:.7rem;">Hide</button></div>
-      </div>
+      
+
+  <main class="container">
+    </div>
       <div class="kpi-grid">
         <div class="kpi-card kpi-gold">
           <span class="kpi-label">Active Orders</span>
@@ -403,6 +404,6 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=20" defer></script>
 </body>
 </html>
