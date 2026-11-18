@@ -1924,3 +1924,99 @@
     }
   }
 })();
+
+// === V29: RELIABLE "+ ADD ITEM TO SELL" & CLIENT-TAB ORDER JUMP ===
+(function initV29Fixes() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+  function loadVault() {
+    try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveVault(v) {
+    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
+  }
+
+  // Event-delegated "+ Add Item to Sell" toggle so it always responds on first tap
+  document.addEventListener('click', (e) => {
+    const toggleBtn = e.target.closest('#toggle-sell-item-btn');
+    if (toggleBtn) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const form = document.getElementById('sell-item-form');
+      if (form) {
+        const isClosed = form.style.display === 'none' || getComputedStyle(form).display === 'none';
+        form.style.display = isClosed ? 'grid' : 'none';
+        toggleBtn.textContent = isClosed ? '− Hide Form' : '+ Add Item to Sell';
+      }
+    }
+
+    // Jump Custom Tailoring tile directly to Clients tab where New Custom Order now lives
+    const customTile = e.target.closest('[data-jump="orders-form"]');
+    if (customTile) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const clientsNav = document.querySelector('[data-tab="clients"]') ||
+                         document.querySelector('[data-target="tab-clients"]');
+      if (clientsNav) clientsNav.click();
+      setTimeout(() => {
+        const form = document.getElementById('order-form');
+        if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
+    }
+  }, true);
+
+  // Ensure saving a sellable item works reliably and updates chips immediately
+  document.addEventListener('submit', (e) => {
+    if (e.target && e.target.id === 'sell-item-form') {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const name = document.getElementById('sell-name')?.value.trim();
+      const category = document.getElementById('sell-cat')?.value || 'Ready Clothes';
+      const qty = document.getElementById('sell-qty')?.value.trim();
+      const note = document.getElementById('sell-note')?.value.trim() || '';
+      if (!name || !qty) return;
+
+      const vault = loadVault();
+      vault.shopItems = Array.isArray(vault.shopItems) ? vault.shopItems : [];
+      vault.shopItems.unshift({ name, category, qty, note, date: new Date().toISOString().split('T') });
+      saveVault(vault);
+
+      e.target.reset();
+      e.target.style.display = 'none';
+      const btn = document.getElementById('toggle-sell-item-btn');
+      if (btn) btn.textContent = '+ Add Item to Sell';
+
+      // Refresh pills and list immediately
+      const pillsEl = document.getElementById('shop-summary-pills');
+      const listEl = document.getElementById('sell-items-list');
+      const clients = Array.isArray(vault.clients) ? vault.clients : [];
+      const orders = Array.isArray(vault.orders) ? vault.orders : [];
+      const accessories = Array.isArray(vault.accessories) ? vault.accessories : [];
+      const shopItems = vault.shopItems;
+      const readyClothes = orders.filter((o) => o.status === 'Ready').length +
+        shopItems.filter((i) => i.category === 'Ready Clothes').length;
+      const materialsCount = shopItems.filter((i) => i.category === 'Fabrics & Materials').length;
+
+      if (pillsEl) {
+        pillsEl.innerHTML = `
+          <span class="summary-chip">👥 Customers: ${clients.length}</span>
+          <span class="summary-chip">👗 Clothes: ${readyClothes}</span>
+          <span class="summary-chip">🧵 Materials/Fabrics: ${materialsCount}</span>
+          <span class="summary-chip">🪡 Accessories: ${accessories.length}</span>
+          <span class="summary-chip">🛍️ Items for Sale: ${shopItems.length}</span>
+        `;
+      }
+      if (listEl) {
+        listEl.innerHTML = shopItems.map((it, idx) => `
+          <div class="acc-item-row">
+            <div>
+              <strong>${it.name}</strong>
+              <div style="font-size:0.78rem;color:#334155;">${it.category} · Qty: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div>
+            </div>
+            <button type="button" class="btn-small sell-del-btn" data-idx="${idx}">✕</button>
+          </div>
+        `).join('');
+      }
+    }
+  }, true);
+})();

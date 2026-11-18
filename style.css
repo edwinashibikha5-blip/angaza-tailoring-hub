@@ -659,3 +659,27 @@ form#order-form:not(.is-open) {
   z-index: 9999;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
+
+/* === V29: HEADER TOP ORDER, CRISP SHOP STOCK & CLIENT-TAB ORDER FORM === */
+.header-bottom-actions {
+  order: 2 !important;
+  margin-top: 6px !important;
+  margin-bottom: 0 !important;
+  padding-top: 5px !important;
+  padding-bottom: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-bottom: none !important;
+}
+#shop-overview-white-card,
+#shop-overview-white-card * {
+  color: #0f172a;
+}
+#shop-overview-white-card h4,
+#shop-overview-white-card .shop-stock-title {
+  color: #1e3a8a !important;
+  font-weight: 800 !important;
+  font-size: 0.9rem !important;
+}
+#tab-clients form#order-form {
+  display: grid !important;
+}
