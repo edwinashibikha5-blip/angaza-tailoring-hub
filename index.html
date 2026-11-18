@@ -55,9 +55,18 @@
     </section>
 
     <section id="tab-orders" class="tab-section active">
+
+      <div class="naomi-welcome-card" id="naomi-welcome-card">
+        <div class="naomi-welcome-top">
+          <span class="naomi-greeting" id="naomi-greeting">Karibu, Naomi ✨</span>
+          <span class="naomi-badge">Master Tailor</span>
+        </div>
+        <p class="naomi-quote" id="naomi-daily-quote">"Every stitch you make turns simple fabric into someone's proudest moment."</p>
+      </div>
+
       <div class="card">
         <h2>New Custom Order</h2>
-                <form id="order-form" class="form-grid">
+                        <form id="order-form" class="form-grid">
           <div class="row-2">
             <div>
               <label for="order-client">Client</label>
@@ -76,60 +85,39 @@
 
           <div class="row-2">
             <div>
-              <label for="order-preset">Garment Preset</label>
+              <label for="order-preset">Quick Style</label>
               <select id="order-preset">
-                <option value="">-- Choose Preset --</option>
-                <option value="Kitenge Dress / Skirt Suit">Kitenge Dress / Suit</option>
-                <option value="Ruracio / Bridal Outfit">Ruracio / Bridal Outfit</option>
+                <option value="">-- Choose Style --</option>
+                <option value="Kitenge Dress / Suit">Kitenge Dress / Suit</option>
+                <option value="Ruracio / Bridal Outfit">Ruracio / Bridal</option>
                 <option value="Kaftan / Dera">Kaftan / Dera</option>
-                <option value="Kaunda / Senator Suit">Kaunda / Senator Suit</option>
+                <option value="Kaunda / Senator Suit">Kaunda / Senator</option>
                 <option value="Kanzu">Kanzu</option>
-                <option value="Official Trousers / Shirt">Official Trousers / Shirt</option>
-                <option value="School Uniform Set">School Uniform Set</option>
+                <option value="Official Trousers / Shirt">Trousers / Shirt</option>
+                <option value="School Uniform">School Uniform</option>
               </select>
             </div>
             <div>
-              <label for="order-fabric-source">Fabric Source</label>
+              <label for="order-fabric-source">Fabric</label>
               <select id="order-fabric-source">
-                <option value="Client Fabric">Client Fabric</option>
+                <option value="Client Fabric">Client's Own</option>
                 <option value="Shop Fabric">Shop Fabric</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label for="order-garment">Garment Style & Tailoring Notes</label>
-            <input type="text" id="order-garment" placeholder="e.g. Pleated Kitenge maxi, full lining, hidden zip" required />
+            <label for="order-garment">Garment Details & Notes</label>
+            <input type="text" id="order-garment" placeholder="e.g. Kitenge maxi dress, full lining" required />
           </div>
 
           <div class="row-2">
             <div>
-              <label for="order-qty">Quantity (Pieces)</label>
-              <input type="number" id="order-qty" min="1" value="1" required />
-            </div>
-            <div>
-              <label for="order-priority">Priority</label>
-              <select id="order-priority">
-                <option value="Normal">Normal</option>
-                <option value="Express">Express / Rush</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row-2">
-            <div>
-              <label for="order-fitting">Fitting Date (Optional)</label>
-              <input type="date" id="order-fitting" />
-            </div>
-            <div>
-              <label for="order-due">Final Due Date</label>
+              <label for="order-due">Pickup Date</label>
               <input type="date" id="order-due" />
             </div>
-          </div>
-
-          <div class="row-2">
             <div>
-              <label for="order-status">Production Stage</label>
+              <label for="order-status">Stage</label>
               <select id="order-status">
                 <option value="Cutting">Cutting</option>
                 <option value="Stitching">Stitching</option>
@@ -138,14 +126,21 @@
                 <option value="Delivered">Delivered</option>
               </select>
             </div>
+          </div>
+
+          <div class="row-2">
             <div>
-              <label for="order-photo">Fabric / Style Photo</label>
+              <label for="order-qty">Pieces</label>
+              <input type="number" id="order-qty" min="1" value="1" required />
+            </div>
+            <div>
+              <label for="order-photo">Fabric Photo</label>
               <label for="order-photo" class="file-btn-label" id="order-photo-label">📷 Add Photo</label>
               <input type="file" id="order-photo" accept="image/*" class="hidden-file-input" />
             </div>
           </div>
 
-          <button type="submit" class="btn-primary">+ Save Tailoring Order</button>
+          <button type="submit" class="btn-primary">+ Save Order</button>
         </form>
       </div>
       <div class="card">

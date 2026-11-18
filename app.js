@@ -1283,3 +1283,30 @@
 
   setTimeout(renderFinanceOrders, 200);
 })();
+
+// === NAOMI'S DAILY INSPIRATION & GREETING ===
+(function initNaomiInspiration() {
+  const quotes = [
+    "Every stitch you make turns simple fabric into someone's proudest moment.",
+    "Your hands bring beauty, dignity, and confidence to every client who walks in.",
+    "Great businesses grow one neat hem, one happy client, and one faithful day at a time.",
+    "Quality tailoring speaks louder than any advertisement—keep shining, Naomi!",
+    "From a simple sketch to a masterpiece: your skill is a gift that blesses families.",
+    "Consistency and care in every seam build a name people trust across town.",
+    "Today is a fresh canvas—create with joy, patience, and pride in your craft."
+  ];
+
+  const greetingEl = document.getElementById('naomi-greeting');
+  const quoteEl = document.getElementById('naomi-daily-quote');
+
+  if (greetingEl) {
+    const hr = new Date().getHours();
+    const timeWord = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+    greetingEl.textContent = `${timeWord}, Naomi ✨`;
+  }
+
+  if (quoteEl) {
+    const dayIndex = Math.floor(Date.now() / 86400000) % quotes.length;
+    quoteEl.textContent = `"${quotes[dayIndex]}"`;
+  }
+})();

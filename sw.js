@@ -1,4 +1,4 @@
-const CACHE = 'angaza-hub-v14';
+const CACHE = 'angaza-hub-v15';
 const ASSETS = ['/', '/index.html', '/style.css', '/app.js', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (e) => {
