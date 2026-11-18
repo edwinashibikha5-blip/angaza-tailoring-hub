@@ -2339,17 +2339,24 @@ window.computeAngazaMaterial = function computeAngazaMaterial() {
 window.computeAngazaMaterial();
 
 
-// === V64: EXCLUSIVE SINGLE-VIEW SWITCHER (HOME NEVER CROWDS OTHER TABS) ===
+
+
+// === V65: HARD INLINE + ATTRIBUTE EXCLUSIVE TAB COLLAPSE ===
 window.openExclusiveView = function openExclusiveView(targetId) {
   const acc = document.getElementById('accessories-panel');
   const sections = document.querySelectorAll('.tab-section, section[id^="tab-"]');
   const navBtns = document.querySelectorAll('nav button, .nav button, [data-target], [data-tab]');
 
   if (targetId === 'accessories-panel') {
-    sections.forEach((s) => s.classList.remove('active'));
+    sections.forEach((s) => {
+      s.classList.remove('active');
+      s.style.setProperty('display', 'none', 'important');
+      s.hidden = true;
+    });
     if (acc) {
-      acc.style.display = 'block';
+      acc.style.setProperty('display', 'block', 'important');
       acc.classList.add('active');
+      acc.hidden = false;
     }
     navBtns.forEach((b) => b.classList.remove('active'));
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2357,13 +2364,20 @@ window.openExclusiveView = function openExclusiveView(targetId) {
   }
 
   if (acc) {
-    acc.style.display = 'none';
+    acc.style.setProperty('display', 'none', 'important');
     acc.classList.remove('active');
+    acc.hidden = true;
   }
 
   sections.forEach((s) => {
     const match = s.id === targetId;
     s.classList.toggle('active', match);
+    s.hidden = !match;
+    if (match) {
+      s.style.setProperty('display', s.id === 'tab-orders' ? 'flex' : 'block', 'important');
+    } else {
+      s.style.setProperty('display', 'none', 'important');
+    }
   });
 
   const shortName = targetId.replace(/^tab-/, '');
@@ -2379,6 +2393,8 @@ window.openExclusiveView = function openExclusiveView(targetId) {
 document.addEventListener('click', (e) => {
   const navBtn = e.target.closest('nav button, .nav button');
   if (!navBtn) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
   const raw = (navBtn.getAttribute('data-target') || navBtn.getAttribute('data-tab') || navBtn.textContent || '').trim().toLowerCase();
   let target = 'tab-orders';
   if (raw.includes('repair')) target = 'tab-repairs';
