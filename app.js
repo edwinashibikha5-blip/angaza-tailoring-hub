@@ -2271,3 +2271,69 @@ window.openAngazaShopModal = function openAngazaShopModal(viewName) {
   });
   window.renderAngazaShopSheet(); renderCalcMemory();
 })();
+
+// === V61: GLOBAL = CALC BUTTON + INSTANT PATTERN-CUTTING COMPUTATION ===
+window.computeAngazaMaterial = function computeAngazaMaterial() {
+  const sel = document.getElementById('calc-person-group');
+  const grp = sel ? sel.value : 'woman_straight';
+
+  const specs = {
+    woman_straight:  { ease: 5,  addLen: 0,  trim: 6, hrs: 2.8, name: 'Straight Dress' },
+    woman_flared:    { ease: 18, addLen: 6,  trim: 6, hrs: 3.8, name: 'Flared Dress' },
+    woman_suit:      { ease: 8,  addLen: 10, trim: 8, hrs: 4.3, name: 'Skirt & Blouse' },
+    woman_bridal:    { ease: 22, addLen: 12, trim: 9, hrs: 5.5, name: 'Ruracio/Bridal' },
+    woman_trouser:   { ease: 10, addLen: 8,  trim: 7, hrs: 4.0, name: 'Women Trousers' },
+    man_shirt:       { ease: 6,  addLen: 0,  trim: 9, hrs: 3.2, name: 'Official Shirt' },
+    man_trouser:     { ease: 10, addLen: 6,  trim: 8, hrs: 4.0, name: 'Men Trousers' },
+    man_kaunda:      { ease: 12, addLen: 18, trim: 10,hrs: 5.5, name: 'Kaunda/Senator' },
+    man_kanzu:       { ease: 14, addLen: 6,  trim: 9, hrs: 4.4, name: 'Kanzu Robe' },
+    man_blazer:      { ease: 14, addLen: 12, trim: 12,hrs: 5.8, name: 'Blazer / Coat' },
+    child_dress:     { ease: 8,  addLen: 4,  trim: 7, hrs: 2.2, name: 'School Dress' },
+    child_set:       { ease: 8,  addLen: 8,  trim: 8, hrs: 2.5, name: 'School Set' },
+    child_party:     { ease: 14, addLen: 5,  trim: 7, hrs: 2.6, name: 'Kids Party Dress' },
+    child_kitenge:   { ease: 8,  addLen: 4,  trim: 7, hrs: 2.3, name: 'Kids Kitenge' },
+    flow_dera:       { ease: 14, addLen: 0,  trim: 8, hrs: 2.8, name: 'Classic Dera' },
+    flow_kaftan:     { ease: 18, addLen: 4,  trim: 9, hrs: 4.0, name: 'Kaftan' },
+    flow_abaya:      { ease: 22, addLen: 6,  trim: 9, hrs: 3.8, name: 'Abaya / Robe' },
+    flow_maternity:  { ease: 20, addLen: 4,  trim: 8, hrs: 3.6, name: 'Maternity Maxi' }
+  };
+
+  const cfg = specs[grp] || specs.woman_straight;
+  const b = Number(document.getElementById('m-bust')?.value || 0);
+  const w = Number(document.getElementById('m-waist')?.value || 0);
+  const h = Number(document.getElementById('m-hips')?.value || 0);
+  const sh = Number(document.getElementById('m-shoulder')?.value || 0);
+  const sl = Number(document.getElementById('m-sleeve')?.value || 0);
+  const len = Number(document.getElementById('m-length')?.value || 0);
+  const roll = Number(document.getElementById('calc-fabric-width')?.value || 45);
+  const outFab = document.getElementById('calc-out-fabric');
+  const outTime = document.getElementById('calc-out-time');
+  if (!outFab || !outTime) return;
+
+  if (!b && !w && !h && !sh && !sl && !len) {
+    outFab.textContent = 'Enter at least one measurement';
+    outTime.textContent = '--';
+    return;
+  }
+
+  const isChild = grp.startsWith('child_');
+  const maxGirth = Math.max(b, w, h, sh * 2.4, isChild ? 24 : 36);
+  const twoLengths = (maxGirth + cfg.ease) > (roll - 1.5);
+  const gLen = (len > 0 ? len : (isChild ? 28 : 42)) + cfg.addLen;
+  const totalIn = (twoLengths ? gLen * 2 : gLen) + (sl > 0 ? sl + 3.5 : 0) + cfg.trim;
+  const meters = Math.ceil((totalIn * 0.0254) * 4) / 4;
+  const yards = (Math.ceil((totalIn / 36) * 4) / 4).toFixed(2);
+  const hrs = cfg.hrs + (gLen >= 52 ? 0.8 : 0) + (sl >= 16 ? 0.6 : sl > 0 ? 0.3 : 0);
+
+  outFab.innerHTML = `<b style="color:#166534;">${meters.toFixed(2)}m</b> (${yards} yds @ ${roll}")`;
+  outTime.textContent = `${twoLengths ? '2× Length' : '1× Width'} · ~${hrs.toFixed(1)} hrs`;
+};
+
+['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length', 'calc-person-group', 'calc-fabric-width'].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', window.computeAngazaMaterial);
+    el.addEventListener('change', window.computeAngazaMaterial);
+  }
+});
+window.computeAngazaMaterial();
