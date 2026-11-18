@@ -2492,3 +2492,32 @@ document.addEventListener('click', (e) => {
     }
   }, true);
 })();
+
+// === V71: ZERO-LAG GITHUB -> RENDER AUTO-UPDATER ===
+(function initGitHubAutoUpdater() {
+  async function checkForNewBuild() {
+    if (!navigator.onLine) return;
+    try {
+      const currentLink = document.querySelector('link[href*="style.css?v="]');
+      const currentVer = currentLink ? (currentLink.getAttribute('href').match(/v=(\d+)/) || [])[1] : null;
+      if (!currentVer) return;
+
+      const res = await fetch('./index.html?check=' + Date.now(), { cache: 'no-store' });
+      const htmlText = await res.text();
+      const liveVer = (htmlText.match(/style\.css\?v=(\d+)/) || [])[1];
+
+      if (liveVer && liveVer !== currentVer) {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+        window.location.replace(window.location.pathname + '?v=' + liveVer);
+      }
+    } catch (e) {}
+  }
+
+  window.addEventListener('load', () => setTimeout(checkForNewBuild, 2500));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkForNewBuild();
+  });
+})();

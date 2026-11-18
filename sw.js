@@ -1,18 +1,10 @@
-const CACHE_NAME = 'angaza-hub-v70';
-const CORE_ASSETS = [
-  './',
-  './index.html',
-  './style.css',
-  './app.js',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
-];
+const CACHE_NAME = 'angaza-hub-v71';
+const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.json'];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {})
   );
 });
 
@@ -26,20 +18,15 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  const url = new URL(event.request.url);
-
-  if (url.origin === self.location.origin) {
-    event.respondWith(
-      caches.match(event.request, { ignoreSearch: true }).then((cached) => {
-        const networkFetch = fetch(event.request).then((res) => {
-          if (res && res.status === 200) {
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return res;
-        }).catch(() => cached);
-        return cached || networkFetch;
+  event.respondWith(
+    fetch(event.request)
+      .then((res) => {
+        if (res && res.status === 200 && res.type === 'basic') {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return res;
       })
-    );
-  }
+      .catch(() => caches.match(event.request))
+  );
 });
