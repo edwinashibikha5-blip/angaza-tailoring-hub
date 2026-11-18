@@ -2147,3 +2147,71 @@
     }
   });
 })();
+
+// === V42: REAL TAILOR BODY-PART MEASUREMENT -> EXACT MATERIAL & CUT CALCULATOR ===
+(function initExactTailorPatternCalculator() {
+  const ids = ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length', 'calc-fabric-width'];
+
+  function calculateExactMaterial() {
+    const bust = Number(document.getElementById('m-bust')?.value || 0);
+    const waist = Number(document.getElementById('m-waist')?.value || 0);
+    const hips = Number(document.getElementById('m-hips')?.value || 0);
+    const shoulder = Number(document.getElementById('m-shoulder')?.value || 0);
+    const sleeve = Number(document.getElementById('m-sleeve')?.value || 0);
+    const length = Number(document.getElementById('m-length')?.value || 0);
+    const rollWidth = Number(document.getElementById('calc-fabric-width')?.value || 45);
+
+    const outFab = document.getElementById('calc-out-fabric');
+    const outTime = document.getElementById('calc-out-time');
+    if (!outFab || !outTime) return;
+
+    if (!length && !bust && !hips && !waist) {
+      outFab.textContent = 'Enter body parts in inches';
+      outTime.textContent = '--';
+      return;
+    }
+
+    // 1. Determine widest body circumference + 5" seam & wearing ease
+    const maxCircumference = Math.max(bust, waist, hips, shoulder * 2.4, 28);
+    const requiredWidthWithEase = maxCircumference + 5;
+
+    // 2. Determine if front & back panels fit side-by-side on the fabric roll width
+    const usableRollWidth = rollWidth - 1.5; // selvedge allowance
+    const needsTwoLengths = requiredWidthWithEase > usableRollWidth;
+
+    const garmentLen = length > 0 ? length : 40;
+    const bodyInches = needsTwoLengths ? (garmentLen * 2) : garmentLen;
+
+    // 3. Add sleeve fabric (if sleeve > 0) + 6" hem, neck facing & cutting allowance
+    const sleeveInches = sleeve > 0 ? (sleeve + 3) : 0;
+    const totalInches = bodyInches + sleeveInches + 6;
+
+    // 4. Convert inches to exact meters (rounded up to nearest 0.25m) and yards
+    const rawMeters = totalInches * 0.0254;
+    const exactMeters = Math.ceil(rawMeters * 4) / 4;
+    const exactYards = (Math.ceil((totalInches / 36) * 4) / 4).toFixed(2);
+
+    // 5. Estimate sewing hours based on complexity & garment length
+    let estHours = 2.5;
+    if (garmentLen >= 48) estHours += 1.5;
+    else if (garmentLen >= 34) estHours += 0.8;
+    if (sleeve >= 16) estHours += 0.8;
+    else if (sleeve > 0) estHours += 0.4;
+    if (waist > 0 && hips > 0 && (hips - waist) >= 8) estHours += 0.5; // dart/shaping work
+
+    const layoutNote = needsTwoLengths
+      ? `2× Length panels (girth ${maxCircumference}" > ${rollWidth}" roll)`
+      : `1× Width cut (fits inside ${rollWidth}" roll)`;
+
+    outFab.innerHTML = `<b>${exactMeters.toFixed(2)}m</b> (${exactYards} yds @ ${rollWidth}")`;
+    outTime.textContent = `${layoutNote} · ~${estHours.toFixed(1)} hrs`;
+  }
+
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', calculateExactMaterial);
+      el.addEventListener('change', calculateExactMaterial);
+    }
+  });
+})();

@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=41" />
+  <link rel="stylesheet" href="style.css?v=42" />
 </head>
 <body>
   <header class="topbar">
@@ -187,39 +187,28 @@
         <div id="accessories-list" class="stack-list" style="margin-top:12px;"></div>
       </div>
       
-      <div class="card" id="auto-fabric-time-card" style="background:linear-gradient(135deg,#eff6ff 0%,#faf5ff 100%);border:1.5px solid #0284c7;padding:10px 12px;margin-top:8px;margin-bottom:8px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-          <h4 style="margin:0;color:#1e3a8a;font-size:0.88rem;font-weight:800;">🧮 Quick Fabric & Sewing Time Estimator</h4>
-          <span style="font-size:0.66rem;background:#dbeafe;color:#1e3a8a;padding:2px 7px;border-radius:999px;font-weight:700;">Auto-Calc</span>
+      
+      <div class="card" id="auto-fabric-time-card" style="background:linear-gradient(135deg,#eff6ff 0%,#faf5ff 100%);border:1.5px solid #0284c7;padding:9px 11px;margin-top:6px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px;">
+          <h4 style="margin:0;color:#1e3a8a;font-size:0.84rem;font-weight:800;">📏 Tailor Measurement & Material Calculator</h4>
+          <select id="calc-fabric-width" style="width:auto;min-height:26px;padding:2px 6px;font-size:0.72rem;font-weight:700;border-radius:8px;">
+            <option value="45">45" Width</option>
+            <option value="60">60" Width</option>
+          </select>
         </div>
-        <div class="row-2" style="gap:6px;">
-          <div>
-            <select id="calc-garment-type" style="min-height:34px;padding:4px 8px;font-size:0.82rem;">
-              <option value="dress">Kitenge Dress / Suit</option>
-              <option value="maxi">Maxi / Ruracio / Kaftan</option>
-              <option value="suit">Kaunda / Senator / Kanzu</option>
-              <option value="top">Shirt / Blouse / Trousers</option>
-              <option value="kids">School Uniform / Kids</option>
-            </select>
-          </div>
-          <div>
-            <select id="calc-fabric-width" style="min-height:34px;padding:4px 8px;font-size:0.82rem;">
-              <option value="45">45" Kitenge Width</option>
-              <option value="60">60" Wide Suiting</option>
-            </select>
-          </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+          <input type="number" id="m-bust" placeholder="Bust/Chest" min="10" max="80" step="0.5" style="min-height:32px;padding:3px 6px;font-size:0.78rem;" />
+          <input type="number" id="m-waist" placeholder="Waist (in)" min="10" max="80" step="0.5" style="min-height:32px;padding:3px 6px;font-size:0.78rem;" />
+          <input type="number" id="m-hips" placeholder="Hips (in)" min="10" max="85" step="0.5" style="min-height:32px;padding:3px 6px;font-size:0.78rem;" />
+          <input type="number" id="m-shoulder" placeholder="Shoulder" min="6" max="30" step="0.5" style="min-height:32px;padding:3px 6px;font-size:0.78rem;" />
+          <input type="number" id="m-sleeve" placeholder="Sleeve (in)" min="0" max="40" step="0.5" style="min-height:32px;padding:3px 6px;font-size:0.78rem;" />
+          <input type="number" id="m-length" placeholder="Full Length" min="8" max="75" step="0.5" style="min-height:32px;padding:3px 6px;font-size:0.78rem;" />
         </div>
-        <div class="row-2" style="gap:6px;margin-top:6px;">
-          <div>
-            <input type="number" id="calc-girth" placeholder="Bust / Hips (in) e.g. 40" min="15" max="80" style="min-height:34px;padding:4px 8px;font-size:0.82rem;" />
-          </div>
-          <div>
-            <input type="number" id="calc-length" placeholder="Length (in) e.g. 44" min="10" max="75" style="min-height:34px;padding:4px 8px;font-size:0.82rem;" />
-          </div>
-        </div>
-        <div id="calc-live-result" style="margin-top:6px;padding:6px 9px;background:#ffffff;border-radius:8px;border:1px solid #bae6fd;font-size:0.79rem;color:#0f172a;line-height:1.35;">
-          🧵 <b>Fabric:</b> <span id="calc-out-fabric">Enter girth & length</span> &nbsp;|&nbsp;
-          ⏱️ <b>Time:</b> <span id="calc-out-time">--</span>
+
+        <div id="calc-live-result" style="margin-top:6px;padding:6px 8px;background:#ffffff;border-radius:8px;border:1px solid #bae6fd;font-size:0.76rem;color:#0f172a;line-height:1.35;">
+          🧵 <b>Material Needed:</b> <span id="calc-out-fabric">Enter body parts in inches</span><br/>
+          📐 <b>Cut Layout & Time:</b> <span id="calc-out-time">--</span>
         </div>
       </div>
 
@@ -445,6 +434,6 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=41" defer></script>
+  <script src="app.js?v=42" defer></script>
 </body>
 </html>
