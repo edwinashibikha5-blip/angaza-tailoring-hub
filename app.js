@@ -1751,3 +1751,124 @@
   document.getElementById('shop-dir-filter')?.addEventListener('change', renderShopDirectory);
   renderShopDirectory();
 })();
+
+// === V49: DYNAMIC DESIGN-AWARE CALCULATOR & FULL SHOP SPREADSHEET MODAL ===
+(function initDynamicDesignsAndSpreadsheet() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+  function loadVault() { try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; } catch (e) { return {}; } }
+  function saveVault(v) { localStorage.setItem(VAULT_KEY, JSON.stringify(v)); }
+
+  const designCatalog = {
+    woman: [
+      { id: 'straight', label: '👗 Straight / Pencil Dress', extraEase: 0, extraLen: 0, extraHrs: 0 },
+      { id: 'flared', label: '💃 Flared / A-Line / Circle Dress', extraEase: 14, extraLen: 6, extraHrs: 1.0 },
+      { id: 'suit', label: '👚 Kitenge Skirt & Blouse Suit', extraEase: 4, extraLen: 10, extraHrs: 1.5 },
+      { id: 'bridal', label: '👰 Ruracio / Bridal Gown', extraEase: 18, extraLen: 12, extraHrs: 2.5 },
+      { id: 'trouser', label: '👖 Official Trousers / Jumpsuit', extraEase: 6, extraLen: 8, extraHrs: 1.2 }
+    ],
+    man: [
+      { id: 'shirt', label: '👔 Official Long / Short Sleeve Shirt', extraEase: 0, extraLen: 0, extraHrs: 0 },
+      { id: 'trouser_m', label: '👖 Official / Chino Trousers', extraEase: 4, extraLen: 6, extraHrs: 0.8 },
+      { id: 'kaunda', label: '🧥 Kaunda / Senator Two-Piece Suit', extraEase: 6, extraLen: 18, extraHrs: 2.2 },
+      { id: 'kanzu', label: '🕌 Kanzu (Traditional Robe)', extraEase: 8, extraLen: 6, extraHrs: 1.2 },
+      { id: 'blazer', label: '🤵 Blazer / Tailored Coat', extraEase: 8, extraLen: 12, extraHrs: 2.5 }
+    ],
+    child: [
+      { id: 'uniform_dress', label: '🎒 School Uniform Dress / Tunic', extraEase: 4, extraLen: 4, extraHrs: 0.4 },
+      { id: 'uniform_set', label: '👕 School Shirt & Shorts / Trousers', extraEase: 4, extraLen: 8, extraHrs: 0.7 },
+      { id: 'party_dress', label: '🎀 Party / Sunday Flared Dress', extraEase: 10, extraLen: 5, extraHrs: 0.8 },
+      { id: 'kids_kitenge', label: '🧒 Kids Kitenge Outfit', extraEase: 4, extraLen: 4, extraHrs: 0.5 }
+    ],
+    flowing: [
+      { id: 'dera', label: '👘 Classic Free-Size Dera', extraEase: 4, extraLen: 0, extraHrs: 0 },
+      { id: 'kaftan', label: '✨ Embroidered / Beaded Kaftan', extraEase: 8, extraLen: 4, extraHrs: 1.2 },
+      { id: 'abaya', label: '🧕 Abaya / Full Sweep Maxi Robe', extraEase: 12, extraLen: 6, extraHrs: 1.0 },
+      { id: 'maternity', label: '🤰 Maternity / Empire Gather Maxi', extraEase: 10, extraLen: 4, extraHrs: 0.8 }
+    ]
+  };
+
+  const grpSel = document.getElementById('calc-person-group');
+  const designSel = document.getElementById('calc-design-type');
+  function populateDesigns() {
+    if (!grpSel || !designSel) return;
+    const list = designCatalog[grpSel.value] || designCatalog.woman;
+    designSel.innerHTML = list.map((d) => `<option value="${d.id}">${d.label}</option>`).join('');
+  }
+  function calcWithDesign() {
+    if (!grpSel || !designSel) return;
+    const grp = grpSel.value, list = designCatalog[grp] || designCatalog.woman;
+    const design = list.find((d) => d.id === designSel.value) || list;
+    const b = Number(document.getElementById('m-bust')?.value || 0), w = Number(document.getElementById('m-waist')?.value || 0), h = Number(document.getElementById('m-hips')?.value || 0), sh = Number(document.getElementById('m-shoulder')?.value || 0), sl = Number(document.getElementById('m-sleeve')?.value || 0), len = Number(document.getElementById('m-length')?.value || 0), roll = Number(document.getElementById('calc-fabric-width')?.value || 45);
+    const outFab = document.getElementById('calc-out-fabric'), outTime = document.getElementById('calc-out-time');
+    if (!outFab || !outTime) return;
+    if (!b && !w && !h && !len) { outFab.textContent = `Enter measurements for ${design.label.replace(/^[^\w]+/, '')}`; outTime.textContent = '--'; return; }
+    const baseEase = grp === 'man' ? 6 : grp === 'child' ? 4 : grp === 'flowing' ? 10 : 5;
+    const baseTrim = grp === 'man' ? 9 : grp === 'child' ? 7 : 6;
+    const baseHrs = grp === 'man' ? 3.2 : grp === 'child' ? 1.8 : 2.8;
+    const maxGirth = Math.max(b, w, h, sh * 2.4, grp === 'child' ? 24 : 36);
+    const twoLengths = (maxGirth + baseEase + design.extraEase) > (roll - 1.5);
+    const gLen = (len > 0 ? len : (grp === 'child' ? 28 : 42)) + design.extraLen;
+    const totalIn = (twoLengths ? gLen * 2 : gLen) + (sl > 0 ? sl + 3.5 : 0) + baseTrim;
+    const meters = Math.ceil((totalIn * 0.0254) * 4) / 4, yards = (Math.ceil((totalIn / 36) * 4) / 4).toFixed(2);
+    const hrs = baseHrs + design.extraHrs + (gLen >= 52 ? 0.8 : 0) + (sl >= 16 ? 0.6 : sl > 0 ? 0.3 : 0);
+    outFab.innerHTML = `<b>${meters.toFixed(2)}m</b> (${yards} yds @ ${roll}")`;
+    outTime.textContent = `${twoLengths ? '2× Length' : '1× Width'} · ~${hrs.toFixed(1)} hrs`;
+  }
+  if (grpSel && designSel) {
+    populateDesigns();
+    grpSel.addEventListener('change', () => { populateDesigns(); calcWithDesign(); }, true);
+    designSel.addEventListener('change', calcWithDesign, true);
+    ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length', 'calc-fabric-width'].forEach((id) => document.getElementById(id)?.addEventListener('input', calcWithDesign, true));
+  }
+  const modal = document.getElementById('shop-hub-modal');
+  function switchModalView(v) {
+    ['sheet', 'form', 'list'].forEach((k) => { const el = document.getElementById('sm-view-' + k); if (el) el.style.display = k === v ? 'block' : 'none'; });
+    document.querySelectorAll('.shop-modal-tab').forEach((b) => {
+      const a = b.getAttribute('data-smview') === v;
+      b.style.background = a ? '#1e3a8a' : '#eff6ff'; b.style.color = a ? '#ffffff' : '#1e3a8a';
+    });
+    renderModalData();
+  }
+  function renderModalData() {
+    const items = Array.isArray(loadVault().shopItems) ? loadVault().shopItems : [];
+    const q = (document.getElementById('sm-search-inp')?.value || '').trim().toLowerCase();
+    const countEl = document.getElementById('shop-dir-count'); if (countEl) countEl.textContent = String(items.length);
+    const filtered = q ? items.filter((it) => (it.name + ' ' + it.category + ' ' + (it.note || '')).toLowerCase().includes(q)) : items;
+    const tbody = document.getElementById('sm-spreadsheet-tbody');
+    if (tbody) tbody.innerHTML = !filtered.length
+      ? '<tr><td colspan="5" style="padding:12px;text-align:center;color:#475569;">No items yet. Tap <b>✍️ Custom Form</b> or <b>📷 Scan List</b>.</td></tr>'
+      : filtered.map((it) => {
+          const idx = items.indexOf(it), hasP = Number(it.sellPrice || 0) > 0;
+          return `<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;"><b>${it.name}</b>${it.note ? `<div style="font-size:0.68rem;color:#64748b;">${it.note}</div>` : ''}</td><td style="padding:6px;font-size:0.72rem;">${it.category}</td><td style="padding:6px;font-weight:700;">${it.qty}</td><td style="padding:6px;"><span class="badge-pay-status ${hasP ? 'badge-pay-paid' : ''}">${hasP ? 'Set 🔒' : 'Finance'}</span></td><td style="padding:6px;"><button type="button" class="sm-del-row" data-idx="${idx}" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:2px 6px;font-weight:800;">✕</button></td></tr>`;
+        }).join('');
+    const dir = document.getElementById('sm-directory-cards');
+    if (dir) dir.innerHTML = !filtered.length ? '<p class="muted-note">No items saved yet.</p>' : filtered.map((it) => {
+      const idx = items.indexOf(it);
+      return `<div class="acc-item-row" style="margin-bottom:6px;"><div><strong>${it.name}</strong><div style="font-size:0.75rem;color:#475569;">${it.category} · Stock: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div></div><button type="button" class="btn-small sm-del-row" data-idx="${idx}" style="width:auto;">✕</button></div>`;
+    }).join('');
+  }
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#open-shop-directory-btn')) { e.preventDefault(); e.stopImmediatePropagation(); if (modal) { modal.style.display = 'block'; switchModalView('sheet'); } return; }
+    if (e.target.closest('#toggle-sell-item-btn')) { e.preventDefault(); e.stopImmediatePropagation(); if (modal) { modal.style.display = 'block'; switchModalView('form'); } return; }
+    if (e.target.closest('#close-shop-hub-modal')) { if (modal) modal.style.display = 'none'; return; }
+    const tab = e.target.closest('.shop-modal-tab'); if (tab) { switchModalView(tab.getAttribute('data-smview')); return; }
+    const del = e.target.closest('.sm-del-row');
+    if (del) { const v = loadVault(); v.shopItems.splice(Number(del.getAttribute('data-idx')), 1); saveVault(v); renderModalData(); if (typeof window.renderFinanceShopPrices === 'function') window.renderFinanceShopPrices(); return; }
+    if (e.target.closest('#sm-export-csv-btn')) {
+      const rows = [['Item Name', 'Category', 'Quantity', 'Notes', 'Price Status']];
+      (Array.isArray(loadVault().shopItems) ? loadVault().shopItems : []).forEach((it) => rows.push([`"${it.name}"`, `"${it.category}"`, `"${it.qty}"`, `"${it.note || ''}"`, Number(it.sellPrice || 0) > 0 ? 'Set' : 'Unset']));
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })); a.download = 'angaza-shop-stock.csv'; a.click();
+    }
+  }, true);
+  document.getElementById('sm-search-inp')?.addEventListener('input', renderModalData);
+  document.getElementById('modal-add-item-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('m-item-name')?.value.trim(), qty = document.getElementById('m-item-qty')?.value.trim();
+    if (!name || !qty) return;
+    const v = loadVault(); v.shopItems = Array.isArray(v.shopItems) ? v.shopItems : [];
+    v.shopItems.unshift({ name, category: document.getElementById('m-item-cat')?.value || 'Ready Clothes', qty, note: document.getElementById('m-item-note')?.value.trim() || '', sellPrice: Math.max(0, Number(document.getElementById('m-item-price')?.value || 0)) });
+    saveVault(v); e.target.reset(); switchModalView('sheet');
+    if (typeof window.renderFinanceShopPrices === 'function') window.renderFinanceShopPrices();
+  });
+  renderModalData();
+})();
