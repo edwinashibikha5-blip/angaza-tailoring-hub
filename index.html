@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=45" />
+  <link rel="stylesheet" href="style.css?v=46" />
 </head>
 <body>
   <header class="topbar">
@@ -72,11 +72,51 @@
         <div id="overview-collapse-body">
           <div id="shop-stock-summary" class="shop-stock-summary">
           <div class="shop-summary-pills" id="shop-summary-pills"></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
-            <strong style="font-size:0.82rem;color:#1e3a8a;">Shop Clothes, Fabrics & Items for Sale</strong>
-            <button type="button" class="btn-small" id="toggle-sell-item-btn">+ Add Item to Sell</button>
-            <label for="scan-shop-list-input" class="btn-small" id="scan-shop-list-btn" style="flex:1;background:#fde68a;color:#1e3a8a;border:1.5px solid #f59e0b;font-weight:800;padding:7px 6px;font-size:0.75rem;text-align:center;cursor:pointer;margin:0;border-radius:8px;">📷 Scan List</label>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px;">
+            <button type="button" id="open-shop-directory-btn" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#eff6ff;color:#1e3a8a;border:1.5px solid #0284c7;cursor:pointer;white-space:nowrap;">📋 Shop List (<span id="shop-dir-count">0</span>)</button>
+            <button type="button" id="toggle-sell-item-btn" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#1e3a8a;color:#ffffff;border:none;cursor:pointer;white-space:nowrap;">+ Add Item</button>
+            <label for="scan-shop-list-input" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#fde68a;color:#1e3a8a;border:1.5px solid #f59e0b;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;margin:0;white-space:nowrap;">📷 Scan List</label>
             <input type="file" id="scan-shop-list-input" accept="image/*" style="display:none;" />
+          </div>
+
+          <form id="sell-item-form" class="form-grid" style="display:none;margin-top:8px;padding:8px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;">
+            <div class="row-2" style="gap:6px;">
+              <div>
+                <input type="text" id="sell-name" placeholder="Item Name (e.g. Kitenge Dress)" required style="min-height:34px;padding:4px 8px;font-size:0.8rem;" />
+              </div>
+              <div>
+                <select id="sell-cat" style="min-height:34px;padding:4px 8px;font-size:0.8rem;">
+                  <option value="Ready Clothes">Ready Clothes</option>
+                  <option value="Fabrics & Materials">Fabrics & Materials</option>
+                  <option value="Sewing Accessories">Sewing Accessories</option>
+                  <option value="Other Shop Item">Other Shop Item</option>
+                </select>
+              </div>
+            </div>
+            <div class="row-2" style="gap:6px;margin-top:6px;">
+              <div>
+                <input type="text" id="sell-qty" placeholder="Qty (e.g. 5 pcs / 10 yds)" required style="min-height:34px;padding:4px 8px;font-size:0.8rem;" />
+              </div>
+              <div>
+                <input type="text" id="sell-note" placeholder="Size / Color (optional)" style="min-height:34px;padding:4px 8px;font-size:0.8rem;" />
+              </div>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top:6px;padding:7px;font-size:0.8rem;">+ Save to Shop List</button>
+          </form>
+
+          <div id="shop-directory-drawer" style="display:none;margin-top:8px;padding:8px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px;">
+              <strong style="font-size:0.82rem;color:#1e3a8a;">📋 Saved Shop List Directory</strong>
+              <select id="shop-dir-filter" style="width:auto;min-height:26px;padding:2px 6px;font-size:0.72rem;">
+                <option value="all">All Items</option>
+                <option value="Ready Clothes">Ready Clothes</option>
+                <option value="Fabrics & Materials">Fabrics & Materials</option>
+                <option value="Sewing Accessories">Sewing Accessories</option>
+                <option value="Other Shop Item">Other Shop Item</option>
+              </select>
+            </div>
+            <div id="sell-items-list" class="stack-list"></div>
           </div>
           <form id="sell-item-form" class="form-grid" style="display:none;margin-top:8px;">
             <div class="row-2">
@@ -444,6 +484,6 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=45" defer></script>
+  <script src="app.js?v=46" defer></script>
 </body>
 </html>
