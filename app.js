@@ -1507,3 +1507,28 @@
     window.location.href = window.location.pathname + '?v=' + Date.now();
   }, true);
 })();
+
+// === CLEAN SUMMARY-ONLY HOME: OPEN ORDER FORM ONLY WHEN TAPPED ===
+(function initSummaryOnlyHome() {
+  const orderCard = document.getElementById('order-form')?.closest('.card');
+  const orderForm = document.getElementById('order-form');
+  if (!orderCard || !orderForm) return;
+
+  orderForm.style.display = 'grid';
+
+  document.querySelectorAll('[data-jump="orders-form"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      orderCard.classList.add('order-form-open');
+      orderCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  const hideBtn = document.getElementById('toggle-order-form-btn');
+  if (hideBtn) {
+    hideBtn.textContent = '✕ Close';
+    hideBtn.addEventListener('click', (e) => {
+      e.stopImmediatePropagation();
+      orderCard.classList.remove('order-form-open');
+    }, true);
+  }
+})();

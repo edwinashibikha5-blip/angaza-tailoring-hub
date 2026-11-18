@@ -485,3 +485,8 @@ input:focus,select:focus,textarea:focus { outline:none; border-color:var(--sky-b
     line-height: 1.15 !important;
   }
 }
+
+/* Keep the New Custom Order card collapsed on Home until Naomi taps "Custom Tailoring" */
+.card:has(#order-form):not(.order-form-open) {
+  display: none !important;
+}
