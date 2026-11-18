@@ -56,32 +56,80 @@
 
     <section id="tab-orders" class="tab-section active">
 
+      
       <div class="naomi-welcome-card" id="naomi-welcome-card">
         <div class="naomi-welcome-top">
           <span class="naomi-greeting" id="naomi-greeting">Karibu, Naomi ✨</span>
-          <span class="naomi-badge">Master Tailor</span>
+          <span class="naomi-badge">Tailoring · Design · Accessories</span>
         </div>
-        <p class="naomi-quote" id="naomi-daily-quote">"Every stitch you make turns simple fabric into someone's proudest moment."</p>
+        <p class="naomi-quote" id="naomi-daily-quote">"Every stitch, resize, and design brings beauty and confidence to your clients."</p>
       </div>
 
-      <div class="card">
-        <h2>New Custom Order</h2>
-                        <form id="order-form" class="form-grid">
+      <div class="hub-actions-grid" id="hub-actions-grid">
+        <button type="button" class="hub-tile tile-blue" data-jump="orders-form">
+          <span class="hub-icon">✂️</span>
+          <strong>Custom Tailoring</strong>
+          <small>New outfits & suits</small>
+        </button>
+        <button type="button" class="hub-tile tile-purple" data-jump="tab-gallery">
+          <span class="hub-icon">👗</span>
+          <strong>Fashion Design</strong>
+          <small>Styles, yardage & gallery</small>
+        </button>
+        <button type="button" class="hub-tile tile-sky" data-jump="tab-repairs">
+          <span class="hub-icon">🪡</span>
+          <strong>Resizing & Fixes</strong>
+          <small>Alterations, hems & zips</small>
+        </button>
+        <button type="button" class="hub-tile tile-gold" data-jump="accessories-panel">
+          <span class="hub-icon">🧵</span>
+          <strong>Sewing Accessories</strong>
+          <small>Threads, zips, buttons & stock</small>
+        </button>
+      </div>
+
+      <div class="card" id="accessories-panel" style="display:none;">
+        <div class="card-head">
+          <h3>🧵 Sewing Accessories & Shop Stock</h3>
+          <button type="button" class="btn-small" id="close-accessories-btn">✕ Close</button>
+        </div>
+        <p class="muted-note">Track threads, zips, buttons, needles, elastic, lining & haberdashery items for your growing shop.</p>
+        <form id="accessory-form" class="form-grid">
           <div class="row-2">
             <div>
-              <label for="order-client">Client</label>
-              <select id="order-client" required></select>
+              <label for="acc-name">Accessory Item</label>
+              <input type="text" id="acc-name" placeholder="e.g. Invisible Zips (Black)" required />
             </div>
             <div>
-              <label for="order-group">Group</label>
-              <select id="order-group">
-                <option value="Women">Women</option>
-                <option value="Men">Men</option>
-                <option value="Girls">Girls</option>
-                <option value="Boys">Boys</option>
+              <label for="acc-cat">Category</label>
+              <select id="acc-cat">
+                <option value="Threads & Needles">Threads & Needles</option>
+                <option value="Zips & Buttons">Zips & Buttons</option>
+                <option value="Lining & Interfacing">Lining & Interfacing</option>
+                <option value="Lace, Ribbons & Trims">Lace, Ribbons & Trims</option>
+                <option value="Elastic & Hooks">Elastic & Hooks</option>
               </select>
             </div>
           </div>
+          <div class="row-2">
+            <div>
+              <label for="acc-qty">Quantity in Shop</label>
+              <input type="text" id="acc-qty" placeholder="e.g. 24 pcs / 5 rolls" required />
+            </div>
+            <div>
+              <label for="acc-status">Stock Status</label>
+              <select id="acc-status">
+                <option value="In Stock">In Stock</option>
+                <option value="Running Low">Running Low</option>
+                <option value="Restock Soon">Restock Soon</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">+ Save Accessory Item</button>
+        </form>
+        <div id="accessories-list" class="stack-list" style="margin-top:12px;"></div>
+      </div>
+
 
           <div class="row-2">
             <div>

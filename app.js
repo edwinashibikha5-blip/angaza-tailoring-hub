@@ -1331,3 +1331,111 @@
     window.location.reload(true);
   });
 })();
+
+// === CLEAN HOME SUMMARY HUB & SEWING ACCESSORIES MODULE ===
+(function initHubHomeAndAccessories() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+
+  function loadVault() {
+    try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveVault(v) {
+    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
+  }
+
+  // Keep New Custom Order form collapsed by default on Home so the screen stays clean & uncluttered
+  const orderForm = document.getElementById('order-form');
+  const toggleOrderBtn = document.getElementById('toggle-order-form-btn');
+  if (orderForm && toggleOrderBtn) {
+    orderForm.style.display = 'none';
+    toggleOrderBtn.addEventListener('click', () => {
+      const isHidden = orderForm.style.display === 'none';
+      orderForm.style.display = isHidden ? 'grid' : 'none';
+      toggleOrderBtn.textContent = isHidden ? '− Hide Form' : '+ Open Form';
+    });
+  }
+
+  // Wire up the 4 Quick-Action Hub Tiles on Home
+  const accPanel = document.getElementById('accessories-panel');
+  document.querySelectorAll('.hub-tile').forEach((tile) => {
+    tile.addEventListener('click', () => {
+      const target = tile.getAttribute('data-jump');
+      if (target === 'orders-form' && orderForm) {
+        orderForm.style.display = 'grid';
+        if (toggleOrderBtn) toggleOrderBtn.textContent = '− Hide Form';
+        orderForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (target === 'accessories-panel' && accPanel) {
+        accPanel.style.display = 'block';
+        renderAccessories();
+        accPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        const navBtn = document.querySelector(`[data-tab="${target.replace('tab-', '')}"]`) ||
+                       document.querySelector(`[data-target="${target}"]`);
+        if (navBtn) navBtn.click();
+      }
+    });
+  });
+
+  const closeAccBtn = document.getElementById('close-accessories-btn');
+  if (closeAccBtn && accPanel) {
+    closeAccBtn.addEventListener('click', () => {
+      accPanel.style.display = 'none';
+    });
+  }
+
+  // Sewing Accessories & Haberdashery Inventory
+  function renderAccessories() {
+    const listEl = document.getElementById('accessories-list');
+    if (!listEl) return;
+    const vault = loadVault();
+    const items = Array.isArray(vault.accessories) ? vault.accessories : [];
+    if (items.length === 0) {
+      listEl.innerHTML = '<p class="muted-note">No sewing accessories logged yet. Add threads, zips, buttons, or lining above.</p>';
+      return;
+    }
+    listEl.innerHTML = items.map((item, idx) => `
+      <div class="acc-item-row">
+        <div>
+          <strong>${item.name}</strong>
+          <div style="font-size:0.78rem;color:#475569;">${item.category} · Qty: <b>${item.qty}</b></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="${item.status === 'In Stock' ? 'acc-ok' : 'acc-low'}">${item.status}</span>
+          <button type="button" class="btn-small acc-del-btn" data-idx="${idx}" title="Remove">✕</button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('.acc-del-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const i = Number(btn.getAttribute('data-idx'));
+        const v = loadVault();
+        if (Array.isArray(v.accessories)) {
+          v.accessories.splice(i, 1);
+          saveVault(v);
+          renderAccessories();
+        }
+      });
+    });
+  }
+
+  const accForm = document.getElementById('accessory-form');
+  if (accForm) {
+    accForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('acc-name')?.value.trim();
+      const category = document.getElementById('acc-cat')?.value || 'Threads & Needles';
+      const qty = document.getElementById('acc-qty')?.value.trim();
+      const status = document.getElementById('acc-status')?.value || 'In Stock';
+      if (!name || !qty) return;
+
+      const vault = loadVault();
+      vault.accessories = Array.isArray(vault.accessories) ? vault.accessories : [];
+      vault.accessories.unshift({ name, category, qty, status, addedAt: new Date().toISOString() });
+      saveVault(vault);
+      accForm.reset();
+      renderAccessories();
+    });
+  }
+})();
