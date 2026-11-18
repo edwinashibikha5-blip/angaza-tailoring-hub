@@ -862,26 +862,29 @@
 
   const yardageRules = {
     Women: {
-      'Kitenge / Ankara Maxi Dress': { w45: 4.0, w60: 3.0, note: 'Add 0.5m for ruffled sleeves or flared mermaid hem.' },
-      'Women Official Suit (Blazer + Skirt/Trouser)': { w45: 4.5, w60: 3.2, note: 'Plus 2.5m lining & 1m fusible interfacing.' },
-      'Peplum Blouse & Pencil Skirt': { w45: 3.5, w60: 2.5, note: 'Plus 1.5m lining for bodice and skirt.' },
-      'Tailored Jumpsuit': { w45: 4.0, w60: 2.8, note: 'Add 0.5m for wide-leg Palazzo cut.' },
-      'Chiffon / Silk Blouse': { w45: 2.0, w60: 1.5, note: 'Plus 1.5m camisole lining if sheer.' }
+      'Kitenge / Ankara Maxi Dress': { w45: 4.0, w60: 3.0, note: '1 full Kitenge piece (6 yds / 5.5m) is plenty with extra for headwrap (Kitambaa).' },
+      'Kitenge Peplum Top & Pencil Skirt': { w45: 3.5, w60: 2.5, note: 'Plus 1.5m lining & 0.5m interfacing for peplum flare.' },
+      'Kaftan / Bubu / Dera Gown': { w45: 4.5, w60: 3.2, note: 'Add 0.5m if adding wide butterfly sleeves or embroidery trim.' },
+      'Traditional / Ruracio Outfit': { w45: 5.0, w60: 3.8, note: 'Includes allowance for matching headwrap (Kitambaa) & layered flare.' },
+      'Women Official Suit (Blazer + Skirt/Trouser)': { w45: 4.5, w60: 3.2, note: 'Plus 2.5m suit lining & 1m fusible interfacing.' },
+      'Bridesmaid / Evening Mermaid Gown': { w45: 5.0, w60: 3.8, note: 'Plus 3m satin/pongee lining & net for mermaid volume.' }
     },
     Men: {
-      'Men 2-Piece Suit (Jacket + Trouser)': { w45: 4.5, w60: 3.5, note: 'Plus 2.5m suit lining & 1.5m canvas/interfacing.' },
-      'Men 3-Piece Suit (With Waistcoat)': { w45: 5.5, w60: 4.2, note: 'Plus 3m lining & 1.5m interfacing.' },
-      'Kaunda / Safari / Senator Wear': { w45: 3.8, w60: 2.8, note: 'Plus 0.5m interfacing for collar & placket.' },
-      'Official Long-Sleeve Shirt': { w45: 2.5, w60: 1.8, note: 'Plus 0.5m collar/cuff interfacing.' },
-      'Tailored Formal Trouser': { w45: 2.0, w60: 1.5, note: 'Plus 0.5m pocket lining & zip.' }
+      'Kaunda / Safari / Senator Suit': { w45: 4.0, w60: 3.0, note: 'Plus 0.5m collar/placket interfacing & matching buttons.' },
+      'Kanzu (Traditional Tunic)': { w45: 3.5, w60: 2.8, note: 'Use lightweight cotton/linen; add 0.5m for tall builds (6ft+).' },
+      'Men 2-Piece Official Suit': { w45: 4.5, w60: 3.5, note: 'Plus 2.5m suit lining & 1.5m canvas/interfacing.' },
+      'Men 3-Piece Wedding Suit': { w45: 5.5, w60: 4.2, note: 'Plus 3m lining & 1.5m interfacing for jacket & waistcoat.' },
+      'Kitenge / Ankara Casual Shirt': { w45: 2.5, w60: 1.8, note: 'Add 0.3m if matching bold Kitenge prints across pocket.' },
+      'Official Long-Sleeve Shirt': { w45: 2.5, w60: 1.8, note: 'Plus 0.5m stiff collar & cuff interfacing.' }
     },
     Girls: {
-      'Girls Party / Ankara Dress': { w45: 2.5, w60: 1.8, note: 'Add 0.5m net/tulle for extra puff.' },
-      'Girls School Uniform Dress': { w45: 2.2, w60: 1.6, note: 'Check school pleat depth; add 0.3m if box-pleated.' }
+      'Girls School Uniform Dress (Tetron)': { w45: 2.5, w60: 1.8, note: 'Add 0.5m for deep box pleats & school belt/tie.' },
+      'Girls Ankara / Sunday Dress': { w45: 2.5, w60: 1.8, note: 'Add 0.5m net/tulle lining for extra skirt puff.' }
     },
     Boys: {
-      'Boys School Shirt & Shorts/Trouser': { w45: 2.5, w60: 1.8, note: '1.2m shirt fabric + 1.3m trouser/short fabric.' },
-      'Boys Kanzu / Suit Set': { w45: 3.0, w60: 2.2, note: 'Plus 1.5m lining for jacket.' }
+      'Boys Primary School Set (Shirt & Shorts)': { w45: 2.2, w60: 1.6, note: '1.1m shirt fabric + 1.1m heavy Tetron/drill for shorts.' },
+      'Boys High School Set (Shirt & Long Trouser)': { w45: 3.0, w60: 2.2, note: '1.4m shirt fabric + 1.6m trouser fabric + zip & pocket lining.' },
+      'Boys Kanzu / Safari Set': { w45: 2.8, w60: 2.0, note: 'Plus 0.3m collar interfacing.' }
     }
   };
 
@@ -889,30 +892,29 @@
 
   const sizeCharts = {
     Women: [
-      { sz: 'UK 6 (XS)', b: '32"', w: '25"', h: '35"', sh: '14"' },
-      { sz: 'UK 8 (S)', b: '34"', w: '27"', h: '37"', sh: '14.5"' },
-      { sz: 'UK 10 (M)', b: '36"', w: '29"', h: '39"', sh: '15"' },
-      { sz: 'UK 12 (M/L)', b: '38"', w: '31"', h: '41"', sh: '15.5"' },
-      { sz: 'UK 14 (L)', b: '40"', w: '33"', h: '43"', sh: '16"' },
-      { sz: 'UK 16 (XL)', b: '42"', w: '35"', h: '45"', sh: '16.5"' },
-      { sz: 'UK 18 (XXL)', b: '44"', w: '38"', h: '48"', sh: '17"' },
-      { sz: 'UK 20 (3XL)', b: '46"', w: '40"', h: '50"', sh: '17.5"' }
+      { sz: 'UK 8 (S)', b: '34"', w: '27"', h: '39"', sh: '14.5"', len: '56"' },
+      { sz: 'UK 10 (M)', b: '36"', w: '29"', h: '41"', sh: '15"', len: '57"' },
+      { sz: 'UK 12 (M/L)', b: '38"', w: '31"', h: '43"', sh: '15.5"', len: '58"' },
+      { sz: 'UK 14 (L)', b: '40"', w: '33"', h: '45"', sh: '16"', len: '58"' },
+      { sz: 'UK 16 (XL)', b: '42"', w: '36"', h: '48"', sh: '16.5"', len: '59"' },
+      { sz: 'UK 18 (XXL)', b: '45"', w: '39"', h: '51"', sh: '17"', len: '59"' },
+      { sz: 'UK 20 (3XL)', b: '48"', w: '42"', h: '54"', sh: '17.5"', len: '60"' },
+      { sz: 'UK 22 (4XL)', b: '51"', w: '45"', h: '57"', sh: '18"', len: '60"' }
     ],
     Men: [
-      { sz: 'Small (S)', b: '36"', w: '30"', h: '36"', sh: '17"' },
-      { sz: 'Medium (M)', b: '38"', w: '32"', h: '38"', sh: '17.5"' },
-      { sz: 'Large (L)', b: '40"', w: '34"', h: '40"', sh: '18"' },
-      { sz: 'XL', b: '42"', w: '36"', h: '42"', sh: '18.5"' },
-      { sz: 'XXL', b: '44"', w: '38"', h: '44"', sh: '19.5"' },
-      { sz: '3XL', b: '46"', w: '40"', h: '46"', sh: '20"' }
+      { sz: 'Small (S)', b: '37"', w: '30"', h: '37"', sh: '17"', len: '28"' },
+      { sz: 'Medium (M)', b: '39"', w: '32"', h: '39"', sh: '17.5"', len: '29"' },
+      { sz: 'Large (L)', b: '41"', w: '34"', h: '41"', sh: '18.5"', len: '30"' },
+      { sz: 'XL', b: '44"', w: '37"', h: '44"', sh: '19"', len: '31"' },
+      { sz: 'XXL', b: '47"', w: '40"', h: '47"', sh: '20"', len: '32"' },
+      { sz: '3XL', b: '50"', w: '43"', h: '50"', sh: '21"', len: '33"' }
     ],
     Kids: [
-      { sz: '2-3 Yrs', b: '21"', w: '20"', h: '22"', sh: '10"' },
-      { sz: '4-5 Yrs', b: '23"', w: '21"', h: '24"', sh: '11"' },
-      { sz: '6-7 Yrs', b: '25"', w: '22"', h: '26"', sh: '11.5"' },
-      { sz: '8-9 Yrs', b: '27"', w: '23.5"', h: '28"', sh: '12.5"' },
-      { sz: '10-12 Yrs', b: '29"', w: '25"', h: '31"', sh: '13.5"' },
-      { sz: '13-14 Yrs', b: '32"', w: '27"', h: '34"', sh: '14.5"' }
+      { sz: '4-5 Yrs (PP1/2)', b: '23"', w: '21"', h: '24"', sh: '11"', len: '24"' },
+      { sz: '6-8 Yrs (Gr 1-3)', b: '26"', w: '23"', h: '27"', sh: '12"', len: '28"' },
+      { sz: '9-11 Yrs (Gr 4-6)', b: '29"', w: '25"', h: '31"', sh: '13"', len: '33"' },
+      { sz: '12-14 Yrs (JSS)', b: '32"', w: '27"', h: '34"', sh: '14.5"', len: '38"' },
+      { sz: '15-17 Yrs (High Sch)', b: '35"', w: '29"', h: '37"', sh: '15.5"', len: '42"' }
     ]
   };
 
@@ -920,7 +922,7 @@
     host.innerHTML = `
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <button type="button" id="fh-tab-calc" class="btn-primary" style="flex:1;padding:9px;">📏 Yardage Calculator</button>
-        <button type="button" id="fh-tab-size" class="btn-sm" style="flex:1;padding:9px;">📐 Standard Size Chart</button>
+        <button type="button" id="fh-tab-size" class="btn-sm" style="flex:1;padding:9px;">📐 Kenya Size Chart</button>
       </div>
 
       <div id="fh-pane-calc">
@@ -937,11 +939,11 @@
           <div class="field">
             <label for="fh-size">Body Size</label>
             <select id="fh-size">
-              <option value="S">Small (S)</option>
-              <option value="M" selected>Medium (M)</option>
-              <option value="L">Large (L)</option>
-              <option value="XL">Extra Large (XL)</option>
-              <option value="XXL">Plus Size (XXL+)</option>
+              <option value="S">Small (UK 8 / S)</option>
+              <option value="M" selected>Medium (UK 10-12 / M)</option>
+              <option value="L">Large (UK 14 / L)</option>
+              <option value="XL">Extra Large (UK 16 / XL)</option>
+              <option value="XXL">Plus Size (UK 18+ / XXL)</option>
             </select>
           </div>
         </div>
@@ -953,8 +955,8 @@
           <div class="field">
             <label for="fh-width">Fabric Roll Width</label>
             <select id="fh-width">
-              <option value="w45">45" (Standard Kitenge / Ankara)</option>
-              <option value="w60">60" (Wide Suiting / Cotton)</option>
+              <option value="w45">45" (Kitenge / Ankara / Kikoy)</option>
+              <option value="w60">60" (Suiting / Tetron / Linen)</option>
             </select>
           </div>
         </div>
@@ -963,20 +965,21 @@
 
       <div id="fh-pane-size" style="display:none;">
         <div style="display:flex;gap:6px;margin-bottom:10px;">
-          <button type="button" class="chip active" data-sz-grp="Women">Women (UK)</button>
+          <button type="button" class="chip active" data-sz-grp="Women">Women (KE/UK)</button>
           <button type="button" class="chip" data-sz-grp="Men">Men</button>
-          <button type="button" class="chip" data-sz-grp="Kids">Kids (Age)</button>
+          <button type="button" class="chip" data-sz-grp="Kids">School / Kids</button>
         </div>
         <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left;">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px;text-align:left;">
             <thead>
               <tr style="background:#1e3a8a;color:#fff;">
-                <th style="padding:7px;">Size</th>
-                <th style="padding:7px;">Bust/Chest</th>
-                <th style="padding:7px;">Waist</th>
-                <th style="padding:7px;">Hips</th>
-                <th style="padding:7px;">Shldr</th>
-                <th style="padding:7px;">Action</th>
+                <th style="padding:6px;">Size</th>
+                <th style="padding:6px;">Bust/Ch</th>
+                <th style="padding:6px;">Waist</th>
+                <th style="padding:6px;">Hips</th>
+                <th style="padding:6px;">Shldr</th>
+                <th style="padding:6px;">Len</th>
+                <th style="padding:6px;">Copy</th>
               </tr>
             </thead>
             <tbody id="fh-size-tbody"></tbody>
@@ -1004,8 +1007,8 @@
       const mult = sizeMultiplier[sizeEl.value] || 1.0;
       const meters = Math.ceil((base * mult) * 4) / 4;
       const yards = (meters * 1.094).toFixed(1);
-      const widthLabel = widthEl.value === 'w45' ? '45-inch' : '60-inch';
-      const msg = `Fabric Needed for ${styleEl.value} (${grpEl.value} - Size ${sizeEl.value}): ${meters} Meters (${yards} Yards) of ${widthLabel} fabric. Note: ${rule.note}`;
+      const widthLabel = widthEl.value === 'w45' ? '45-inch (Kitenge/Ankara)' : '60-inch (Suiting/Tetron)';
+      const msg = `ANGAZA TAILORING HUB - Fabric Guide:\nGarment: ${styleEl.value} (${grpEl.value}, Size ${sizeEl.value})\nBuy: ${meters} Meters (${yards} Yards) of ${widthLabel} fabric.\nTip: ${rule.note}`;
 
       resEl.innerHTML = `
         <div style="font-size:16px;font-weight:700;color:#1e3a8a;">Buy: ${meters} Meters <span style="font-size:13px;font-weight:500;color:#475569;">(approx. ${yards} Yards)</span></div>
@@ -1026,15 +1029,16 @@
       const rows = sizeCharts[groupKey] || [];
       const tbody = document.getElementById('fh-size-tbody');
       tbody.innerHTML = rows.map((r, idx) => {
-        const summary = `${groupKey} ${r.sz}: Bust/Chest ${r.b}, Waist ${r.w}, Hips ${r.h}, Shoulder ${r.sh}`;
+        const summary = `${groupKey} ${r.sz}: Bust/Chest ${r.b}, Waist ${r.w}, Hips ${r.h}, Shoulder ${r.sh}, Length ${r.len}`;
         return `
           <tr style="border-bottom:1px solid #e2e8f0;background:${idx % 2 ? '#f8fafc' : '#fff'};">
-            <td style="padding:7px;font-weight:600;">${r.sz}</td>
-            <td style="padding:7px;">${r.b}</td>
-            <td style="padding:7px;">${r.w}</td>
-            <td style="padding:7px;">${r.h}</td>
-            <td style="padding:7px;">${r.sh}</td>
-            <td style="padding:7px;"><button type="button" class="btn-sm fh-copy-sz" data-txt="${summary}">Copy</button></td>
+            <td style="padding:6px;font-weight:600;">${r.sz}</td>
+            <td style="padding:6px;">${r.b}</td>
+            <td style="padding:6px;">${r.w}</td>
+            <td style="padding:6px;">${r.h}</td>
+            <td style="padding:6px;">${r.sh}</td>
+            <td style="padding:6px;">${r.len}</td>
+            <td style="padding:6px;"><button type="button" class="btn-sm fh-copy-sz" data-txt="${summary}">Copy</button></td>
           </tr>
         `;
       }).join('');
@@ -1064,7 +1068,6 @@
       tabSize.className = 'btn-sm';
     });
 
-
     tabSize.addEventListener('click', () => {
       paneCalc.style.display = 'none';
       paneSize.style.display = 'block';
@@ -1085,7 +1088,4 @@
   }
 
   renderHelper();
-  document.querySelectorAll('#catalog-chips .chip').forEach((ch) => {
-    ch.addEventListener('click', () => setTimeout(renderHelper, 0));
-  });
 })();
