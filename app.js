@@ -2215,3 +2215,149 @@
     }
   });
 })();
+
+// === V43: SHOP LIST DIRECTORY & LOCKED FINANCE ITEM PRICING ===
+(function initShopListDirectoryAndPricing() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+  function loadVault() {
+    try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveVault(v) {
+    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
+  }
+
+  function renderFullShopDirectory() {
+    const vault = loadVault();
+    const items = Array.isArray(vault.shopItems) ? vault.shopItems : [];
+    const filter = document.getElementById('shop-dir-filter')?.value || 'all';
+    const countEl = document.getElementById('shop-dir-count');
+    const listEl = document.getElementById('sell-items-list');
+
+    if (countEl) countEl.textContent = String(items.length);
+    if (!listEl) return;
+
+    const filtered = filter === 'all' ? items : items.filter((it) => it.category === filter);
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<p class="muted-note" style="font-size:0.78rem;">No items saved in this category yet. Tap <b>+ Add Item</b> to add clothes, fabrics, or accessories.</p>';
+      return;
+    }
+
+    listEl.innerHTML = filtered.map((it) => {
+      const realIdx = items.indexOf(it);
+      const hasPrice = Number(it.sellPrice || 0) > 0;
+      const priceBadge = hasPrice
+        ? '<span class="badge-pay-status badge-pay-paid">Price Set 🔒</span>'
+        : '<span class="badge-pay-status">Set Price in Finance</span>';
+
+      return `
+        <div class="acc-item-row" style="margin-bottom:6px;">
+          <div>
+            <strong>${it.name}</strong>
+            <div style="font-size:0.75rem;color:#334155;">${it.category} · Stock: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${priceBadge}
+            <button type="button" class="btn-small dir-del-btn" data-idx="${realIdx}" title="Delete item">✕</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    listEl.querySelectorAll('.dir-del-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.getAttribute('data-idx'));
+        const v = loadVault();
+        if (Array.isArray(v.shopItems)) {
+          v.shopItems.splice(idx, 1);
+          saveVault(v);
+          renderFullShopDirectory();
+          renderFinanceShopPrices();
+        }
+      });
+    });
+  }
+
+  // Render private KES pricing editor inside locked Finance tab
+  window.renderFinanceShopPrices = function renderFinanceShopPrices() {
+    const finList = document.getElementById('finance-shop-items-list');
+    if (!finList) return;
+    const vault = loadVault();
+    const items = Array.isArray(vault.shopItems) ? vault.shopItems : [];
+
+    if (items.length === 0) {
+      finList.innerHTML = '<p class="muted-note">No items in Shop List yet. Add items from the Home screen first.</p>';
+      return;
+    }
+
+    finList.innerHTML = items.map((it, idx) => `
+      <div class="fin-order-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+          <strong>${it.name}</strong>
+          <span style="font-size:0.75rem;color:#475569;">${it.category} · Qty: <b>${it.qty}</b></span>
+        </div>
+        <div class="fin-grid-2">
+          <div>
+            <label style="font-size:0.75rem;">Selling Price (KES)</label>
+            <input type="number" class="fin-sell-price" data-idx="${idx}" value="${Number(it.sellPrice || 0)}" min="0" />
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button type="button" class="btn-small fin-save-item-price" data-idx="${idx}" style="width:100%;">Save Price (KES)</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    finList.querySelectorAll('.fin-save-item-price').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.getAttribute('data-idx'));
+        const v = loadVault();
+        if (!Array.isArray(v.shopItems) || !v.shopItems[idx]) return;
+        const inp = finList.querySelector(`.fin-sell-price[data-idx="${idx}"]`);
+        v.shopItems[idx].sellPrice = Math.max(0, Number(inp?.value || 0));
+        saveVault(v);
+        btn.textContent = '✅ Saved';
+        setTimeout(() => { btn.textContent = 'Save Price (KES)'; }, 1500);
+        renderFullShopDirectory();
+      });
+    });
+  };
+
+  // Toggle Shop List Directory drawer
+  document.addEventListener('click', (e) => {
+    const openDirBtn = e.target.closest('#open-shop-directory-btn');
+    if (openDirBtn) {
+      const drawer = document.getElementById('shop-directory-drawer');
+      if (drawer) {
+        const isClosed = drawer.style.display === 'none';
+        drawer.style.display = isClosed ? 'block' : 'none';
+        if (isClosed) renderFullShopDirectory();
+      }
+    }
+
+    if (e.target.closest('[data-tab="finance"]') || e.target.id === 'unlock-finance-btn') {
+      setTimeout(renderFinanceShopPrices, 100);
+    }
+  });
+
+  // Auto-open directory right after saving a new item
+  document.addEventListener('submit', (e) => {
+    if (e.target && e.target.id === 'sell-item-form') {
+      setTimeout(() => {
+        const drawer = document.getElementById('shop-directory-drawer');
+        if (drawer) drawer.style.display = 'block';
+        renderFullShopDirectory();
+        renderFinanceShopPrices();
+      }, 60);
+    }
+  });
+
+  const dirFilter = document.getElementById('shop-dir-filter');
+  if (dirFilter) dirFilter.addEventListener('change', renderFullShopDirectory);
+
+  setTimeout(() => {
+    renderFullShopDirectory();
+    renderFinanceShopPrices();
+  }, 200);
+})();
