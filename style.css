@@ -269,3 +269,50 @@ input:focus,select:focus,textarea:focus { outline:none; border-color:var(--sky-b
     font-size: 0.9rem !important;
   }
 }
+
+/* === EXACT 2-COLUMN FORM ROWS & INSTANT MOBILE FIT === */
+.row-2 {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  align-items: end;
+}
+.row-2 > div {
+  min-width: 0;
+}
+.row-2 input, .row-2 select {
+  width: 100% !important;
+}
+
+/* Place Naomi's inspirational card at the very top of Orders tab */
+#tab-orders {
+  display: flex;
+  flex-direction: column;
+}
+#naomi-welcome-card {
+  order: -1;
+}
+
+/* Compact 4-column Shop Overview bar on mobile */
+@media (max-width: 640px) {
+  #dashboard-panel .grid,
+  #dashboard-panel [class*="grid"] {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+  }
+  #dashboard-panel .grid > div,
+  #dashboard-panel [class*="grid"] > div {
+    padding: 8px 4px !important;
+    text-align: center !important;
+  }
+  #dashboard-panel p,
+  #dashboard-panel small {
+    display: none !important;
+  }
+  #dashboard-panel h3,
+  #dashboard-panel .stat-label {
+    font-size: 0.72rem !important;
+    line-height: 1.15 !important;
+  }
+}

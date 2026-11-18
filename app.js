@@ -1310,3 +1310,24 @@
     quoteEl.textContent = `"${quotes[dayIndex]}"`;
   }
 })();
+
+// === INSTANT CACHE-BUST ON SYNC BUTTON CLICK ===
+(function initInstantSync() {
+  const syncBtn = document.getElementById('btn-sync-app');
+  if (!syncBtn) return;
+  syncBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    syncBtn.textContent = '⏳';
+    try {
+      if ('caches' in window) {
+        const names = await caches.keys();
+        await Promise.all(names.map((n) => caches.delete(n)));
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.update()));
+      }
+    } catch (err) {}
+    window.location.reload(true);
+  });
+})();
