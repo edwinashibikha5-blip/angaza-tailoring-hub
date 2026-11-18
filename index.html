@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=35" />
+  <link rel="stylesheet" href="style.css?v=36" />
 </head>
 <body>
   <header class="topbar">
@@ -248,19 +248,7 @@
           <button type="submit" class="btn-primary">+ Save Order</button>
         </form>
       </div>
-      <div class="card">
-        <div class="card-head-row">
-          <h2>Active Orders &amp; WhatsApp Alerts</h2>
-          <select id="filter-order-cat" class="mini-select">
-            <option value="ALL">All Groups</option>
-            <option value="Women">Women</option>
-            <option value="Men">Men</option>
-            <option value="Girls">Girls</option>
-            <option value="Boys">Boys</option>
-          </select>
-        </div>
-        <div id="orders-list" class="item-list"><p class="empty-msg">No orders logged yet.</p></div>
-      </div>
+      
     </section>
 
     <section id="tab-repairs" class="tab-section">
@@ -303,6 +291,19 @@
       </div>
     </section>
     <section id="tab-clients" class="tab-section">
+<div class="card">
+        <div class="card-head-row">
+          <h2>Active Orders &amp; WhatsApp Alerts</h2>
+          <select id="filter-order-cat" class="mini-select">
+            <option value="ALL">All Groups</option>
+            <option value="Women">Women</option>
+            <option value="Men">Men</option>
+            <option value="Girls">Girls</option>
+            <option value="Boys">Boys</option>
+          </select>
+        </div>
+        <div id="orders-list" class="item-list"><p class="empty-msg">No orders logged yet.</p></div>
+      </div>
 
       <div class="card" id="auto-fabric-time-card" style="background:linear-gradient(135deg,#eff6ff 0%,#faf5ff 100%);border:1.5px solid #0284c7;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -508,6 +509,6 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=35" defer></script>
+  <script src="app.js?v=36" defer></script>
 </body>
 </html>
