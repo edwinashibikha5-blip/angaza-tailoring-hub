@@ -490,3 +490,34 @@ input:focus,select:focus,textarea:focus { outline:none; border-color:var(--sky-b
 .card:has(#order-form):not(.order-form-open) {
   display: none !important;
 }
+
+/* === COMPACT HEADER & BOTTOM ACTION PILLS === */
+header {
+  padding-bottom: 10px !important;
+}
+.header-bottom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+.header-bottom-actions button {
+  padding: 4px 9px !important;
+  font-size: 0.72rem !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  border-radius: 999px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+}
+#btn-sync-app {
+  min-width: 30px !important;
+  padding: 4px 8px !important;
+}

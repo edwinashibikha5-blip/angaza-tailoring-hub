@@ -1,4 +1,4 @@
-const CACHE_NAME = 'angaza-hub-v21';
+const CACHE_NAME = 'angaza-hub-v22';
 const CORE_ASSETS = [
   './',
   './index.html',
