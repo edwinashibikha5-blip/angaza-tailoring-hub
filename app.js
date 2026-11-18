@@ -2403,3 +2403,92 @@ document.addEventListener('click', (e) => {
   else if (raw.includes('finance')) target = 'tab-finance';
   window.openExclusiveView(target);
 }, true);
+
+// === V70: ROCK-SOLID FINANCE PIN UNLOCK, SET-PIN & LOCK CONTROLLER ===
+(function initFinancePinV70() {
+  const PIN_KEY = 'angaza_finance_pin_v1';
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+
+  function getSavedPin() {
+    try {
+      const direct = localStorage.getItem(PIN_KEY);
+      if (direct && /^\d{4,6}$/.test(direct)) return direct;
+      const vault = JSON.parse(localStorage.getItem(VAULT_KEY) || '{}');
+      if (vault.pin && /^\d{4,6}$/.test(String(vault.pin))) return String(vault.pin);
+    } catch (e) {}
+    return null;
+  }
+
+  function unlockFinanceScreen() {
+    const lockedBox = document.getElementById('finance-locked') || document.getElementById('finance-lock-card');
+    const unlockedBox = document.getElementById('finance-unlocked') || document.getElementById('finance-dashboard');
+    if (lockedBox) lockedBox.style.setProperty('display', 'none', 'important');
+    if (unlockedBox) {
+      unlockedBox.style.setProperty('display', 'block', 'important');
+      unlockedBox.hidden = false;
+    }
+    if (typeof window.renderFinanceShopPrices === 'function') {
+      window.renderFinanceShopPrices();
+    }
+  }
+
+  function lockFinanceScreen() {
+    const lockedBox = document.getElementById('finance-locked') || document.getElementById('finance-lock-card');
+    const unlockedBox = document.getElementById('finance-unlocked') || document.getElementById('finance-dashboard');
+    if (unlockedBox) unlockedBox.style.setProperty('display', 'none', 'important');
+    if (lockedBox) lockedBox.style.setProperty('display', 'block', 'important');
+  }
+
+  function attemptPinUnlock() {
+    const pinInput = document.getElementById('finance-pin-input')
+      || document.querySelector('#tab-finance input[type="password"], #tab-finance input[type="number"], #tab-finance input[type="tel"]');
+    const entered = (pinInput ? pinInput.value : '').trim();
+    const saved = getSavedPin();
+
+    if (!entered || !/^\d{4,6}$/.test(entered)) {
+      window.alert('Enter a 4-digit PIN (e.g. 2540) to unlock Finance.');
+      if (pinInput) pinInput.focus();
+      return;
+    }
+
+    // First-time setup: if no PIN was saved yet, save this PIN and unlock immediately
+    if (!saved) {
+      localStorage.setItem(PIN_KEY, entered);
+      if (pinInput) pinInput.value = '';
+      unlockFinanceScreen();
+      return;
+    }
+
+    // Check against saved PIN (also allow master default 2540 if forgotten)
+    if (entered === saved || entered === '2540') {
+      if (pinInput) pinInput.value = '';
+      unlockFinanceScreen();
+    } else {
+      window.alert('Incorrect PIN. Enter your 4-digit Finance PIN (or default 2540).');
+      if (pinInput) { pinInput.value = ''; pinInput.focus(); }
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#unlock-finance-btn, #finance-unlock-btn, #set-finance-pin-btn');
+    if (btn) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      attemptPinUnlock();
+      return;
+    }
+    if (e.target.closest('#lock-finance-btn, #finance-lock-btn')) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      lockFinanceScreen();
+    }
+  }, true);
+
+  document.addEventListener('submit', (e) => {
+    if (e.target && (e.target.id === 'finance-pin-form' || e.target.closest('#finance-locked'))) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      attemptPinUnlock();
+    }
+  }, true);
+})();
