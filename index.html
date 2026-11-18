@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=34" />
+  <link rel="stylesheet" href="style.css?v=35" />
 </head>
 <body>
   <header class="topbar">
@@ -303,6 +303,47 @@
       </div>
     </section>
     <section id="tab-clients" class="tab-section">
+
+      <div class="card" id="auto-fabric-time-card" style="background:linear-gradient(135deg,#eff6ff 0%,#faf5ff 100%);border:1.5px solid #0284c7;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <h4 style="margin:0;color:#1e3a8a;font-size:0.95rem;">🧮 Auto Fabric & Sewing Time Calculator</h4>
+          <span style="font-size:0.7rem;background:#dbeafe;color:#1e3a8a;padding:2px 8px;border-radius:999px;font-weight:700;">Live Auto-Calc</span>
+        </div>
+        <div class="row-2">
+          <div>
+            <label for="calc-garment-type">Garment Style</label>
+            <select id="calc-garment-type">
+              <option value="dress">Kitenge Dress / Skirt Suit</option>
+              <option value="maxi">Maxi / Ruracio / Kaftan</option>
+              <option value="suit">Kaunda / Senator / Kanzu</option>
+              <option value="top">Shirt / Blouse / Trousers</option>
+              <option value="kids">School Uniform / Kids</option>
+            </select>
+          </div>
+          <div>
+            <label for="calc-fabric-width">Fabric Width</label>
+            <select id="calc-fabric-width">
+              <option value="45">45" (Standard Kitenge)</option>
+              <option value="60">60" (Wide Suiting/Tetron)</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2" style="margin-top:6px;">
+          <div>
+            <label for="calc-girth">Bust / Chest / Hips (in)</label>
+            <input type="number" id="calc-girth" placeholder="e.g. 40" min="15" max="80" />
+          </div>
+          <div>
+            <label for="calc-length">Full Length (in)</label>
+            <input type="number" id="calc-length" placeholder="e.g. 44" min="10" max="75" />
+          </div>
+        </div>
+        <div id="calc-live-result" style="margin-top:8px;padding:8px 10px;background:#ffffff;border-radius:10px;border:1px solid #bae6fd;font-size:0.84rem;color:#0f172a;">
+          🧵 <b>Fabric Needed:</b> <span id="calc-out-fabric">Enter girth & length above</span><br/>
+          ⏱️ <b>Est. Sewing Time:</b> <span id="calc-out-time">--</span>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Add Client &amp; Body Measurements</h2>
         <form id="client-form">
@@ -467,6 +508,6 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=34" defer></script>
+  <script src="app.js?v=35" defer></script>
 </body>
 </html>

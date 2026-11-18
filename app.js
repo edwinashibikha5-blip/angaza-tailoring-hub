@@ -2048,3 +2048,102 @@
     } catch (e) {}
   }, 25000);
 })();
+
+// === V35: DIRECT NAVIGATION FOR ALL 4 HOME TILES & LIVE AUTO-CALCULATOR ===
+(function initV35TilesAndCalculator() {
+  // Helper: click bottom nav button by matching its text label (Orders, Repairs, Clients, Catalog, Finance)
+  function switchToNavLabel(labelWord) {
+    const navButtons = Array.from(document.querySelectorAll('nav button, .nav button, [role="tab"]'));
+    const match = navButtons.find((b) => b.textContent.toLowerCase().includes(labelWord.toLowerCase()));
+    if (match) {
+      match.click();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return true;
+    }
+    return false;
+  }
+
+  // Wire the 4 Home Quick-Action Tiles reliably
+  document.addEventListener('click', (e) => {
+    const tile = e.target.closest('.hub-tile');
+    if (!tile) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    const jump = tile.getAttribute('data-jump') || '';
+    if (jump === 'orders-form') {
+      // 1. Custom Tailoring -> Opens Clients tab & scrolls to New Custom Order form
+      switchToNavLabel('Clients');
+      setTimeout(() => {
+        const orderForm = document.getElementById('order-form');
+        if (orderForm) {
+          orderForm.classList.add('is-open');
+          orderForm.style.display = 'grid';
+          orderForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
+    } else if (jump === 'tab-gallery') {
+      // 2. Fashion Design -> Opens Catalog tab (Style search, Yardage helper & Gallery)
+      switchToNavLabel('Catalog');
+    } else if (jump === 'tab-repairs') {
+      // 3. Resizing & Fixes -> Opens Repairs tab
+      switchToNavLabel('Repairs');
+    } else if (jump === 'accessories-panel') {
+      // 4. Sewing Accessories -> Opens the Sewing Accessories & Shop Stock drawer right below
+      const accPanel = document.getElementById('accessories-panel');
+      if (accPanel) {
+        accPanel.style.display = 'block';
+        accPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, true);
+
+  // Live Auto Fabric & Sewing Time Calculator inside Clients tab
+  function runAutoFabricTimeCalc() {
+    const typeEl = document.getElementById('calc-garment-type');
+    const widthEl = document.getElementById('calc-fabric-width');
+    const girthEl = document.getElementById('calc-girth');
+    const lenEl = document.getElementById('calc-length');
+    const outFab = document.getElementById('calc-out-fabric');
+    const outTime = document.getElementById('calc-out-time');
+    if (!typeEl || !outFab || !outTime) return;
+
+    const gType = typeEl.value;
+    const fWidth = Number(widthEl?.value || 45);
+    const girth = Number(girthEl?.value || 0);
+    const len = Number(lenEl?.value || 0);
+
+    if (!girth && !len) {
+      outFab.textContent = 'Enter girth & length above';
+      outTime.textContent = '--';
+      return;
+    }
+
+    const effectiveGirth = girth || 38;
+    const effectiveLen = len || 42;
+
+    let baseMeters = 2.0;
+    let hours = 3.5;
+
+    if (gType === 'maxi') { baseMeters = 3.0; hours = 6.0; }
+    else if (gType === 'suit') { baseMeters = 3.0; hours = 5.5; }
+    else if (gType === 'top') { baseMeters = 1.5; hours = 2.5; }
+    else if (gType === 'kids') { baseMeters = 1.5; hours = 2.0; }
+
+    if (effectiveGirth > 44) { baseMeters += 0.5; hours += 0.5; }
+    if (effectiveLen > 50) { baseMeters += 0.5; hours += 0.5; }
+    if (fWidth === 60) { baseMeters = Math.max(1.25, baseMeters - 0.5); }
+
+    const yards = (baseMeters * 1.094).toFixed(1);
+    outFab.textContent = `${baseMeters.toFixed(2)} meters (~${yards} yards at ${fWidth}")`;
+    outTime.textContent = `~${hours.toFixed(1)} hrs (${hours <= 3 ? 'Same Day' : '1–2 Days'})`;
+  }
+
+  ['calc-garment-type', 'calc-fabric-width', 'calc-girth', 'calc-length'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', runAutoFabricTimeCalc);
+      el.addEventListener('change', runAutoFabricTimeCalc);
+    }
+  });
+})();
