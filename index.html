@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=49" />
+  <link rel="stylesheet" href="style.css?v=51" />
 </head>
 <body>
   <header class="topbar">
@@ -234,11 +234,33 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px;">
           <h4 style="margin:0;color:#1e3a8a;font-size:0.84rem;font-weight:800;">📏 Tailor Measurement & Material Calculator</h4>
           <div style="display:flex;align-items:center;gap:4px;">
-            <select id="calc-person-group" style="width:auto;min-height:26px;padding:2px 5px;font-size:0.71rem;font-weight:700;border-radius:8px;background:#ffffff;color:#1e3a8a;">
-              <option value="woman">👩 Woman</option>
-              <option value="man">👨 Man</option>
-              <option value="child">🧒 Child</option>
-              <option value="flowing">👘 Flowing/Dera</option>
+            <select id="calc-person-group" style="width:auto;max-width:138px;min-height:26px;padding:2px 5px;font-size:0.71rem;font-weight:700;border-radius:8px;background:#ffffff;color:#1e3a8a;">
+              <optgroup label="👩 Women">
+                <option value="woman_straight">👩 Woman · Straight Dress</option>
+                <option value="woman_flared">💃 Woman · Flared / A-Line</option>
+                <option value="woman_suit">👚 Woman · Skirt &amp; Blouse</option>
+                <option value="woman_bridal">👰 Woman · Ruracio / Bridal</option>
+                <option value="woman_trouser">👖 Woman · Trousers / Jumpsuit</option>
+              </optgroup>
+              <optgroup label="👨 Men">
+                <option value="man_shirt">👔 Man · Official Shirt</option>
+                <option value="man_trouser">👖 Man · Official Trousers</option>
+                <option value="man_kaunda">🧥 Man · Kaunda / Senator Suit</option>
+                <option value="man_kanzu">🕌 Man · Kanzu Robe</option>
+                <option value="man_blazer">🤵 Man · Blazer / Coat</option>
+              </optgroup>
+              <optgroup label="🧒 Children">
+                <option value="child_dress">🎒 Child · School Dress/Tunic</option>
+                <option value="child_set">👕 Child · School Shirt &amp; Shorts</option>
+                <option value="child_party">🎀 Child · Party / Sunday Dress</option>
+                <option value="child_kitenge">🧒 Child · Kids Kitenge</option>
+              </optgroup>
+              <optgroup label="👘 Flowing &amp; Special">
+                <option value="flow_dera">👘 Flowing · Classic Dera</option>
+                <option value="flow_kaftan">✨ Flowing · Embroidered Kaftan</option>
+                <option value="flow_abaya">🧕 Flowing · Abaya / Maxi Robe</option>
+                <option value="flow_maternity">🤰 Flowing · Maternity Maxi</option>
+              </optgroup>
             </select>
             <select id="calc-fabric-width" style="width:auto;min-height:26px;padding:2px 5px;font-size:0.71rem;font-weight:700;border-radius:8px;">
               <option value="45">45"</option>
@@ -247,11 +269,7 @@
           </div>
         </div>
 
-        <div style="margin-bottom:5px;">
-          <select id="calc-design-type" style="width:100%;min-height:30px;padding:3px 8px;font-size:0.78rem;font-weight:700;border-radius:8px;background:#ffffff;color:#1e3a8a;border:1px solid #93c5fd;">
-            <option value="straight">👗 Straight / Pencil Dress</option>
-          </select>
-        </div>
+        
 
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
           <input type="number" id="m-bust" placeholder="Bust/Chest" min="10" max="80" step="0.5" style="min-height:32px;padding:3px 6px;font-size:0.78rem;" />
@@ -490,7 +508,7 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=49" defer></script>
+  <script src="app.js?v=51" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
