@@ -1089,3 +1089,197 @@
 
   renderHelper();
 })();
+
+// === PRODUCTION & LOCKED FINANCE SEPARATION MODULE ===
+(function initProductionAndLockedFinance() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+
+  function loadVault() {
+    try {
+      return JSON.parse(localStorage.getItem(VAULT_KEY)) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveVault(data) {
+    localStorage.setItem(VAULT_KEY, JSON.stringify(data));
+  }
+
+  function formatKES(num) {
+    return 'KES ' + Number(num || 0).toLocaleString('en-KE');
+  }
+
+  const photoInput = document.getElementById('order-photo');
+  const photoLabel = document.getElementById('order-photo-label');
+  if (photoInput && photoLabel) {
+    photoInput.addEventListener('change', () => {
+      photoLabel.textContent = photoInput.files && photoInput.files
+        ? '✅ ' + photoInput.files.name.slice(0, 16)
+        : '📷 Add Photo';
+    });
+  }
+
+  const presetSelect = document.getElementById('order-preset');
+  const garmentInput = document.getElementById('order-garment');
+  if (presetSelect && garmentInput) {
+    presetSelect.addEventListener('change', () => {
+      if (presetSelect.value && !garmentInput.value.trim()) {
+        garmentInput.value = presetSelect.value;
+      }
+    });
+  }
+
+  const orderForm = document.getElementById('order-form');
+  if (orderForm) {
+    orderForm.addEventListener('submit', () => {
+      const fabricSource = document.getElementById('order-fabric-source')?.value || 'Client Fabric';
+      const qty = Math.max(1, parseInt(document.getElementById('order-qty')?.value || '1', 10));
+      const priority = document.getElementById('order-priority')?.value || 'Normal';
+      const fittingDate = document.getElementById('order-fitting')?.value || '';
+
+      setTimeout(() => {
+        const vault = loadVault();
+        if (Array.isArray(vault.orders) && vault.orders.length > 0) {
+          const latest = vault.orders;
+          latest.fabricSource = fabricSource;
+          latest.qty = qty;
+          latest.priority = priority;
+          latest.fittingDate = fittingDate;
+          latest.price = Number(latest.price || 0);
+          latest.deposit = Number(latest.deposit || 0);
+          latest.payMethod = latest.payMethod || 'M-Pesa';
+          latest.mpesaRef = latest.mpesaRef || '';
+          saveVault(vault);
+        }
+        if (photoLabel) photoLabel.textContent = '📷 Add Photo';
+        renderFinanceOrders();
+      }, 60);
+    });
+  }
+
+  window.renderFinanceOrders = function renderFinanceOrders() {
+    const container = document.getElementById('finance-orders-list');
+    if (!container) return;
+
+    const vault = loadVault();
+    const orders = Array.isArray(vault.orders) ? vault.orders : [];
+    const filter = document.getElementById('finance-order-filter')?.value || 'unpaid';
+
+    const filtered = orders.filter((o) => {
+      const price = Number(o.price || 0);
+      const paid = Number(o.deposit || 0);
+      const bal = Math.max(0, price - paid);
+      if (filter === 'unpaid') return price === 0 || bal > 0;
+      if (filter === 'paid') return price > 0 && bal === 0;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<p class="muted-note">No orders match this billing filter.</p>';
+      return;
+    }
+
+    container.innerHTML = filtered.map((o) => {
+      const price = Number(o.price || 0);
+      const paid = Number(o.deposit || 0);
+      const bal = Math.max(0, price - paid);
+      const qty = o.qty || 1;
+      const statusBadge = price === 0
+        ? '<span class="badge-pay-status">Price Not Set</span>'
+        : bal === 0
+          ? '<span class="badge-pay-status badge-pay-paid">Fully Paid</span>'
+          : '<span class="badge-pay-status">Balance: ' + formatKES(bal) + '</span>';
+
+      return `
+        <div class="fin-order-box" data-oid="${o.id}">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <strong>${o.clientName || 'Client'} — ${o.garment || 'Custom Order'} (x${qty})</strong>
+            ${statusBadge}
+          </div>
+          <div style="font-size:0.82rem;color:#475569;margin-top:4px;">
+            Stage: <b>${o.status || 'Cutting'}</b> · Source: ${o.fabricSource || 'Client Fabric'}
+            ${o.mpesaRef ? ' · Ref: <b>' + o.mpesaRef + '</b>' : ''}
+          </div>
+          <div class="fin-grid-2">
+            <div>
+              <label style="font-size:0.78rem;">Total Price (KES)</label>
+              <input type="number" class="fin-price-inp" data-id="${o.id}" value="${price}" min="0" />
+            </div>
+            <div>
+              <label style="font-size:0.78rem;">Total Paid (KES)</label>
+              <input type="number" class="fin-paid-inp" data-id="${o.id}" value="${paid}" min="0" />
+            </div>
+          </div>
+          <div class="fin-grid-2">
+            <div>
+              <label style="font-size:0.78rem;">Payment Method</label>
+              <select class="fin-method-inp" data-id="${o.id}">
+                <option value="M-Pesa" ${(o.payMethod || 'M-Pesa') === 'M-Pesa' ? 'selected' : ''}>M-Pesa</option>
+                <option value="Cash" ${o.payMethod === 'Cash' ? 'selected' : ''}>Cash</option>
+                <option value="Bank" ${o.payMethod === 'Bank' ? 'selected' : ''}>Bank</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.78rem;">M-Pesa / Receipt Code</label>
+              <input type="text" class="fin-ref-inp" data-id="${o.id}" value="${o.mpesaRef || ''}" placeholder="e.g. SJK84X..." />
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+            <button type="button" class="btn-small fin-save-btn" data-id="${o.id}">Save Billing</button>
+            ${bal > 0 ? `<button type="button" class="btn-small fin-clear-btn" data-id="${o.id}">Clear Balance (${formatKES(bal)})</button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.fin-save-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const vaultData = loadVault();
+        const item = (vaultData.orders || []).find((x) => String(x.id) === String(id));
+        if (!item) return;
+
+        const priceVal = Number(container.querySelector(`.fin-price-inp[data-id="${id}"]`)?.value || 0);
+        const paidVal = Number(container.querySelector(`.fin-paid-inp[data-id="${id}"]`)?.value || 0);
+        const methodVal = container.querySelector(`.fin-method-inp[data-id="${id}"]`)?.value || 'M-Pesa';
+        const refVal = container.querySelector(`.fin-ref-inp[data-id="${id}"]`)?.value.trim() || '';
+
+        item.price = Math.max(0, priceVal);
+        item.deposit = Math.max(0, paidVal);
+        item.payMethod = methodVal;
+        item.mpesaRef = refVal;
+        saveVault(vaultData);
+
+        if (typeof window.renderAll === 'function') window.renderAll();
+        renderFinanceOrders();
+      });
+    });
+
+    container.querySelectorAll('.fin-clear-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const vaultData = loadVault();
+        const item = (vaultData.orders || []).find((x) => String(x.id) === String(id));
+        if (!item) return;
+
+        item.deposit = Number(item.price || 0);
+        saveVault(vaultData);
+
+        if (typeof window.renderAll === 'function') window.renderAll();
+        renderFinanceOrders();
+      });
+    });
+  };
+
+  const filterEl = document.getElementById('finance-order-filter');
+  if (filterEl) filterEl.addEventListener('change', renderFinanceOrders);
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-tab="finance"]') || e.target.id === 'unlock-finance-btn') {
+      setTimeout(renderFinanceOrders, 80);
+    }
+  });
+
+  setTimeout(renderFinanceOrders, 200);
+})();

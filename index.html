@@ -57,52 +57,94 @@
     <section id="tab-orders" class="tab-section active">
       <div class="card">
         <h2>New Custom Order</h2>
-        <form id="order-form">
-          <div class="grid-2">
-            <div class="field">
-              <label for="ord-client">Client</label>
-              <select id="ord-client" required>
-                <option value="">-- Add Client in "Clients" --</option>
+                <form id="order-form" class="form-grid">
+          <div class="row-2">
+            <div>
+              <label for="order-client">Client</label>
+              <select id="order-client" required></select>
+            </div>
+            <div>
+              <label for="order-group">Group</label>
+              <select id="order-group">
+                <option value="Women">Women</option>
+                <option value="Men">Men</option>
+                <option value="Girls">Girls</option>
+                <option value="Boys">Boys</option>
               </select>
             </div>
-            <div class="field">
-              <label for="ord-category">Category (All Ages)</label>
-              <select id="ord-category">
-                <option value="Women">Women (Adult Female)</option>
-                <option value="Men">Men (Adult Male)</option>
-                <option value="Girls">Girls (Child Female)</option>
-                <option value="Boys">Boys (Child Male)</option>
+          </div>
+
+          <div class="row-2">
+            <div>
+              <label for="order-preset">Garment Preset</label>
+              <select id="order-preset">
+                <option value="">-- Choose Preset --</option>
+                <option value="Kitenge Dress / Skirt Suit">Kitenge Dress / Suit</option>
+                <option value="Ruracio / Bridal Outfit">Ruracio / Bridal Outfit</option>
+                <option value="Kaftan / Dera">Kaftan / Dera</option>
+                <option value="Kaunda / Senator Suit">Kaunda / Senator Suit</option>
+                <option value="Kanzu">Kanzu</option>
+                <option value="Official Trousers / Shirt">Official Trousers / Shirt</option>
+                <option value="School Uniform Set">School Uniform Set</option>
+              </select>
+            </div>
+            <div>
+              <label for="order-fabric-source">Fabric Source</label>
+              <select id="order-fabric-source">
+                <option value="Client Fabric">Client Fabric</option>
+                <option value="Shop Fabric">Shop Fabric</option>
               </select>
             </div>
           </div>
-          <div class="grid-2">
-            <div class="field">
-              <label for="ord-style-preset">Quick Garment Preset</label>
-              <select id="ord-style-preset"></select>
+
+          <div>
+            <label for="order-garment">Garment Style & Tailoring Notes</label>
+            <input type="text" id="order-garment" placeholder="e.g. Pleated Kitenge maxi, full lining, hidden zip" required />
+          </div>
+
+          <div class="row-2">
+            <div>
+              <label for="order-qty">Quantity (Pieces)</label>
+              <input type="number" id="order-qty" min="1" value="1" required />
             </div>
-            <div class="field">
-              <label for="ord-style">Garment Style / Notes</label>
-              <input type="text" id="ord-style" placeholder="Kitenge Dress / Suit..." required />
+            <div>
+              <label for="order-priority">Priority</label>
+              <select id="order-priority">
+                <option value="Normal">Normal</option>
+                <option value="Express">Express / Rush</option>
+              </select>
             </div>
           </div>
-          <div class="grid-3">
-            <div class="field"><label for="ord-price">Price (KES)</label><input type="number" id="ord-price" min="0" placeholder="2500" required /></div>
-            <div class="field"><label for="ord-deposit">Deposit (KES)</label><input type="number" id="ord-deposit" min="0" value="0" required /></div>
-            <div class="field"><label for="ord-due">Due Date</label><input type="date" id="ord-due" required /></div>
+
+          <div class="row-2">
+            <div>
+              <label for="order-fitting">Fitting Date (Optional)</label>
+              <input type="date" id="order-fitting" />
+            </div>
+            <div>
+              <label for="order-due">Final Due Date</label>
+              <input type="date" id="order-due" />
+            </div>
           </div>
-          <div class="grid-2">
-            <div class="field">
-              <label for="ord-status">Status</label>
-              <select id="ord-status">
+
+          <div class="row-2">
+            <div>
+              <label for="order-status">Production Stage</label>
+              <select id="order-status">
                 <option value="Cutting">Cutting</option>
                 <option value="Stitching">Stitching</option>
                 <option value="Fitting">Fitting</option>
-                <option value="Ready">Ready for Pickup</option>
+                <option value="Ready">Ready</option>
                 <option value="Delivered">Delivered</option>
               </select>
             </div>
-            <div class="field"><label for="ord-photo">Fabric Photo</label><input type="file" id="ord-photo" accept="image/*" /></div>
+            <div>
+              <label for="order-photo">Fabric / Style Photo</label>
+              <label for="order-photo" class="file-btn-label" id="order-photo-label">📷 Add Photo</label>
+              <input type="file" id="order-photo" accept="image/*" class="hidden-file-input" />
+            </div>
           </div>
+
           <button type="submit" class="btn-primary">+ Save Tailoring Order</button>
         </form>
       </div>
