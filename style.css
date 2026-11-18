@@ -548,3 +548,90 @@ header {
 #order-form:not(.is-open) {
   display: none !important;
 }
+
+/* === V25 HEADER ORDER, LIVE DATE & SMART ESTIMATOR STYLES === */
+.header-bottom-actions {
+  order: -1 !important;
+  margin-top: 0 !important;
+  margin-bottom: 6px !important;
+  padding-top: 0 !important;
+  padding-bottom: 5px !important;
+  border-top: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16) !important;
+}
+.angaza-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.live-date-pill {
+  background: rgba(253, 230, 138, 0.2);
+  color: #fde68a;
+  border: 1px solid rgba(253, 230, 138, 0.45);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.meas-estimate-box {
+  background: linear-gradient(135deg, #eff6ff 0%, #faf5ff 100%);
+  border: 1.5px solid #38bdf8;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 8px 0;
+}
+.meas-est-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #1e3a8a;
+}
+.shop-stock-summary {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #cbd5e1;
+}
+.shop-summary-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.summary-chip {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.client-quick-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+.client-quick-links {
+  display: flex;
+  gap: 6px;
+}
+.client-quick-links a {
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+}

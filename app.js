@@ -1554,3 +1554,228 @@
     });
   }
 })();
+
+// === V25: AUTO DATE, COLLAPSIBLE CLIENTS LIST, MEASUREMENT ESTIMATOR & SHOP ITEMS ===
+(function initV25ShopIntelligence() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+  function loadVault() {
+    try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveVault(v) {
+    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
+  }
+
+  // 1. Automatic live date update in header & default date inputs
+  function updateLiveDates() {
+    const now = new Date();
+    const formatted = now.toLocaleDateString('en-KE', {
+      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+    });
+    const pill = document.getElementById('live-date-pill');
+    if (pill) pill.textContent = '📅 ' + formatted;
+
+    const isoToday = now.toISOString().split('T');
+    document.querySelectorAll('input[type="date"]').forEach((inp) => {
+      if (!inp.value && inp.id !== 'order-fitting') {
+        inp.value = isoToday;
+      }
+    });
+  }
+  updateLiveDates();
+  setInterval(updateLiveDates, 60000);
+
+  // 2. Replace "No orders logged yet" empty message with Collapsible Client List & Phone Numbers
+  function replaceEmptyOrdersWithClients() {
+    const ordersList = document.getElementById('orders-list') || document.querySelector('#tab-orders .stack-list');
+    if (!ordersList) return;
+    if (!ordersList.textContent.includes('No orders logged yet')) return;
+
+    const vault = loadVault();
+    const clients = Array.isArray(vault.clients) ? vault.clients : [];
+
+    ordersList.innerHTML = `
+      <div class="card" style="margin-top:8px;padding:12px;">
+        <div class="card-head">
+          <h4 style="margin:0;color:#1e3a8a;">👥 Client Directory & Contacts (${clients.length})</h4>
+          <button type="button" class="btn-small" id="toggle-home-clients-btn">Show</button>
+        </div>
+        <div id="home-clients-collapse" style="display:none;margin-top:8px;">
+          ${clients.length === 0
+            ? '<p class="muted-note">No saved clients yet. Tap <b>Clients</b> below to add a client profile.</p>'
+            : clients.map((c) => {
+                const phone = (c.phone || '').trim();
+                const cleanWa = phone.replace(/[^\d]/g, '').replace(/^0/, '254');
+                return `
+                  <div class="client-quick-row">
+                    <div>
+                      <strong>${c.name || 'Client'}</strong>
+                      <div style="font-size:0.76rem;color:#475569;">${c.group || 'Client'} · ${phone || 'No phone'}</div>
+                    </div>
+                    ${phone ? `
+                      <div class="client-quick-links">
+                        <a href="tel:${phone}">📞 Call</a>
+                        <a href="https://wa.me{cleanWa}" target="_blank" rel="noopener">💬 WhatsApp</a>
+                      </div>` : ''}
+                  </div>`;
+              }).join('')}
+        </div>
+      </div>
+    `;
+
+    const btn = document.getElementById('toggle-home-clients-btn');
+    const body = document.getElementById('home-clients-collapse');
+    if (btn && body) {
+      btn.addEventListener('click', () => {
+        const open = body.style.display === 'none';
+        body.style.display = open ? 'block' : 'none';
+        btn.textContent = open ? 'Hide' : 'Show';
+      });
+    }
+  }
+  setTimeout(replaceEmptyOrdersWithClients, 250);
+
+  // 3. Smart Measurement -> Fabric Yardage & Sewing Time Calculator
+  function computeFabricAndTime() {
+    const clientForm = document.getElementById('client-form');
+    const box = document.getElementById('meas-smart-estimate');
+    if (!clientForm || !box) return;
+
+    const text = Array.from(clientForm.querySelectorAll('input, textarea, select'))
+      .map((el) => (el.id + ':' + el.value))
+      .join(' ')
+      .toLowerCase();
+
+    const nums = (text.match(/\d+(\.\d+)?/g) || []).map(Number).filter((n) => n >= 12 && n <= 85);
+    if (nums.length < 2) {
+      box.style.display = 'none';
+      return;
+    }
+
+    const maxGirth = Math.max(...nums.filter((n) => n <= 65), 36);
+    const maxLen = Math.max(...nums, 40);
+
+    // Calculate fabric in meters & yards based on body girth and garment length
+    let meters = 2.0;
+    let hours = 3.5;
+    let label = 'Standard Outfit';
+
+    if (text.includes('maxi') || text.includes('ruracio') || text.includes('bridal') || text.includes('kaftan') || text.includes('dera') || maxLen >= 52) {
+      meters = maxGirth > 44 ? 3.5 : 3.0;
+      hours = 6.0;
+      label = 'Full-Length Dress / Kaftan';
+    } else if (text.includes('suit') || text.includes('kaunda') || text.includes('senator') || text.includes('kanzu')) {
+      meters = maxGirth > 44 ? 3.5 : 3.0;
+      hours = 5.5;
+      label = 'Two-Piece Suit / Kanzu';
+    } else if (text.includes('trouser') || text.includes('skirt') || text.includes('shirt')) {
+      meters = maxGirth > 42 ? 2.0 : 1.5;
+      hours = 2.5;
+      label = 'Top / Skirt / Trousers';
+    } else if (text.includes('girl') || text.includes('boy') || maxGirth < 30) {
+      meters = 1.5;
+      hours = 2.0;
+      label = 'Kids / Youth Garment';
+    } else if (maxGirth > 44) {
+      meters = 3.0;
+      hours = 4.5;
+    }
+
+    const yards = (meters * 1.094).toFixed(1);
+    const estFabric = document.getElementById('est-fabric-val');
+    const estTime = document.getElementById('est-time-val');
+    const estNote = document.getElementById('est-note-val');
+
+    if (estFabric) estFabric.textContent = `${meters.toFixed(1)}m (~${yards} yds at 45")`;
+    if (estTime) estTime.textContent = `~${hours} hrs (${hours <= 3 ? 'Same Day' : '1–2 Days'})`;
+    if (estNote) estNote.textContent = `Auto-calculated for ${label} (Max girth ~${maxGirth}", Length ~${maxLen}").`;
+    box.style.display = 'block';
+  }
+
+  const clientFormEl = document.getElementById('client-form');
+  if (clientFormEl) {
+    clientFormEl.addEventListener('input', computeFabricAndTime);
+    clientFormEl.addEventListener('change', computeFabricAndTime);
+  }
+
+  // 4. Expanded Shop Overview Summary & Add Items to Sell
+  function renderShopOverviewAndStock() {
+    const pillsEl = document.getElementById('shop-summary-pills');
+    const listEl = document.getElementById('sell-items-list');
+    const vault = loadVault();
+    const clients = Array.isArray(vault.clients) ? vault.clients : [];
+    const orders = Array.isArray(vault.orders) ? vault.orders : [];
+    const accessories = Array.isArray(vault.accessories) ? vault.accessories : [];
+    const shopItems = Array.isArray(vault.shopItems) ? vault.shopItems : [];
+
+    const readyClothes = orders.filter((o) => o.status === 'Ready').length +
+      shopItems.filter((i) => i.category === 'Ready Clothes').length;
+    const materialsCount = shopItems.filter((i) => i.category === 'Fabrics & Materials').length;
+
+    if (pillsEl) {
+      pillsEl.innerHTML = `
+        <span class="summary-chip">👥 Customers: ${clients.length}</span>
+        <span class="summary-chip">👗 Clothes: ${readyClothes}</span>
+        <span class="summary-chip">🧵 Materials/Fabrics: ${materialsCount}</span>
+        <span class="summary-chip">🪡 Accessories: ${accessories.length}</span>
+        <span class="summary-chip">🛍️ Items for Sale: ${shopItems.length}</span>
+      `;
+    }
+
+    if (listEl) {
+      if (shopItems.length === 0) {
+        listEl.innerHTML = '<p class="muted-note" style="margin:4px 0;">No retail items added yet. Tap <b>+ Add Item to Sell</b> to log clothes, fabrics, or goods.</p>';
+      } else {
+        listEl.innerHTML = shopItems.map((it, idx) => `
+          <div class="acc-item-row">
+            <div>
+              <strong>${it.name}</strong>
+              <div style="font-size:0.75rem;color:#475569;">${it.category} · Qty: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div>
+            </div>
+            <button type="button" class="btn-small sell-del-btn" data-idx="${idx}">✕</button>
+          </div>
+        `).join('');
+
+        listEl.querySelectorAll('.sell-del-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const i = Number(btn.getAttribute('data-idx'));
+            const v = loadVault();
+            v.shopItems.splice(i, 1);
+            saveVault(v);
+            renderShopOverviewAndStock();
+          });
+        });
+      }
+    }
+  }
+
+  const toggleSellBtn = document.getElementById('toggle-sell-item-btn');
+  const sellForm = document.getElementById('sell-item-form');
+  if (toggleSellBtn && sellForm) {
+    toggleSellBtn.addEventListener('click', () => {
+      const hidden = sellForm.style.display === 'none';
+      sellForm.style.display = hidden ? 'grid' : 'none';
+      toggleSellBtn.textContent = hidden ? '− Hide Form' : '+ Add Item to Sell';
+    });
+
+    sellForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('sell-name')?.value.trim();
+      const category = document.getElementById('sell-cat')?.value || 'Ready Clothes';
+      const qty = document.getElementById('sell-qty')?.value.trim();
+      const note = document.getElementById('sell-note')?.value.trim() || '';
+      if (!name || !qty) return;
+
+      const vault = loadVault();
+      vault.shopItems = Array.isArray(vault.shopItems) ? vault.shopItems : [];
+      vault.shopItems.unshift({ name, category, qty, note, date: new Date().toISOString().split('T') });
+      saveVault(vault);
+      sellForm.reset();
+      sellForm.style.display = 'none';
+      toggleSellBtn.textContent = '+ Add Item to Sell';
+      renderShopOverviewAndStock();
+    });
+  }
+
+  renderShopOverviewAndStock();
+})();
