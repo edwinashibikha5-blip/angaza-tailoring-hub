@@ -1960,3 +1960,221 @@ window.openAngazaShopModal = function openAngazaShopModal(viewName) {
   const searchInp = document.getElementById('sm-search-inp');
   if (searchInp) searchInp.dispatchEvent(new Event('input'));
 };
+
+// === V57: REPLACEABLE STARTER RECORDS, ONE-TAP EDIT/REPLACE & DELETE ===
+(function initReplaceableShopRecordsAndDelete() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+  const SEED_FLAG = 'angaza_shop_seeded_v1';
+
+  function loadVault() {
+    try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveVault(v) {
+    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
+  }
+
+  // 1. Seed realistic, replaceable starter shop records once if Shop List is empty
+  const vault = loadVault();
+  if (!localStorage.getItem(SEED_FLAG) && (!Array.isArray(vault.shopItems) || vault.shopItems.length === 0)) {
+    vault.shopItems = [
+      {
+        name: 'Kitenge Peplum & Skirt Suit',
+        category: 'Ready Clothes',
+        qty: '4 pcs',
+        note: 'Sizes 10-16 · Replaceable Sample',
+        sellPrice: 2800,
+        isSample: true
+      },
+      {
+        name: 'Premium Cotton Kitenge Fabric (45")',
+        category: 'Fabrics & Materials',
+        qty: '18 yds',
+        note: 'Assorted Prints · Replaceable Sample',
+        sellPrice: 650,
+        isSample: true
+      },
+      {
+        name: 'Invisible Zips (22-inch Assorted)',
+        category: 'Sewing Accessories',
+        qty: '25 pcs',
+        note: 'Black, Navy, Red, Cream · Sample',
+        sellPrice: 80,
+        isSample: true
+      },
+      {
+        name: 'Polyester Tailoring Thread Cones',
+        category: 'Sewing Accessories',
+        qty: '12 cones',
+        note: 'Standard Lockstitch · Sample',
+        sellPrice: 150,
+        isSample: true
+      }
+    ];
+    saveVault(vault);
+    localStorage.setItem(SEED_FLAG, '1');
+  }
+
+  let editingItemIndex = -1;
+
+  // 2. Render Spreadsheet & Shop List with Edit (Replace) + Delete buttons
+  window.renderAngazaShopSheet = function renderAngazaShopSheet() {
+    const v = loadVault();
+    const items = Array.isArray(v.shopItems) ? v.shopItems : [];
+    const q = (document.getElementById('sm-search-inp')?.value || '').trim().toLowerCase();
+
+    const countEl = document.getElementById('shop-dir-count');
+    if (countEl) countEl.textContent = String(items.length);
+
+    const filtered = q
+      ? items.filter((it) => (it.name + ' ' + it.category + ' ' + (it.note || '')).toLowerCase().includes(q))
+      : items;
+
+    const tbody = document.getElementById('sm-spreadsheet-tbody');
+    if (tbody) {
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="padding:12px;text-align:center;color:#475569;">No records found. Tap <b>✍️ Form</b> to add a record.</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map((it) => {
+          const idx = items.indexOf(it);
+          const hasPrice = Number(it.sellPrice || 0) > 0;
+          return `
+            <tr style="border-bottom:1px solid #e2e8f0;${it.isSample ? 'background:#fffbeb;' : ''}">
+              <td style="padding:6px 7px;">
+                <b>${it.name}</b>
+                ${it.note ? `<div style="font-size:0.67rem;color:#64748b;">${it.note}</div>` : ''}
+              </td>
+              <td style="padding:6px 5px;font-size:0.71rem;">${it.category}</td>
+              <td style="padding:6px 5px;font-weight:700;white-space:nowrap;">${it.qty}</td>
+              <td style="padding:6px 5px;"><span class="badge-pay-status ${hasPrice ? 'badge-pay-paid' : ''}">${hasPrice ? 'Set 🔒' : 'Finance'}</span></td>
+              <td style="padding:6px 5px;white-space:nowrap;">
+                <button type="button" class="sm-edit-row" data-idx="${idx}" title="Edit / Replace record" style="background:#dbeafe;color:#1e3a8a;border:none;border-radius:6px;padding:3px 6px;font-weight:800;cursor:pointer;margin-right:3px;">✏️</button>
+                <button type="button" class="sm-del-row" data-idx="${idx}" title="Delete record" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:3px 6px;font-weight:800;cursor:pointer;">🗑️</button>
+              </td>
+            </tr>`;
+        }).join('');
+      }
+    }
+
+    const dirCards = document.getElementById('sm-directory-cards');
+    if (dirCards) {
+      dirCards.innerHTML = !filtered.length
+        ? '<p class="muted-note">No records saved yet.</p>'
+        : filtered.map((it) => {
+            const idx = items.indexOf(it);
+            return `
+              <div class="acc-item-row" style="margin-bottom:6px;${it.isSample ? 'border-color:#fcd34d;background:#fffbeb;' : ''}">
+                <div>
+                  <strong>${it.name}</strong>
+                  <div style="font-size:0.74rem;color:#475569;">${it.category} · Stock: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div>
+                </div>
+                <div style="display:flex;gap:4px;">
+                  <button type="button" class="btn-small sm-edit-row" data-idx="${idx}" style="width:auto;padding:3px 8px;">✏️ Edit</button>
+                  <button type="button" class="btn-small sm-del-row" data-idx="${idx}" style="width:auto;padding:3px 8px;background:#fee2e2;color:#dc2626;">🗑️</button>
+                </div>
+              </div>`;
+          }).join('');
+    }
+  };
+
+  // 3. Handle Edit/Replace and Delete clicks cleanly
+  document.addEventListener('click', (e) => {
+    const editBtn = e.target.closest('.sm-edit-row');
+    if (editBtn) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const idx = Number(editBtn.getAttribute('data-idx'));
+      const v = loadVault();
+      const item = Array.isArray(v.shopItems) ? v.shopItems[idx] : null;
+      if (!item) return;
+
+      editingItemIndex = idx;
+      const nameEl = document.getElementById('m-item-name');
+      const catEl = document.getElementById('m-item-cat');
+      const qtyEl = document.getElementById('m-item-qty');
+      const noteEl = document.getElementById('m-item-note');
+      const priceEl = document.getElementById('m-item-price');
+      const submitBtn = document.querySelector('#modal-add-item-form button[type="submit"]');
+
+      if (nameEl) nameEl.value = item.name || '';
+      if (catEl) catEl.value = item.category || 'Ready Clothes';
+      if (qtyEl) qtyEl.value = item.qty || '';
+      if (noteEl) noteEl.value = (item.note || '').replace(/\s*·\s*Replaceable Sample|\s*·\s*Sample/gi, '');
+      if (priceEl) priceEl.value = Number(item.sellPrice || 0) || '';
+      if (submitBtn) submitBtn.textContent = '✅ Replace & Update Record';
+
+      // Switch modal to Form tab
+      ['sheet', 'form', 'list'].forEach((k) => {
+        const el = document.getElementById('sm-view-' + k);
+        if (el) el.style.display = k === 'form' ? 'block' : 'none';
+      });
+      document.querySelectorAll('.shop-modal-tab').forEach((b) => {
+        const a = b.getAttribute('data-smview') === 'form';
+        b.style.background = a ? '#1e3a8a' : '#eff6ff';
+        b.style.color = a ? '#ffffff' : '#1e3a8a';
+      });
+      return;
+    }
+
+    const delBtn = e.target.closest('.sm-del-row');
+    if (delBtn) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const idx = Number(delBtn.getAttribute('data-idx'));
+      const v = loadVault();
+      if (Array.isArray(v.shopItems) && v.shopItems[idx]) {
+        v.shopItems.splice(idx, 1);
+        saveVault(v);
+        window.renderAngazaShopSheet();
+        if (typeof window.renderFinanceShopPrices === 'function') window.renderFinanceShopPrices();
+      }
+    }
+  }, true);
+
+  // 4. Support both Adding New & Replacing Existing Record on Form Submit
+  const modalForm = document.getElementById('modal-add-item-form');
+  if (modalForm) {
+    modalForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const name = document.getElementById('m-item-name')?.value.trim();
+      const category = document.getElementById('m-item-cat')?.value || 'Ready Clothes';
+      const qty = document.getElementById('m-item-qty')?.value.trim();
+      const note = document.getElementById('m-item-note')?.value.trim() || '';
+      const sellPrice = Math.max(0, Number(document.getElementById('m-item-price')?.value || 0));
+      if (!name || !qty) return;
+
+      const v = loadVault();
+      v.shopItems = Array.isArray(v.shopItems) ? v.shopItems : [];
+      const record = { name, category, qty, note, sellPrice, isSample: false };
+
+      if (editingItemIndex >= 0 && v.shopItems[editingItemIndex]) {
+        v.shopItems[editingItemIndex] = record;
+        editingItemIndex = -1;
+      } else {
+        v.shopItems.unshift(record);
+      }
+      saveVault(v);
+
+      modalForm.reset();
+      const submitBtn = modalForm.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.textContent = '+ Save Item to Spreadsheet & Shop List';
+
+      // Return to Spreadsheet view to show updated row
+      ['sheet', 'form', 'list'].forEach((k) => {
+        const el = document.getElementById('sm-view-' + k);
+        if (el) el.style.display = k === 'sheet' ? 'block' : 'none';
+      });
+      document.querySelectorAll('.shop-modal-tab').forEach((b) => {
+        const a = b.getAttribute('data-smview') === 'sheet';
+        b.style.background = a ? '#1e3a8a' : '#eff6ff';
+        b.style.color = a ? '#ffffff' : '#1e3a8a';
+      });
+      window.renderAngazaShopSheet();
+      if (typeof window.renderFinanceShopPrices === 'function') window.renderFinanceShopPrices();
+    }, true);
+  }
+
+  document.getElementById('sm-search-inp')?.addEventListener('input', window.renderAngazaShopSheet);
+  window.renderAngazaShopSheet();
+})();
