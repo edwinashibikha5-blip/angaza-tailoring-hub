@@ -683,3 +683,21 @@ form#order-form:not(.is-open) {
 #tab-clients form#order-form {
   display: grid !important;
 }
+
+/* === V30: INLINE CARD-HEAD ALIGNMENT & CLEAN HOME BOTTOM === */
+#shop-overview-white-card .card-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+#shop-overview-white-card .card-head h4 {
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+#toggle-overview-collapse-btn {
+  width: auto !important;
+  min-width: 58px !important;
+  padding: 4px 10px !important;
+  font-size: 0.75rem !important;
+}
