@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=57" />
+  <link rel="stylesheet" href="style.css?v=59" />
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=57'+Date.now());})(this)">↻</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=59'+Date.now());})(this)">↻</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -284,6 +284,20 @@
           🧵 <b>Material Needed:</b> <span id="calc-out-fabric">Enter body parts in inches</span><br/>
           📐 <b>Cut Layout & Time:</b> <span id="calc-out-time">--</span>
         </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:5px;">
+          <button type="button" id="calc-save-mem-btn" style="flex:1;min-height:26px;padding:2px 6px;font-size:0.71rem;font-weight:800;border-radius:7px;background:#1e3a8a;color:#ffffff;border:none;cursor:pointer;margin:0;">💾 Save Ref</button>
+          <button type="button" id="calc-toggle-mem-btn" style="flex:1.2;min-height:26px;padding:2px 6px;font-size:0.71rem;font-weight:800;border-radius:7px;background:#eff6ff;color:#1e3a8a;border:1px solid #93c5fd;cursor:pointer;margin:0;">📂 Memory (<span id="calc-mem-count">2</span>)</button>
+          <button type="button" id="calc-clear-btn" style="width:auto;min-height:26px;padding:2px 8px;font-size:0.71rem;font-weight:700;border-radius:7px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;cursor:pointer;margin:0;">Clear</button>
+        </div>
+
+        <div id="calc-memory-drawer" style="display:none;margin-top:6px;padding:6px 8px;background:#ffffff;border:1px solid #93c5fd;border-radius:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <strong style="font-size:0.75rem;color:#1e3a8a;">📂 Saved Measurement References</strong>
+            <button type="button" onclick="document.getElementById('calc-memory-drawer').style.display='none'" style="width:auto;padding:1px 6px;font-size:0.68rem;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;font-weight:800;margin:0;">✕</button>
+          </div>
+          <div id="calc-memory-list" style="max-height:140px;overflow-y:auto;"></div>
+        </div>
       </div>
 
     </section>
@@ -508,7 +522,7 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=57" defer></script>
+  <script src="app.js?v=59" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -543,7 +557,7 @@
             <tbody id="sm-spreadsheet-tbody"></tbody>
           </table>
         </div>
-        <p style="font-size:0.72rem;color:#475569;margin-top:6px;">Exact KES selling prices stay locked inside <b>Finance 🔒</b> for privacy.</p>
+        <p style="font-size:0.72rem;color:#475569;margin-top:6px;">Unit reference prices (KES) shown below for quick quoting. Shop totals & profit stay locked in <b>Finance 🔒</b>.</p>
       </div>
 
       <!-- VIEW 2: CUSTOM ADD-ITEM FORM -->
@@ -574,7 +588,7 @@
               <input type="text" id="m-item-note" placeholder="e.g. Size 12-16, Royal Blue" />
             </div>
             <div>
-              <label style="font-size:0.78rem;font-weight:700;">Selling Price (Saved to Finance 🔒)</label>
+              <label style="font-size:0.78rem;font-weight:700;">Unit Reference Price (KES)</label>
               <input type="number" id="m-item-price" placeholder="KES (optional)" min="0" />
             </div>
           </div>

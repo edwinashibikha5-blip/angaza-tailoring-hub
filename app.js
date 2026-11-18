@@ -2178,3 +2178,96 @@ window.openAngazaShopModal = function openAngazaShopModal(viewName) {
   document.getElementById('sm-search-inp')?.addEventListener('input', window.renderAngazaShopSheet);
   window.renderAngazaShopSheet();
 })();
+
+// === V59: VISIBLE UNIT REFERENCE PRICES (KES) + CALCULATOR MEMORY ===
+(function initVisibleRefPricesAndCalcMemory() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+  const MEM_KEY = 'angaza_calc_memory_v1';
+  const MEM_SEED_FLAG = 'angaza_calc_mem_seeded_v1';
+  function loadVault() { try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; } catch (e) { return {}; } }
+  function loadMem() { try { return JSON.parse(localStorage.getItem(MEM_KEY)) || []; } catch (e) { return []; } }
+  function saveMem(arr) { localStorage.setItem(MEM_KEY, JSON.stringify(arr)); }
+
+  window.renderAngazaShopSheet = function renderAngazaShopSheet() {
+    const items = Array.isArray(loadVault().shopItems) ? loadVault().shopItems : [];
+    const q = (document.getElementById('sm-search-inp')?.value || '').trim().toLowerCase();
+    const countEl = document.getElementById('shop-dir-count');
+    if (countEl) countEl.textContent = String(items.length);
+    const filtered = q ? items.filter((it) => (it.name + ' ' + it.category + ' ' + (it.note || '')).toLowerCase().includes(q)) : items;
+
+    const tbody = document.getElementById('sm-spreadsheet-tbody');
+    if (tbody) {
+      tbody.innerHTML = !filtered.length
+        ? '<tr><td colspan="5" style="padding:12px;text-align:center;color:#475569;">No records found. Tap <b>✍️ Form</b> to add a record.</td></tr>'
+        : filtered.map((it) => {
+            const idx = items.indexOf(it), price = Number(it.sellPrice || 0);
+            const pHtml = price > 0 ? `<b style="color:#166534;">KES ${price.toLocaleString()}</b>` : '<span style="color:#64748b;">--</span>';
+            return `<tr style="border-bottom:1px solid #e2e8f0;${it.isSample ? 'background:#fffbeb;' : ''}"><td style="padding:6px 7px;"><b>${it.name}</b>${it.note ? `<div style="font-size:0.67rem;color:#64748b;">${it.note}</div>` : ''}</td><td style="padding:6px 5px;font-size:0.71rem;">${it.category}</td><td style="padding:6px 5px;font-weight:700;white-space:nowrap;">${it.qty}</td><td style="padding:6px 5px;white-space:nowrap;">${pHtml}</td><td style="padding:6px 5px;white-space:nowrap;"><button type="button" class="sm-edit-row" data-idx="${idx}" style="background:#dbeafe;color:#1e3a8a;border:none;border-radius:6px;padding:3px 6px;font-weight:800;margin-right:3px;">✏️</button><button type="button" class="sm-del-row" data-idx="${idx}" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:3px 6px;font-weight:800;">🗑️</button></td></tr>`;
+          }).join('');
+    }
+    const dirCards = document.getElementById('sm-directory-cards');
+    if (dirCards) {
+      dirCards.innerHTML = !filtered.length ? '<p class="muted-note">No records saved yet.</p>' : filtered.map((it) => {
+        const idx = items.indexOf(it), price = Number(it.sellPrice || 0);
+        return `<div class="acc-item-row" style="margin-bottom:6px;${it.isSample ? 'border-color:#fcd34d;background:#fffbeb;' : ''}"><div><strong>${it.name}</strong> ${price > 0 ? `<span style="color:#166534;font-weight:800;font-size:0.76rem;">· KES ${price.toLocaleString()}</span>` : ''}<div style="font-size:0.74rem;color:#475569;">${it.category} · Stock: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div></div><div style="display:flex;gap:4px;"><button type="button" class="btn-small sm-edit-row" data-idx="${idx}" style="width:auto;padding:3px 8px;">✏️ Edit</button><button type="button" class="btn-small sm-del-row" data-idx="${idx}" style="width:auto;padding:3px 8px;background:#fee2e2;color:#dc2626;">🗑️</button></div></div>`;
+      }).join('');
+    }
+  };
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#open-shop-directory-btn') || e.target.closest('[data-smview="sheet"]') || e.target.closest('[data-smview="list"]')) setTimeout(window.renderAngazaShopSheet, 30);
+    if (e.target.closest('#sm-export-csv-btn')) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      const rows = [['Item Name', 'Category', 'Quantity', 'Unit Reference Price (KES)', 'Notes']];
+      (Array.isArray(loadVault().shopItems) ? loadVault().shopItems : []).forEach((it) => rows.push([`"${it.name}"`, `"${it.category}"`, `"${it.qty}"`, Number(it.sellPrice || 0), `"${it.note || ''}"`]));
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })); a.download = 'angaza-shop-reference-sheet.csv'; a.click();
+    }
+  }, true);
+
+  if (!localStorage.getItem(MEM_SEED_FLAG) && loadMem().length === 0) {
+    saveMem([
+      { label: 'Sample: Mama Chepkoech (Dress)', group: 'woman_straight', roll: '45', b: 38, w: 31, h: 41, sh: 15, sl: 18, len: 44, summary: '2.00m (2.25 yds @ 45") · ~3.4 hrs', isSample: true },
+      { label: 'Sample: Baba Kevin (Kaunda Suit)', group: 'man_kaunda', roll: '60', b: 42, w: 36, h: 41, sh: 18, sl: 24, len: 30, summary: '3.25m (3.75 yds @ 60") · ~6.0 hrs', isSample: true }
+    ]);
+    localStorage.setItem(MEM_SEED_FLAG, '1');
+  }
+  const bEl = document.getElementById('m-bust');
+  if (bEl && !bEl.value && !document.getElementById('m-length')?.value) {
+    bEl.value = '38';
+    if (document.getElementById('m-waist')) document.getElementById('m-waist').value = '31';
+    if (document.getElementById('m-hips')) document.getElementById('m-hips').value = '41';
+    if (document.getElementById('m-shoulder')) document.getElementById('m-shoulder').value = '15';
+    if (document.getElementById('m-sleeve')) document.getElementById('m-sleeve').value = '18';
+    if (document.getElementById('m-length')) document.getElementById('m-length').value = '44';
+    setTimeout(() => bEl.dispatchEvent(new Event('input', { bubbles: true })), 80);
+  }
+  function renderCalcMemory() {
+    const list = loadMem(), cEl = document.getElementById('calc-mem-count'), lEl = document.getElementById('calc-memory-list');
+    if (cEl) cEl.textContent = String(list.length);
+    if (!lEl) return;
+    lEl.innerHTML = !list.length ? '<p style="font-size:0.72rem;color:#64748b;margin:4px 0;">No saved references yet.</p>' : list.map((m, idx) => `<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 6px;border-bottom:1px solid #e2e8f0;font-size:0.73rem;${m.isSample ? 'background:#fffbeb;' : ''}"><div style="min-width:0;flex:1;"><b style="color:#0f172a;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.label}</b><span style="color:#475569;font-size:0.68rem;">B:${m.b || '-'} W:${m.w || '-'} H:${m.h || '-'} L:${m.len || '-'} → <b>${m.summary}</b></span></div><div style="display:flex;gap:3px;flex-shrink:0;"><button type="button" class="mem-load-btn" data-idx="${idx}" style="background:#dbeafe;color:#1e3a8a;border:none;border-radius:6px;padding:3px 6px;font-size:0.68rem;font-weight:800;">Load</button><button type="button" class="mem-del-btn" data-idx="${idx}" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:3px 6px;font-size:0.68rem;font-weight:800;">🗑️</button></div></div>`).join('');
+  }
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#calc-toggle-mem-btn')) { const d = document.getElementById('calc-memory-drawer'); if (d) { const s = d.style.display === 'none'; d.style.display = s ? 'block' : 'none'; if (s) renderCalcMemory(); } return; }
+    if (e.target.closest('#calc-clear-btn')) { ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; }); document.getElementById('m-bust')?.dispatchEvent(new Event('input', { bubbles: true })); return; }
+    if (e.target.closest('#calc-save-mem-btn')) {
+      const b = Number(document.getElementById('m-bust')?.value || 0), w = Number(document.getElementById('m-waist')?.value || 0), h = Number(document.getElementById('m-hips')?.value || 0), sh = Number(document.getElementById('m-shoulder')?.value || 0), sl = Number(document.getElementById('m-sleeve')?.value || 0), len = Number(document.getElementById('m-length')?.value || 0);
+      if (!b && !w && !h && !len) return;
+      const g = document.getElementById('calc-person-group'), st = g ? g.options[g.selectedIndex]?.text.replace(/^[^\w]+/, '') : 'Custom';
+      const label = window.prompt('Save reference name:', st); if (!label) return;
+      const list = loadMem(); list.unshift({ label: label.trim(), group: g?.value || 'woman_straight', roll: document.getElementById('calc-fabric-width')?.value || '45', b, w, h, sh, sl, len, summary: `${document.getElementById('calc-out-fabric')?.textContent || ''} · ${(document.getElementById('calc-out-time')?.textContent || '').split('·').pop()?.trim() || ''}`, isSample: false });
+      saveMem(list); renderCalcMemory(); const d = document.getElementById('calc-memory-drawer'); if (d) d.style.display = 'block'; return;
+    }
+    const lb = e.target.closest('.mem-load-btn');
+    if (lb) {
+      const m = loadMem()[Number(lb.getAttribute('data-idx'))]; if (!m) return;
+      const g = document.getElementById('calc-person-group'), r = document.getElementById('calc-fabric-width');
+      if (g && m.group) g.value = m.group; if (r && m.roll) r.value = m.roll;
+      ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length'].forEach((id, k) => { const vals = [m.b, m.w, m.h, m.sh, m.sl, m.len]; const el = document.getElementById(id); if (el) el.value = vals[k] || ''; });
+      g?.dispatchEvent(new Event('change', { bubbles: true })); document.getElementById('m-bust')?.dispatchEvent(new Event('input', { bubbles: true }));
+      const d = document.getElementById('calc-memory-drawer'); if (d) d.style.display = 'none'; return;
+    }
+    const db = e.target.closest('.mem-del-btn');
+    if (db) { const list = loadMem(); list.splice(Number(db.getAttribute('data-idx')), 1); saveMem(list); renderCalcMemory(); }
+  });
+  window.renderAngazaShopSheet(); renderCalcMemory();
+})();
