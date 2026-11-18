@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=51" />
+  <link rel="stylesheet" href="style.css?v=52" />
 </head>
 <body>
   <header class="topbar">
@@ -74,8 +74,8 @@
           <div class="shop-summary-pills" id="shop-summary-pills"></div>
           
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px;">
-            <button type="button" id="open-shop-directory-btn" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#eff6ff;color:#1e3a8a;border:1.5px solid #0284c7;cursor:pointer;white-space:nowrap;">📋 Shop List (<span id="shop-dir-count">0</span>)</button>
-            <button type="button" id="toggle-sell-item-btn" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#1e3a8a;color:#ffffff;border:none;cursor:pointer;white-space:nowrap;">+ Add Item</button>
+            <button type="button" id="open-shop-directory-btn" onclick="window.openAngazaShopModal && window.openAngazaShopModal('sheet')" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#eff6ff;color:#1e3a8a;border:1.5px solid #0284c7;cursor:pointer;white-space:nowrap;">📋 Shop List (<span id="shop-dir-count">0</span>)</button>
+            <button type="button" id="toggle-sell-item-btn" onclick="window.openAngazaShopModal && window.openAngazaShopModal('form')" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#1e3a8a;color:#ffffff;border:none;cursor:pointer;white-space:nowrap;">+ Add Item</button>
             <label for="scan-shop-list-input" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#fde68a;color:#1e3a8a;border:1.5px solid #f59e0b;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;margin:0;white-space:nowrap;">📷 Scan List</label>
             <input type="file" id="scan-shop-list-input" accept="image/*" style="display:none;" />
           </div>
@@ -508,7 +508,7 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=51" defer></script>
+  <script src="app.js?v=52" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">

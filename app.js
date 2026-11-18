@@ -1942,3 +1942,21 @@
   });
   updateAll();
 })();
+
+// === V52: GUARANTEED LIVE MODAL OPENER FOR SHOP LIST & + ADD ITEM ===
+window.openAngazaShopModal = function openAngazaShopModal(viewName) {
+  const modal = document.getElementById('shop-hub-modal');
+  if (!modal) return;
+  modal.style.display = 'block';
+  ['sheet', 'form', 'list'].forEach((k) => {
+    const el = document.getElementById('sm-view-' + k);
+    if (el) el.style.display = k === viewName ? 'block' : 'none';
+  });
+  document.querySelectorAll('.shop-modal-tab').forEach((b) => {
+    const active = b.getAttribute('data-smview') === viewName;
+    b.style.background = active ? '#1e3a8a' : '#eff6ff';
+    b.style.color = active ? '#ffffff' : '#1e3a8a';
+  });
+  const searchInp = document.getElementById('sm-search-inp');
+  if (searchInp) searchInp.dispatchEvent(new Event('input'));
+};
