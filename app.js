@@ -1532,3 +1532,25 @@
     }, true);
   }
 })();
+
+// === HIDE ORDER FORM BY DEFAULT ON SUMMARY HOME ===
+(function hideOrderFormInitially() {
+  const form = document.getElementById('order-form');
+  if (!form) return;
+  form.classList.remove('is-open');
+  form.style.removeProperty('display');
+
+  document.querySelectorAll('[data-jump="orders-form"]').forEach((tile) => {
+    tile.addEventListener('click', () => {
+      form.classList.add('is-open');
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  const closeBtn = document.getElementById('toggle-order-form-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      form.classList.toggle('is-open');
+    });
+  }
+})();

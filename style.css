@@ -543,3 +543,8 @@ header {
   height: 24px !important;
   border-radius: 999px !important;
 }
+
+/* Keep #order-form itself hidden on Home until Custom Tailoring tile is tapped */
+#order-form:not(.is-open) {
+  display: none !important;
+}
