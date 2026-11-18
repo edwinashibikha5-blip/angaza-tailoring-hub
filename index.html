@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=44" />
+  <link rel="stylesheet" href="style.css?v=45" />
 </head>
 <body>
   <header class="topbar">
@@ -193,10 +193,18 @@
       <div class="card" id="auto-fabric-time-card" style="background:linear-gradient(135deg,#eff6ff 0%,#faf5ff 100%);border:1.5px solid #0284c7;padding:9px 11px;margin-top:6px;margin-bottom:6px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px;">
           <h4 style="margin:0;color:#1e3a8a;font-size:0.84rem;font-weight:800;">📏 Tailor Measurement & Material Calculator</h4>
-          <select id="calc-fabric-width" style="width:auto;min-height:26px;padding:2px 6px;font-size:0.72rem;font-weight:700;border-radius:8px;">
-            <option value="45">45" Width</option>
-            <option value="60">60" Width</option>
-          </select>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <select id="calc-person-group" style="width:auto;min-height:26px;padding:2px 5px;font-size:0.71rem;font-weight:700;border-radius:8px;background:#ffffff;color:#1e3a8a;">
+              <option value="woman">👩 Woman</option>
+              <option value="man">👨 Man</option>
+              <option value="child">🧒 Child</option>
+              <option value="flowing">👘 Flowing/Dera</option>
+            </select>
+            <select id="calc-fabric-width" style="width:auto;min-height:26px;padding:2px 5px;font-size:0.71rem;font-weight:700;border-radius:8px;">
+              <option value="45">45"</option>
+              <option value="60">60"</option>
+            </select>
+          </div>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
@@ -436,6 +444,6 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=44" defer></script>
+  <script src="app.js?v=45" defer></script>
 </body>
 </html>

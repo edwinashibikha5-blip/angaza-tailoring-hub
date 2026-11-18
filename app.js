@@ -2537,3 +2537,112 @@
     });
   }
 })();
+
+// === V45: WOMAN / MAN / CHILD / FLOWING GROUP-SPECIFIC TAILORING MATH ===
+(function initGroupAwareTailorCalc() {
+  const groupSel = document.getElementById('calc-person-group');
+  if (!groupSel) return;
+
+  const groupPresets = {
+    woman: {
+      placeholders: ['Bust (in)', 'Waist (in)', 'Hips (in)', 'Shoulder (in)', 'Sleeve (in)', 'Full Length'],
+      ease: 5,
+      extraTrimInches: 6,
+      baseHours: 2.8,
+      label: 'Woman'
+    },
+    man: {
+      placeholders: ['Chest (in)', 'Waist (in)', 'Neck/Seat (in)', 'Shoulder (in)', 'Sleeve (in)', 'Shirt/Trouser L'],
+      ease: 6,
+      extraTrimInches: 9, // collar, cuffs, placket & trouser hem turn-up
+      baseHours: 3.2,
+      label: 'Man'
+    },
+    child: {
+      placeholders: ['Chest (in)', 'Waist (in)', 'Hips (in)', 'Shoulder (in)', 'Sleeve (in)', 'Full Length'],
+      ease: 4,
+      extraTrimInches: 7, // extra growth hem allowance
+      baseHours: 1.8,
+      label: 'Child'
+    },
+    flowing: {
+      placeholders: ['Bust/Chest', 'Waist/Empire', 'Hips/Flare', 'Shoulder (in)', 'Sleeve (in)', 'Full Length'],
+      ease: 10, // generous flare & drape allowance
+      extraTrimInches: 8,
+      baseHours: 3.0,
+      label: 'Flowing/Dera'
+    }
+  };
+
+  function updateGroupPlaceholders() {
+    const cfg = groupPresets[groupSel.value] || groupPresets.woman;
+    const inputIds = ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length'];
+    inputIds.forEach((id, idx) => {
+      const el = document.getElementById(id);
+      if (el && cfg.placeholders[idx]) el.placeholder = cfg.placeholders[idx];
+    });
+  }
+
+  function calculateByGroup() {
+    const cfg = groupPresets[groupSel.value] || groupPresets.woman;
+    const b = Number(document.getElementById('m-bust')?.value || 0);
+    const w = Number(document.getElementById('m-waist')?.value || 0);
+    const h = Number(document.getElementById('m-hips')?.value || 0);
+    const sh = Number(document.getElementById('m-shoulder')?.value || 0);
+    const sl = Number(document.getElementById('m-sleeve')?.value || 0);
+    const len = Number(document.getElementById('m-length')?.value || 0);
+    const rollWidth = Number(document.getElementById('calc-fabric-width')?.value || 45);
+
+    const outFab = document.getElementById('calc-out-fabric');
+    const outTime = document.getElementById('calc-out-time');
+    if (!outFab || !outTime) return;
+
+    if (!b && !w && !h && !len) {
+      outFab.textContent = `Enter ${cfg.label} measurements in inches`;
+      outTime.textContent = '--';
+      return;
+    }
+
+    const defaultGirth = groupSel.value === 'child' ? 24 : 36;
+    const defaultLen = groupSel.value === 'child' ? 28 : 42;
+    const maxCircumference = Math.max(b, w, h, sh * 2.4, defaultGirth);
+    const requiredWidth = maxCircumference + cfg.ease;
+
+    const usableRoll = rollWidth - 1.5;
+    const needsTwoLengths = requiredWidth > usableRoll;
+    const garmentLen = len > 0 ? len : defaultLen;
+
+    const bodyInches = needsTwoLengths ? (garmentLen * 2) : garmentLen;
+    const sleeveInches = sl > 0 ? (sl + 3.5) : 0;
+    const totalInches = bodyInches + sleeveInches + cfg.extraTrimInches;
+
+    const exactMeters = Math.ceil((totalInches * 0.0254) * 4) / 4;
+    const exactYards = (Math.ceil((totalInches / 36) * 4) / 4).toFixed(2);
+
+    let estHours = cfg.baseHours;
+    if (garmentLen >= 48) estHours += 1.3;
+    else if (garmentLen >= 34) estHours += 0.6;
+    if (sl >= 16) estHours += 0.7;
+    else if (sl > 0) estHours += 0.35;
+    if (groupSel.value === 'woman' && w > 0 && h > 0 && (h - w) >= 8) estHours += 0.5;
+
+    const layoutTag = needsTwoLengths ? '2× Length' : '1× Width';
+    outFab.innerHTML = `<b>${exactMeters.toFixed(2)}m</b> (${exactYards} yds @ ${rollWidth}")`;
+    outTime.textContent = `${cfg.label} · ${layoutTag} · ~${estHours.toFixed(1)} hrs`;
+  }
+
+  groupSel.addEventListener('change', () => {
+    updateGroupPlaceholders();
+    calculateByGroup();
+  }, true);
+
+  ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length', 'calc-fabric-width'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', calculateByGroup, true);
+      el.addEventListener('change', calculateByGroup, true);
+    }
+  });
+
+  updateGroupPlaceholders();
+})();
