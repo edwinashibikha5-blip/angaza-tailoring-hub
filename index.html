@@ -21,43 +21,12 @@
       <h1>ANGAZA TAILORING HUB</h1>
       <p style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px;"><span>Naomi:</span><a href="tel:+25410635228" style="color:#fde68a;text-decoration:none;background:rgba(255,255,255,.12);padding:2px 7px;border-radius:999px;">📞 +254 106 35228</a><a href="https://wa.me" target="_blank" rel="noopener" style="color:#bbf7d0;text-decoration:none;background:rgba(22,163,74,.28);padding:2px 7px;border-radius:999px;">💬 +254 725 240629</a></p>
     </div>
-    <div style="display:flex;gap:5px;align-items:center;"><button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;">↻</button><button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button></div>
+    <div style="display:flex;gap:5px;align-items:center;"><button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;">↻</button><button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button></div>
   </header>
 
   <main class="container">
-    <section class="dashboard-panel" aria-label="Tailoring Shop Dashboard">
-      <div class="dash-header">
-        <span class="dash-title">Shop Overview</span>
-        <div style="display:flex;align-items:center;gap:6px;"><span id="dash-date" class="dash-date"></span><button type="button" id="toggle-dash-btn" class="btn-sm" style="padding:2px 8px;font-size:.7rem;">Hide</button></div>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi-card kpi-gold">
-          <span class="kpi-label">Active Orders</span>
-          <strong id="kpi-active-orders" class="kpi-val">0</strong>
-          <small class="kpi-sub">In workshop progress</small>
-        </div>
-        <div class="kpi-card kpi-ember">
-          <span class="kpi-label">Ready for Pickup</span>
-          <strong id="kpi-ready-orders" class="kpi-val">0</strong>
-          <small class="kpi-sub">Completed garments</small>
-        </div>
-        <div class="kpi-card kpi-brown">
-          <span class="kpi-label">Repairs Logged</span>
-          <strong id="kpi-repair-count" class="kpi-val">0</strong>
-          <small class="kpi-sub">Alterations &amp; fixes</small>
-        </div>
-        <div class="kpi-card kpi-cream">
-          <span class="kpi-label">Saved Clients</span>
-          <strong id="kpi-clients-count" class="kpi-val">0</strong>
-          <small class="kpi-sub">Measurement profiles</small>
-        </div>
-      </div>
-    </section>
-
-    <section id="tab-orders" class="tab-section active">
-
-      
-      <div class="naomi-welcome-card" id="naomi-welcome-card">
+    <div class="naomi-welcome-card" id="naomi-welcome-card">
         <div class="naomi-welcome-top">
           <span class="naomi-greeting" id="naomi-greeting">Karibu, Naomi ✨</span>
           <span class="naomi-badge">Tailoring · Design · Accessories</span>
@@ -111,6 +80,39 @@
               </select>
             </div>
           </div>
+  <section class="dashboard-panel" aria-label="Tailoring Shop Dashboard">
+      <div class="dash-header">
+        <span class="dash-title">Shop Overview</span>
+        <div style="display:flex;align-items:center;gap:6px;"><span id="dash-date" class="dash-date"></span><button type="button" id="toggle-dash-btn" class="btn-sm" style="padding:2px 8px;font-size:.7rem;">Hide</button></div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-gold">
+          <span class="kpi-label">Active Orders</span>
+          <strong id="kpi-active-orders" class="kpi-val">0</strong>
+          <small class="kpi-sub">In workshop progress</small>
+        </div>
+        <div class="kpi-card kpi-ember">
+          <span class="kpi-label">Ready for Pickup</span>
+          <strong id="kpi-ready-orders" class="kpi-val">0</strong>
+          <small class="kpi-sub">Completed garments</small>
+        </div>
+        <div class="kpi-card kpi-brown">
+          <span class="kpi-label">Repairs Logged</span>
+          <strong id="kpi-repair-count" class="kpi-val">0</strong>
+          <small class="kpi-sub">Alterations &amp; fixes</small>
+        </div>
+        <div class="kpi-card kpi-cream">
+          <span class="kpi-label">Saved Clients</span>
+          <strong id="kpi-clients-count" class="kpi-val">0</strong>
+          <small class="kpi-sub">Measurement profiles</small>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-orders" class="tab-section active">
+
+      
+      
           <div class="row-2">
             <div>
               <label for="acc-qty">Quantity in Shop</label>

@@ -1439,3 +1439,21 @@
     });
   }
 })();
+
+// === TOP-RIGHT QUICK SCANNER SHORTCUT ===
+(function initTopRightScanner() {
+  const scanBtn = document.getElementById('btn-quick-scan');
+  if (!scanBtn) return;
+  scanBtn.addEventListener('click', () => {
+    const clientsTabBtn = document.querySelector('[data-tab="clients"]') ||
+                          document.querySelector('[data-target="tab-clients"]');
+    if (clientsTabBtn) clientsTabBtn.click();
+    setTimeout(() => {
+      const ocrInput = document.getElementById('ocr-meas-photo');
+      if (ocrInput) {
+        ocrInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        ocrInput.click();
+      }
+    }, 120);
+  });
+})();

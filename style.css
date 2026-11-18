@@ -388,3 +388,100 @@ input:focus,select:focus,textarea:focus { outline:none; border-color:var(--sky-b
   font-size: 0.72rem;
   font-weight: 700;
 }
+
+/* === ONE-SCREEN COMPACT MOBILE FIT & TOP-RIGHT SCAN BUTTON === */
+.hdr-scan-btn {
+  background: #fde68a;
+  color: #1e3a8a;
+  border: none;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Slim, high-impact Welcome Card right below header */
+.naomi-welcome-card {
+  padding: 9px 12px !important;
+  margin: 8px 10px 6px 10px !important;
+  border-radius: 12px !important;
+}
+.naomi-welcome-top {
+  margin-bottom: 3px !important;
+}
+.naomi-greeting {
+  font-size: 0.92rem !important;
+}
+.naomi-badge {
+  font-size: 0.65rem !important;
+  padding: 1px 7px !important;
+}
+.naomi-quote {
+  font-size: 0.77rem !important;
+  line-height: 1.28 !important;
+}
+
+/* Force Shop Overview into a single 4-column horizontal strip */
+@media (max-width: 640px) {
+  .dash-cards,
+  .overview-cards,
+  [class*="dash-grid"],
+  section:has(#toggle-dash-btn) > div:last-child,
+  div:has(> #toggle-dash-btn) + div {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 5px !important;
+  }
+  section:has(#toggle-dash-btn),
+  div:has(> #toggle-dash-btn) {
+    padding: 8px 10px !important;
+    margin-bottom: 6px !important;
+  }
+  section:has(#toggle-dash-btn) > div:last-child > div,
+  div:has(> #toggle-dash-btn) + div > div {
+    padding: 6px 4px !important;
+    min-height: 0 !important;
+    border-radius: 10px !important;
+    text-align: center !important;
+  }
+  section:has(#toggle-dash-btn) p,
+  div:has(> #toggle-dash-btn) + div p {
+    display: none !important;
+  }
+  section:has(#toggle-dash-btn) h4,
+  section:has(#toggle-dash-btn) .card-label,
+  div:has(> #toggle-dash-btn) + div > div > div:first-child {
+    font-size: 0.66rem !important;
+    line-height: 1.15 !important;
+  }
+  section:has(#toggle-dash-btn) .stat-num,
+  section:has(#toggle-dash-btn) strong,
+  div:has(> #toggle-dash-btn) + div > div > div:nth-child(2) {
+    font-size: 1.15rem !important;
+    margin: 2px 0 0 0 !important;
+  }
+
+  /* Compact 2x2 Action Tiles so all 4 fit cleanly above bottom nav */
+  .hub-actions-grid {
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+  }
+  .hub-tile {
+    padding: 9px 10px !important;
+    border-radius: 12px !important;
+  }
+  .hub-icon {
+    font-size: 1.2rem !important;
+    margin-bottom: 2px !important;
+  }
+  .hub-tile strong {
+    font-size: 0.84rem !important;
+  }
+  .hub-tile small {
+    font-size: 0.69rem !important;
+    line-height: 1.15 !important;
+  }
+}
