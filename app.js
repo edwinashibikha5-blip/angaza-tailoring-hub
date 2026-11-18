@@ -1555,1094 +1555,199 @@
   }
 })();
 
-// === V25: AUTO DATE, COLLAPSIBLE CLIENTS LIST, MEASUREMENT ESTIMATOR & SHOP ITEMS ===
-(function initV25ShopIntelligence() {
+
+
+// === V48: UNIFIED ZERO-LAG HOME CONTROLLER ===
+(function initAngazaUnifiedV48() {
   const VAULT_KEY = 'angaza_atelier_vault_v2';
   function loadVault() {
     try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
     catch (e) { return {}; }
   }
-  function saveVault(v) {
-    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
-  }
+  function saveVault(v) { localStorage.setItem(VAULT_KEY, JSON.stringify(v)); }
 
-  // 1. Automatic live date update in header & default date inputs
-  function updateLiveDates() {
-    const now = new Date();
-    const formatted = now.toLocaleDateString('en-KE', {
-      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+  function openTab(tabName) {
+    const clean = tabName.replace(/^tab-/, '');
+    const navItems = Array.from(document.querySelectorAll('nav button, nav a, .nav button, .nav a, [data-tab], [data-target]'));
+    const targetNav = navItems.find((el) => {
+      const dt = (el.getAttribute('data-tab') || el.getAttribute('data-target') || '').toLowerCase();
+      const txt = el.textContent.trim().toLowerCase();
+      return dt.includes(clean) || txt.includes(clean) || (clean === 'orders' && txt.includes('home'));
     });
-    const pill = document.getElementById('live-date-pill');
-    if (pill) pill.textContent = '📅 ' + formatted;
-
-    const isoToday = now.toISOString().split('T');
-    document.querySelectorAll('input[type="date"]').forEach((inp) => {
-      if (!inp.value && inp.id !== 'order-fitting') {
-        inp.value = isoToday;
-      }
-    });
-  }
-  updateLiveDates();
-  setInterval(updateLiveDates, 60000);
-
-  // 2. Replace "No orders logged yet" empty message with Collapsible Client List & Phone Numbers
-  function replaceEmptyOrdersWithClients() {
-    const ordersList = document.getElementById('orders-list') || document.querySelector('#tab-orders .stack-list');
-    if (!ordersList) return;
-    if (!ordersList.textContent.includes('No orders logged yet')) return;
-
-    const vault = loadVault();
-    const clients = Array.isArray(vault.clients) ? vault.clients : [];
-
-    ordersList.innerHTML = `
-      <div class="card" style="margin-top:8px;padding:12px;">
-        <div class="card-head">
-          <h4 style="margin:0;color:#1e3a8a;">👥 Client Directory & Contacts (${clients.length})</h4>
-          <button type="button" class="btn-small" id="toggle-home-clients-btn">Show</button>
-        </div>
-        <div id="home-clients-collapse" style="display:none;margin-top:8px;">
-          ${clients.length === 0
-            ? '<p class="muted-note">No saved clients yet. Tap <b>Clients</b> below to add a client profile.</p>'
-            : clients.map((c) => {
-                const phone = (c.phone || '').trim();
-                const cleanWa = phone.replace(/[^\d]/g, '').replace(/^0/, '254');
-                return `
-                  <div class="client-quick-row">
-                    <div>
-                      <strong>${c.name || 'Client'}</strong>
-                      <div style="font-size:0.76rem;color:#475569;">${c.group || 'Client'} · ${phone || 'No phone'}</div>
-                    </div>
-                    ${phone ? `
-                      <div class="client-quick-links">
-                        <a href="tel:${phone}">📞 Call</a>
-                        <a href="https://wa.me{cleanWa}" target="_blank" rel="noopener">💬 WhatsApp</a>
-                      </div>` : ''}
-                  </div>`;
-              }).join('')}
-        </div>
-      </div>
-    `;
-
-    const btn = document.getElementById('toggle-home-clients-btn');
-    const body = document.getElementById('home-clients-collapse');
-    if (btn && body) {
-      btn.addEventListener('click', () => {
-        const open = body.style.display === 'none';
-        body.style.display = open ? 'block' : 'none';
-        btn.textContent = open ? 'Hide' : 'Show';
-      });
-    }
-  }
-  setTimeout(replaceEmptyOrdersWithClients, 250);
-
-  // 3. Smart Measurement -> Fabric Yardage & Sewing Time Calculator
-  function computeFabricAndTime() {
-    const clientForm = document.getElementById('client-form');
-    const box = document.getElementById('meas-smart-estimate');
-    if (!clientForm || !box) return;
-
-    const text = Array.from(clientForm.querySelectorAll('input, textarea, select'))
-      .map((el) => (el.id + ':' + el.value))
-      .join(' ')
-      .toLowerCase();
-
-    const nums = (text.match(/\d+(\.\d+)?/g) || []).map(Number).filter((n) => n >= 12 && n <= 85);
-    if (nums.length < 2) {
-      box.style.display = 'none';
-      return;
-    }
-
-    const maxGirth = Math.max(...nums.filter((n) => n <= 65), 36);
-    const maxLen = Math.max(...nums, 40);
-
-    // Calculate fabric in meters & yards based on body girth and garment length
-    let meters = 2.0;
-    let hours = 3.5;
-    let label = 'Standard Outfit';
-
-    if (text.includes('maxi') || text.includes('ruracio') || text.includes('bridal') || text.includes('kaftan') || text.includes('dera') || maxLen >= 52) {
-      meters = maxGirth > 44 ? 3.5 : 3.0;
-      hours = 6.0;
-      label = 'Full-Length Dress / Kaftan';
-    } else if (text.includes('suit') || text.includes('kaunda') || text.includes('senator') || text.includes('kanzu')) {
-      meters = maxGirth > 44 ? 3.5 : 3.0;
-      hours = 5.5;
-      label = 'Two-Piece Suit / Kanzu';
-    } else if (text.includes('trouser') || text.includes('skirt') || text.includes('shirt')) {
-      meters = maxGirth > 42 ? 2.0 : 1.5;
-      hours = 2.5;
-      label = 'Top / Skirt / Trousers';
-    } else if (text.includes('girl') || text.includes('boy') || maxGirth < 30) {
-      meters = 1.5;
-      hours = 2.0;
-      label = 'Kids / Youth Garment';
-    } else if (maxGirth > 44) {
-      meters = 3.0;
-      hours = 4.5;
-    }
-
-    const yards = (meters * 1.094).toFixed(1);
-    const estFabric = document.getElementById('est-fabric-val');
-    const estTime = document.getElementById('est-time-val');
-    const estNote = document.getElementById('est-note-val');
-
-    if (estFabric) estFabric.textContent = `${meters.toFixed(1)}m (~${yards} yds at 45")`;
-    if (estTime) estTime.textContent = `~${hours} hrs (${hours <= 3 ? 'Same Day' : '1–2 Days'})`;
-    if (estNote) estNote.textContent = `Auto-calculated for ${label} (Max girth ~${maxGirth}", Length ~${maxLen}").`;
-    box.style.display = 'block';
+    if (targetNav) targetNav.click();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  const clientFormEl = document.getElementById('client-form');
-  if (clientFormEl) {
-    clientFormEl.addEventListener('input', computeFabricAndTime);
-    clientFormEl.addEventListener('change', computeFabricAndTime);
-  }
-
-  // 4. Expanded Shop Overview Summary & Add Items to Sell
-  function renderShopOverviewAndStock() {
-    const pillsEl = document.getElementById('shop-summary-pills');
-    const listEl = document.getElementById('sell-items-list');
-    const vault = loadVault();
-    const clients = Array.isArray(vault.clients) ? vault.clients : [];
-    const orders = Array.isArray(vault.orders) ? vault.orders : [];
-    const accessories = Array.isArray(vault.accessories) ? vault.accessories : [];
-    const shopItems = Array.isArray(vault.shopItems) ? vault.shopItems : [];
-
-    const readyClothes = orders.filter((o) => o.status === 'Ready').length +
-      shopItems.filter((i) => i.category === 'Ready Clothes').length;
-    const materialsCount = shopItems.filter((i) => i.category === 'Fabrics & Materials').length;
-
-    if (pillsEl) {
-      pillsEl.innerHTML = `
-        <span class="summary-chip">👥 Customers: ${clients.length}</span>
-        <span class="summary-chip">👗 Clothes: ${readyClothes}</span>
-        <span class="summary-chip">🧵 Materials/Fabrics: ${materialsCount}</span>
-        <span class="summary-chip">🪡 Accessories: ${accessories.length}</span>
-        <span class="summary-chip">🛍️ Items for Sale: ${shopItems.length}</span>
-      `;
-    }
-
-    if (listEl) {
-      if (shopItems.length === 0) {
-        listEl.innerHTML = '<p class="muted-note" style="margin:4px 0;">No retail items added yet. Tap <b>+ Add Item to Sell</b> to log clothes, fabrics, or goods.</p>';
-      } else {
-        listEl.innerHTML = shopItems.map((it, idx) => `
-          <div class="acc-item-row">
-            <div>
-              <strong>${it.name}</strong>
-              <div style="font-size:0.75rem;color:#475569;">${it.category} · Qty: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div>
-            </div>
-            <button type="button" class="btn-small sell-del-btn" data-idx="${idx}">✕</button>
-          </div>
-        `).join('');
-
-        listEl.querySelectorAll('.sell-del-btn').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const i = Number(btn.getAttribute('data-idx'));
-            const v = loadVault();
-            v.shopItems.splice(i, 1);
-            saveVault(v);
-            renderShopOverviewAndStock();
-          });
-        });
-      }
-    }
-  }
-
-  const toggleSellBtn = document.getElementById('toggle-sell-item-btn');
-  const sellForm = document.getElementById('sell-item-form');
-  if (toggleSellBtn && sellForm) {
-    toggleSellBtn.addEventListener('click', () => {
-      const hidden = sellForm.style.display === 'none';
-      sellForm.style.display = hidden ? 'grid' : 'none';
-      toggleSellBtn.textContent = hidden ? '− Hide Form' : '+ Add Item to Sell';
-    });
-
-    sellForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('sell-name')?.value.trim();
-      const category = document.getElementById('sell-cat')?.value || 'Ready Clothes';
-      const qty = document.getElementById('sell-qty')?.value.trim();
-      const note = document.getElementById('sell-note')?.value.trim() || '';
-      if (!name || !qty) return;
-
-      const vault = loadVault();
-      vault.shopItems = Array.isArray(vault.shopItems) ? vault.shopItems : [];
-      vault.shopItems.unshift({ name, category, qty, note, date: new Date().toISOString().split('T') });
-      saveVault(vault);
-      sellForm.reset();
-      sellForm.style.display = 'none';
-      toggleSellBtn.textContent = '+ Add Item to Sell';
-      renderShopOverviewAndStock();
-    });
-  }
-
-  renderShopOverviewAndStock();
-})();
-
-// === V26: ZERO-CRASH SHIELD, DUAL-VAULT BACKUP, SECURITY & SELF-REFRESH ===
-(function initEnterpriseResilienceEngine() {
-  const VAULT_KEY = 'angaza_atelier_vault_v2';
-  const SNAPSHOT_KEY = 'angaza_daily_auto_snapshot_v1';
-
-  // 1. Global Crash Shield — prevents any unexpected error from freezing the UI
-  window.addEventListener('error', (e) => {
-    console.warn('[Angaza Shield] Isolated runtime error:', e.message);
-    e.preventDefault();
-  });
-  window.addEventListener('unhandledrejection', (e) => {
-    console.warn('[Angaza Shield] Isolated async warning:', e.reason);
-    e.preventDefault();
-  });
-
-  // 2. IndexedDB Redundant Mirror + Daily Auto-Snapshot
-  function openMirrorDB() {
-    return new Promise((resolve) => {
-      if (!('indexedDB' in window)) return resolve(null);
-      const req = indexedDB.open('AngazaVaultMirrorDB', 1);
-      req.onupgradeneeded = () => {
-        const db = req.result;
-        if (!db.objectStoreNames.contains('vault')) db.createObjectStore('vault');
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => resolve(null);
-    });
-  }
-
-  async function mirrorToIndexedDB(rawJson) {
-    try {
-      const db = await openMirrorDB();
-      if (!db || !rawJson) return;
-      const tx = db.transaction('vault', 'readwrite');
-      tx.objectStore('vault').put(rawJson, 'latest_backup');
-    } catch (e) {}
-  }
-
-  async function restoreFromIndexedDBIfNeeded() {
-    try {
-      const current = localStorage.getItem(VAULT_KEY);
-      if (current && current.length > 20) {
-        mirrorToIndexedDB(current);
-        return;
-      }
-      const db = await openMirrorDB();
-      if (!db) return;
-      const tx = db.transaction('vault', 'readonly');
-      const getReq = tx.objectStore('vault').get('latest_backup');
-      getReq.onsuccess = () => {
-        if (getReq.result && typeof getReq.result === 'string' && getReq.result.length > 20) {
-          localStorage.setItem(VAULT_KEY, getReq.result);
-          window.location.reload();
-        }
-      };
-    } catch (e) {}
-  }
-  restoreFromIndexedDBIfNeeded();
-
-  // Intercept localStorage.setItem to auto-mirror and keep daily rolling backup
-  const origSetItem = localStorage.setItem.bind(localStorage);
-  localStorage.setItem = function(key, val) {
-    origSetItem(key, val);
-    if (key === VAULT_KEY && typeof val === 'string') {
-      mirrorToIndexedDB(val);
-      try {
-        const today = new Date().toISOString().split('T');
-        const snap = JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || '{}');
-        if (snap.date !== today) {
-          origSetItem(SNAPSHOT_KEY, JSON.stringify({ date: today, data: val }));
-        }
-      } catch (e) {}
-    }
-  };
-
-  // 3. Auto-Lock Finance Tab on App Backgrounding or 3-Minute Idle
-  let financeIdleTimer = null;
-  function lockFinanceSilently() {
-    const unlocked = document.getElementById('finance-unlocked');
-    const locked = document.getElementById('finance-locked') || document.getElementById('pin-lock-screen');
-    if (unlocked && unlocked.style.display !== 'none') {
-      unlocked.style.display = 'none';
-      if (locked) locked.style.display = 'block';
-    }
-  }
-
-  function resetFinanceTimer() {
-    clearTimeout(financeIdleTimer);
-    financeIdleTimer = setTimeout(lockFinanceSilently, 180000);
-  }
-
-  ['click', 'touchstart', 'keydown'].forEach((evt) => {
-    document.addEventListener(evt, resetFinanceTimer, { passive: true });
-  });
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      lockFinanceSilently();
-    } else if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration().then((reg) => { if (reg) reg.update(); });
-    }
-  });
-
-  // 4. Silent Self-Refreshing Service Worker Activation
-  if ('serviceWorker' in navigator) {
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
-
-    setInterval(() => {
-      if (navigator.onLine) {
-        navigator.serviceWorker.getRegistration().then((reg) => { if (reg) reg.update(); });
-      }
-    }, 300000);
-  }
-})();
-
-// === V28: COLLAPSIBLE SHOP OVERVIEW & CLEAR REFRESH FEEDBACK ===
-(function initV28Polish() {
-  const toggleOvBtn = document.getElementById('toggle-overview-collapse-btn');
-  const ovBody = document.getElementById('overview-collapse-body');
-  if (toggleOvBtn && ovBody) {
-    toggleOvBtn.addEventListener('click', () => {
-      const hidden = ovBody.style.display === 'none';
-      ovBody.style.display = hidden ? 'block' : 'none';
-      toggleOvBtn.textContent = hidden ? 'Hide' : 'Show';
-    });
-  }
-
-  // Show confirmation toast if reloaded via Refresh button
-  if (window.location.search.includes('v=')) {
-    const toast = document.createElement('div');
-    toast.className = 'sync-toast';
-    toast.textContent = '✅ App Refreshed & Up to Date';
-    document.body.appendChild(toast);
-    setTimeout(() => { toast.remove(); }, 2600);
-    if (window.history && window.history.replaceState) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }
-})();
-
-// === V29: RELIABLE "+ ADD ITEM TO SELL" & CLIENT-TAB ORDER JUMP ===
-(function initV29Fixes() {
-  const VAULT_KEY = 'angaza_atelier_vault_v2';
-  function loadVault() {
-    try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
-    catch (e) { return {}; }
-  }
-  function saveVault(v) {
-    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
-  }
-
-  // Event-delegated "+ Add Item to Sell" toggle so it always responds on first tap
-  document.addEventListener('click', (e) => {
-    const toggleBtn = e.target.closest('#toggle-sell-item-btn');
-    if (toggleBtn) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      const form = document.getElementById('sell-item-form');
-      if (form) {
-        const isClosed = form.style.display === 'none' || getComputedStyle(form).display === 'none';
-        form.style.display = isClosed ? 'grid' : 'none';
-        toggleBtn.textContent = isClosed ? '− Hide Form' : '+ Add Item to Sell';
-      }
-    }
-
-    // Jump Custom Tailoring tile directly to Clients tab where New Custom Order now lives
-    const customTile = e.target.closest('[data-jump="orders-form"]');
-    if (customTile) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      const clientsNav = document.querySelector('[data-tab="clients"]') ||
-                         document.querySelector('[data-target="tab-clients"]');
-      if (clientsNav) clientsNav.click();
-      setTimeout(() => {
-        const form = document.getElementById('order-form');
-        if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 120);
-    }
-  }, true);
-
-  // Ensure saving a sellable item works reliably and updates chips immediately
-  document.addEventListener('submit', (e) => {
-    if (e.target && e.target.id === 'sell-item-form') {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      const name = document.getElementById('sell-name')?.value.trim();
-      const category = document.getElementById('sell-cat')?.value || 'Ready Clothes';
-      const qty = document.getElementById('sell-qty')?.value.trim();
-      const note = document.getElementById('sell-note')?.value.trim() || '';
-      if (!name || !qty) return;
-
-      const vault = loadVault();
-      vault.shopItems = Array.isArray(vault.shopItems) ? vault.shopItems : [];
-      vault.shopItems.unshift({ name, category, qty, note, date: new Date().toISOString().split('T') });
-      saveVault(vault);
-
-      e.target.reset();
-      e.target.style.display = 'none';
-      const btn = document.getElementById('toggle-sell-item-btn');
-      if (btn) btn.textContent = '+ Add Item to Sell';
-
-      // Refresh pills and list immediately
-      const pillsEl = document.getElementById('shop-summary-pills');
-      const listEl = document.getElementById('sell-items-list');
-      const clients = Array.isArray(vault.clients) ? vault.clients : [];
-      const orders = Array.isArray(vault.orders) ? vault.orders : [];
-      const accessories = Array.isArray(vault.accessories) ? vault.accessories : [];
-      const shopItems = vault.shopItems;
-      const readyClothes = orders.filter((o) => o.status === 'Ready').length +
-        shopItems.filter((i) => i.category === 'Ready Clothes').length;
-      const materialsCount = shopItems.filter((i) => i.category === 'Fabrics & Materials').length;
-
-      if (pillsEl) {
-        pillsEl.innerHTML = `
-          <span class="summary-chip">👥 Customers: ${clients.length}</span>
-          <span class="summary-chip">👗 Clothes: ${readyClothes}</span>
-          <span class="summary-chip">🧵 Materials/Fabrics: ${materialsCount}</span>
-          <span class="summary-chip">🪡 Accessories: ${accessories.length}</span>
-          <span class="summary-chip">🛍️ Items for Sale: ${shopItems.length}</span>
-        `;
-      }
-      if (listEl) {
-        listEl.innerHTML = shopItems.map((it, idx) => `
-          <div class="acc-item-row">
-            <div>
-              <strong>${it.name}</strong>
-              <div style="font-size:0.78rem;color:#334155;">${it.category} · Qty: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div>
-            </div>
-            <button type="button" class="btn-small sell-del-btn" data-idx="${idx}">✕</button>
-          </div>
-        `).join('');
-      }
-    }
-  }, true);
-})();
-
-// === V32: LIVE VERSION BADGE & AUTOMATIC DEPLOYMENT DETECTOR ===
-(function initAutoDeployWatcher() {
-  const CURRENT_VER = 'v32';
-
-  // Display subtle version tag beside live date or header so you always know which build is active
-  const datePill = document.getElementById('live-date-pill');
-  if (datePill && !datePill.textContent.includes(CURRENT_VER)) {
-    datePill.textContent = datePill.textContent + ' · ' + CURRENT_VER;
-  }
-
-  // Poll index.html with cache-bypass every 25s when online; auto-reload the instant Render publishes a newer build
-  setInterval(async () => {
-    if (!navigator.onLine) return;
-    try {
-      const res = await fetch('./index.html?ping=' + Date.now(), { cache: 'no-store' });
-      const text = await res.text();
-      const match = text.match(/style\.css\?v=(\d+)/);
-      if (match && ('v' + match) !== CURRENT_VER) {
-        if ('caches' in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map((k) => caches.delete(k)));
-        }
-        window.location.replace(window.location.pathname + '?v=' + match + '&t=' + Date.now());
-      }
-    } catch (e) {}
-  }, 25000);
-})();
-
-// === V35: DIRECT NAVIGATION FOR ALL 4 HOME TILES & LIVE AUTO-CALCULATOR ===
-(function initV35TilesAndCalculator() {
-  // Helper: click bottom nav button by matching its text label (Orders, Repairs, Clients, Catalog, Finance)
-  function switchToNavLabel(labelWord) {
-    const navButtons = Array.from(document.querySelectorAll('nav button, .nav button, [role="tab"]'));
-    const match = navButtons.find((b) => b.textContent.toLowerCase().includes(labelWord.toLowerCase()));
-    if (match) {
-      match.click();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return true;
-    }
-    return false;
-  }
-
-  // Wire the 4 Home Quick-Action Tiles reliably
-  document.addEventListener('click', (e) => {
-    const tile = e.target.closest('.hub-tile');
-    if (!tile) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-
-    const jump = tile.getAttribute('data-jump') || '';
-    if (jump === 'orders-form') {
-      // 1. Custom Tailoring -> Opens Clients tab & scrolls to New Custom Order form
-      switchToNavLabel('Clients');
-      setTimeout(() => {
-        const orderForm = document.getElementById('order-form');
-        if (orderForm) {
-          orderForm.classList.add('is-open');
-          orderForm.style.display = 'grid';
-          orderForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 150);
-    } else if (jump === 'tab-gallery') {
-      // 2. Fashion Design -> Opens Catalog tab (Style search, Yardage helper & Gallery)
-      switchToNavLabel('Catalog');
-    } else if (jump === 'tab-repairs') {
-      // 3. Resizing & Fixes -> Opens Repairs tab
-      switchToNavLabel('Repairs');
-    } else if (jump === 'accessories-panel') {
-      // 4. Sewing Accessories -> Opens the Sewing Accessories & Shop Stock drawer right below
-      const accPanel = document.getElementById('accessories-panel');
-      if (accPanel) {
-        accPanel.style.display = 'block';
-        accPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  }, true);
-
-  // Live Auto Fabric & Sewing Time Calculator inside Clients tab
-  function runAutoFabricTimeCalc() {
-    const typeEl = document.getElementById('calc-garment-type');
-    const widthEl = document.getElementById('calc-fabric-width');
-    const girthEl = document.getElementById('calc-girth');
-    const lenEl = document.getElementById('calc-length');
-    const outFab = document.getElementById('calc-out-fabric');
-    const outTime = document.getElementById('calc-out-time');
-    if (!typeEl || !outFab || !outTime) return;
-
-    const gType = typeEl.value;
-    const fWidth = Number(widthEl?.value || 45);
-    const girth = Number(girthEl?.value || 0);
-    const len = Number(lenEl?.value || 0);
-
-    if (!girth && !len) {
-      outFab.textContent = 'Enter girth & length above';
-      outTime.textContent = '--';
-      return;
-    }
-
-    const effectiveGirth = girth || 38;
-    const effectiveLen = len || 42;
-
-    let baseMeters = 2.0;
-    let hours = 3.5;
-
-    if (gType === 'maxi') { baseMeters = 3.0; hours = 6.0; }
-    else if (gType === 'suit') { baseMeters = 3.0; hours = 5.5; }
-    else if (gType === 'top') { baseMeters = 1.5; hours = 2.5; }
-    else if (gType === 'kids') { baseMeters = 1.5; hours = 2.0; }
-
-    if (effectiveGirth > 44) { baseMeters += 0.5; hours += 0.5; }
-    if (effectiveLen > 50) { baseMeters += 0.5; hours += 0.5; }
-    if (fWidth === 60) { baseMeters = Math.max(1.25, baseMeters - 0.5); }
-
-    const yards = (baseMeters * 1.094).toFixed(1);
-    outFab.textContent = `${baseMeters.toFixed(2)} meters (~${yards} yards at ${fWidth}")`;
-    outTime.textContent = `~${hours.toFixed(1)} hrs (${hours <= 3 ? 'Same Day' : '1–2 Days'})`;
-  }
-
-  ['calc-garment-type', 'calc-fabric-width', 'calc-girth', 'calc-length'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', runAutoFabricTimeCalc);
-      el.addEventListener('change', runAutoFabricTimeCalc);
-    }
-  });
-})();
-
-// === V42: REAL TAILOR BODY-PART MEASUREMENT -> EXACT MATERIAL & CUT CALCULATOR ===
-(function initExactTailorPatternCalculator() {
-  const ids = ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length', 'calc-fabric-width'];
-
-  function calculateExactMaterial() {
-    const bust = Number(document.getElementById('m-bust')?.value || 0);
-    const waist = Number(document.getElementById('m-waist')?.value || 0);
-    const hips = Number(document.getElementById('m-hips')?.value || 0);
-    const shoulder = Number(document.getElementById('m-shoulder')?.value || 0);
-    const sleeve = Number(document.getElementById('m-sleeve')?.value || 0);
-    const length = Number(document.getElementById('m-length')?.value || 0);
-    const rollWidth = Number(document.getElementById('calc-fabric-width')?.value || 45);
-
-    const outFab = document.getElementById('calc-out-fabric');
-    const outTime = document.getElementById('calc-out-time');
-    if (!outFab || !outTime) return;
-
-    if (!length && !bust && !hips && !waist) {
-      outFab.textContent = 'Enter body parts in inches';
-      outTime.textContent = '--';
-      return;
-    }
-
-    // 1. Determine widest body circumference + 5" seam & wearing ease
-    const maxCircumference = Math.max(bust, waist, hips, shoulder * 2.4, 28);
-    const requiredWidthWithEase = maxCircumference + 5;
-
-    // 2. Determine if front & back panels fit side-by-side on the fabric roll width
-    const usableRollWidth = rollWidth - 1.5; // selvedge allowance
-    const needsTwoLengths = requiredWidthWithEase > usableRollWidth;
-
-    const garmentLen = length > 0 ? length : 40;
-    const bodyInches = needsTwoLengths ? (garmentLen * 2) : garmentLen;
-
-    // 3. Add sleeve fabric (if sleeve > 0) + 6" hem, neck facing & cutting allowance
-    const sleeveInches = sleeve > 0 ? (sleeve + 3) : 0;
-    const totalInches = bodyInches + sleeveInches + 6;
-
-    // 4. Convert inches to exact meters (rounded up to nearest 0.25m) and yards
-    const rawMeters = totalInches * 0.0254;
-    const exactMeters = Math.ceil(rawMeters * 4) / 4;
-    const exactYards = (Math.ceil((totalInches / 36) * 4) / 4).toFixed(2);
-
-    // 5. Estimate sewing hours based on complexity & garment length
-    let estHours = 2.5;
-    if (garmentLen >= 48) estHours += 1.5;
-    else if (garmentLen >= 34) estHours += 0.8;
-    if (sleeve >= 16) estHours += 0.8;
-    else if (sleeve > 0) estHours += 0.4;
-    if (waist > 0 && hips > 0 && (hips - waist) >= 8) estHours += 0.5; // dart/shaping work
-
-    const layoutNote = needsTwoLengths
-      ? `2× Length panels (girth ${maxCircumference}" > ${rollWidth}" roll)`
-      : `1× Width cut (fits inside ${rollWidth}" roll)`;
-
-    outFab.innerHTML = `<b>${exactMeters.toFixed(2)}m</b> (${exactYards} yds @ ${rollWidth}")`;
-    outTime.textContent = `${layoutNote} · ~${estHours.toFixed(1)} hrs`;
-  }
-
-  ids.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', calculateExactMaterial);
-      el.addEventListener('change', calculateExactMaterial);
-    }
-  });
-})();
-
-// === V43: SHOP LIST DIRECTORY & LOCKED FINANCE ITEM PRICING ===
-(function initShopListDirectoryAndPricing() {
-  const VAULT_KEY = 'angaza_atelier_vault_v2';
-  function loadVault() {
-    try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
-    catch (e) { return {}; }
-  }
-  function saveVault(v) {
-    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
-  }
-
-  function renderFullShopDirectory() {
+  function renderShopDirectory() {
     const vault = loadVault();
     const items = Array.isArray(vault.shopItems) ? vault.shopItems : [];
     const filter = document.getElementById('shop-dir-filter')?.value || 'all';
     const countEl = document.getElementById('shop-dir-count');
     const listEl = document.getElementById('sell-items-list');
-
     if (countEl) countEl.textContent = String(items.length);
     if (!listEl) return;
 
     const filtered = filter === 'all' ? items : items.filter((it) => it.category === filter);
-
-    if (filtered.length === 0) {
-      listEl.innerHTML = '<p class="muted-note" style="font-size:0.78rem;">No items saved in this category yet. Tap <b>+ Add Item</b> to add clothes, fabrics, or accessories.</p>';
+    if (!filtered.length) {
+      listEl.innerHTML = '<p style="font-size:0.78rem;color:#475569;margin:4px 0;">No items saved yet. Tap <b>+ Add Item</b> or <b>📷 Scan List</b>.</p>';
       return;
     }
-
     listEl.innerHTML = filtered.map((it) => {
       const realIdx = items.indexOf(it);
       const hasPrice = Number(it.sellPrice || 0) > 0;
-      const priceBadge = hasPrice
-        ? '<span class="badge-pay-status badge-pay-paid">Price Set 🔒</span>'
-        : '<span class="badge-pay-status">Set Price in Finance</span>';
-
-      return `
-        <div class="acc-item-row" style="margin-bottom:6px;">
-          <div>
-            <strong>${it.name}</strong>
-            <div style="font-size:0.75rem;color:#334155;">${it.category} · Stock: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            ${priceBadge}
-            <button type="button" class="btn-small dir-del-btn" data-idx="${realIdx}" title="Delete item">✕</button>
-          </div>
-        </div>
-      `;
+      return `<div class="acc-item-row" style="margin-bottom:5px;padding:7px 9px;">
+        <div><strong style="font-size:0.82rem;">${it.name}</strong>
+        <div style="font-size:0.73rem;color:#334155;">${it.category} · Stock: <b>${it.qty}</b> ${it.note ? '· ' + it.note : ''}</div></div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span class="badge-pay-status ${hasPrice ? 'badge-pay-paid' : ''}">${hasPrice ? 'Price Set 🔒' : 'Set in Finance'}</span>
+          <button type="button" class="btn-small dir-del-btn" data-idx="${realIdx}" style="width:auto;padding:2px 7px;">✕</button>
+        </div></div>`;
     }).join('');
-
-    listEl.querySelectorAll('.dir-del-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const idx = Number(btn.getAttribute('data-idx'));
-        const v = loadVault();
-        if (Array.isArray(v.shopItems)) {
-          v.shopItems.splice(idx, 1);
-          saveVault(v);
-          renderFullShopDirectory();
-          renderFinanceShopPrices();
-        }
-      });
-    });
   }
 
-  // Render private KES pricing editor inside locked Finance tab
   window.renderFinanceShopPrices = function renderFinanceShopPrices() {
     const finList = document.getElementById('finance-shop-items-list');
     if (!finList) return;
-    const vault = loadVault();
-    const items = Array.isArray(vault.shopItems) ? vault.shopItems : [];
-
-    if (items.length === 0) {
-      finList.innerHTML = '<p class="muted-note">No items in Shop List yet. Add items from the Home screen first.</p>';
+    const items = Array.isArray(loadVault().shopItems) ? loadVault().shopItems : [];
+    if (!items.length) { finList.innerHTML = '<p class="muted-note">No items in Shop List yet.</p>'; return; }
+    finList.innerHTML = items.map((it, idx) => `<div class="fin-order-box">
+      <div style="display:flex;justify-content:space-between;"><strong>${it.name}</strong><span>${it.category} · ${it.qty}</span></div>
+      <div class="fin-grid-2">
+        <div><label style="font-size:0.75rem;">Selling Price (KES)</label>
+        <input type="number" class="fin-sell-price" data-idx="${idx}" value="${Number(it.sellPrice || 0)}" min="0" /></div>
+        <div style="display:flex;align-items:flex-end;">
+        <button type="button" class="btn-small fin-save-item-price" data-idx="${idx}" style="width:100%;">Save Price (KES)</button></div>
+      </div></div>`).join('');
+  };
+  document.addEventListener('click', (e) => {
+    const hideBtn = e.target.closest('#toggle-overview-collapse-btn');
+    if (hideBtn) {
+      const body = document.getElementById('overview-collapse-body');
+      if (body) { const h = body.style.display === 'none'; body.style.display = h ? 'block' : 'none'; hideBtn.textContent = h ? 'Hide' : 'Show'; }
       return;
     }
-
-    finList.innerHTML = items.map((it, idx) => `
-      <div class="fin-order-box">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
-          <strong>${it.name}</strong>
-          <span style="font-size:0.75rem;color:#475569;">${it.category} · Qty: <b>${it.qty}</b></span>
-        </div>
-        <div class="fin-grid-2">
-          <div>
-            <label style="font-size:0.75rem;">Selling Price (KES)</label>
-            <input type="number" class="fin-sell-price" data-idx="${idx}" value="${Number(it.sellPrice || 0)}" min="0" />
-          </div>
-          <div style="display:flex;align-items:flex-end;">
-            <button type="button" class="btn-small fin-save-item-price" data-idx="${idx}" style="width:100%;">Save Price (KES)</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-    finList.querySelectorAll('.fin-save-item-price').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const idx = Number(btn.getAttribute('data-idx'));
-        const v = loadVault();
-        if (!Array.isArray(v.shopItems) || !v.shopItems[idx]) return;
-        const inp = finList.querySelector(`.fin-sell-price[data-idx="${idx}"]`);
-        v.shopItems[idx].sellPrice = Math.max(0, Number(inp?.value || 0));
-        saveVault(v);
-        btn.textContent = '✅ Saved';
-        setTimeout(() => { btn.textContent = 'Save Price (KES)'; }, 1500);
-        renderFullShopDirectory();
-      });
-    });
-  };
-
-  // Toggle Shop List Directory drawer
-  document.addEventListener('click', (e) => {
-    const openDirBtn = e.target.closest('#open-shop-directory-btn');
-    if (openDirBtn) {
-      const drawer = document.getElementById('shop-directory-drawer');
-      if (drawer) {
-        const isClosed = drawer.style.display === 'none';
-        drawer.style.display = isClosed ? 'block' : 'none';
-        if (isClosed) renderFullShopDirectory();
+    if (e.target.closest('#open-shop-directory-btn')) {
+      const d = document.getElementById('shop-directory-drawer'), f = document.getElementById('sell-item-form');
+      if (f) f.style.display = 'none';
+      if (d) { const c = d.style.display === 'none'; d.style.display = c ? 'block' : 'none'; if (c) renderShopDirectory(); }
+      return;
+    }
+    const addBtn = e.target.closest('#toggle-sell-item-btn');
+    if (addBtn) {
+      const f = document.getElementById('sell-item-form'), d = document.getElementById('shop-directory-drawer');
+      if (d) d.style.display = 'none';
+      if (f) { const c = f.style.display === 'none'; f.style.display = c ? 'grid' : 'none'; addBtn.textContent = c ? '✕ Close' : '+ Add Item'; }
+      return;
+    }
+    const delBtn = e.target.closest('.dir-del-btn');
+    if (delBtn) {
+      const v = loadVault(); v.shopItems.splice(Number(delBtn.getAttribute('data-idx')), 1); saveVault(v);
+      renderShopDirectory(); window.renderFinanceShopPrices(); return;
+    }
+    const savePriceBtn = e.target.closest('.fin-save-item-price');
+    if (savePriceBtn) {
+      const idx = Number(savePriceBtn.getAttribute('data-idx')), v = loadVault();
+      const inp = document.querySelector(`.fin-sell-price[data-idx="${idx}"]`);
+      if (v.shopItems[idx] && inp) {
+        v.shopItems[idx].sellPrice = Math.max(0, Number(inp.value || 0)); saveVault(v);
+        savePriceBtn.textContent = '✅ Saved'; setTimeout(() => { savePriceBtn.textContent = 'Save Price (KES)'; }, 1200);
+        renderShopDirectory();
       }
+      return;
     }
-
-    if (e.target.closest('[data-tab="finance"]') || e.target.id === 'unlock-finance-btn') {
-      setTimeout(renderFinanceShopPrices, 100);
+    if (e.target.closest('#close-shop-scan-btn')) { const b = document.getElementById('shop-scan-review'); if (b) b.style.display = 'none'; return; }
+    const tile = e.target.closest('.hub-tile');
+    if (tile) {
+      const j = tile.getAttribute('data-jump') || '';
+      if (j === 'orders-form') { openTab('clients'); setTimeout(() => { document.getElementById('order-form')?.scrollIntoView({ behavior: 'smooth' }); }, 120); }
+      else if (j === 'tab-gallery') openTab('gallery');
+      else if (j === 'tab-repairs') openTab('repairs');
+      else if (j === 'accessories-panel') {
+        const acc = document.getElementById('accessories-panel');
+        if (acc) { const h = acc.style.display === 'none'; acc.style.display = h ? 'block' : 'none'; if (h) acc.scrollIntoView({ behavior: 'smooth' }); }
+      }
+      return;
     }
+    if (e.target.closest('[data-tab="finance"]') || e.target.id === 'unlock-finance-btn') setTimeout(window.renderFinanceShopPrices, 80);
   });
 
-  // Auto-open directory right after saving a new item
   document.addEventListener('submit', (e) => {
     if (e.target && e.target.id === 'sell-item-form') {
-      setTimeout(() => {
-        const drawer = document.getElementById('shop-directory-drawer');
-        if (drawer) drawer.style.display = 'block';
-        renderFullShopDirectory();
-        renderFinanceShopPrices();
-      }, 60);
+      e.preventDefault();
+      const name = document.getElementById('sell-name')?.value.trim(), qty = document.getElementById('sell-qty')?.value.trim();
+      if (!name || !qty) return;
+      const v = loadVault(); v.shopItems = Array.isArray(v.shopItems) ? v.shopItems : [];
+      v.shopItems.unshift({ name, category: document.getElementById('sell-cat')?.value || 'Ready Clothes', qty, note: document.getElementById('sell-note')?.value.trim() || '', sellPrice: 0 });
+      saveVault(v); e.target.reset(); e.target.style.display = 'none';
+      const addBtn = document.getElementById('toggle-sell-item-btn'); if (addBtn) addBtn.textContent = '+ Add Item';
+      const drawer = document.getElementById('shop-directory-drawer'); if (drawer) drawer.style.display = 'block';
+      renderShopDirectory(); window.renderFinanceShopPrices();
     }
   });
-
-  const dirFilter = document.getElementById('shop-dir-filter');
-  if (dirFilter) dirFilter.addEventListener('change', renderFullShopDirectory);
-
-  setTimeout(() => {
-    renderFullShopDirectory();
-    renderFinanceShopPrices();
-  }, 200);
-})();
-
-// === V44: HANDWRITTEN SHOP-LIST PHOTO SCANNER -> DIRECT TO SHOP LIST ===
-(function initShopListPhotoScanner() {
-  const VAULT_KEY = 'angaza_atelier_vault_v2';
-  function loadVault() {
-    try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
-    catch (e) { return {}; }
-  }
-  function saveVault(v) {
-    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
-  }
-
-  function preprocessHandwriting(file) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        const maxW = 1400;
-        const scale = img.width > maxW ? maxW / img.width : 1;
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const d = imgData.data;
-        for (let i = 0; i < d.length; i += 4) {
-          const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-          const bw = gray < 155 ? 0 : 255;
-          d[i] = d[i + 1] = d[i + 2] = bw;
-        }
-        ctx.putImageData(imgData, 0, 0);
-        URL.revokeObjectURL(url);
-        resolve(canvas);
-      };
-      img.onerror = (err) => { URL.revokeObjectURL(url); reject(err); };
-      img.src = url;
-    });
-  }
-
-  function detectCategory(text) {
-    const t = text.toLowerCase();
-    if (/dress|skirt|shirt|trouser|suit|kanzu|kaftan|dera|blouse|uniform|coat/.test(t)) return 'Ready Clothes';
-    if (/kitenge|ankara|fabric|material|tetron|satin|cotton|chiffon|linen|silk|yard|meter/.test(t)) return 'Fabrics & Materials';
-    if (/zip|button|thread|needle|elastic|lace|ribbon|lining|hook|pin|bobbin|scissors/.test(t)) return 'Sewing Accessories';
-    return 'Other Shop Item';
-  }
-
-  function parseShopLines(rawText) {
-    const lines = rawText.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length >= 2);
-    const parsed = [];
-
-    for (const line of lines) {
-      let clean = line.replace(/^[-*•\d.)\s]+(?=[a-zA-Z])/, '').trim();
-      if (clean.length < 2) continue;
-
-      let sellPrice = 0;
-      const priceMatch = clean.match(/(?:kes|ksh|@|=|-)\s*(\d{2,6})\s*$/i);
-      if (priceMatch) {
-        sellPrice = Number(priceMatch);
-        clean = clean.slice(0, priceMatch.index).trim();
-      }
-
-      let qty = '1 pc';
-      const qtyMatch = clean.match(/^(\d+(?:\.\d+)?)\s*(pcs?|pieces?|rolls?|yds?|yards?|m|meters?|packs?|pairs?)?\s+(.+)$/i);
-      let name = clean;
-      if (qtyMatch) {
-        qty = qtyMatch + ' ' + (qtyMatch || 'pcs');
-        name = qtyMatch.trim();
-      }
-
-      if (name.length >= 2) {
-        parsed.push({
-          name: name.charAt(0).toUpperCase() + name.slice(1),
-          category: detectCategory(name),
-          qty,
-          note: 'Scanned from list',
-          sellPrice,
-          date: new Date().toISOString().split('T')
-        });
-      }
-    }
-    return parsed;
-  }
-
-  let pendingScannedItems = [];
-
-  const scanInput = document.getElementById('scan-shop-list-input');
-  const reviewBox = document.getElementById('shop-scan-review');
-  const statusEl = document.getElementById('shop-scan-status');
-  const previewList = document.getElementById('shop-scan-preview-list');
-  const confirmBtn = document.getElementById('confirm-shop-scan-btn');
-  const closeBtn = document.getElementById('close-shop-scan-btn');
-
-  if (closeBtn && reviewBox) {
-    closeBtn.addEventListener('click', () => {
-      reviewBox.style.display = 'none';
-      pendingScannedItems = [];
-    });
-  }
-
-  if (scanInput) {
-    scanInput.addEventListener('change', async () => {
-      const file = scanInput.files && scanInput.files;
-      if (!file || !reviewBox) return;
-
-      reviewBox.style.display = 'block';
-      if (confirmBtn) confirmBtn.style.display = 'none';
-      if (previewList) previewList.innerHTML = '';
-      if (statusEl) statusEl.textContent = '⏳ Enhancing & reading handwritten items...';
-
+  let pendingScanned = [];
+  const scanInp = document.getElementById('scan-shop-list-input');
+  if (scanInp) {
+    scanInp.addEventListener('change', async () => {
+      const file = scanInp.files && scanInp.files, box = document.getElementById('shop-scan-review'), status = document.getElementById('shop-scan-status'), prev = document.getElementById('shop-scan-preview-list'), cBtn = document.getElementById('confirm-shop-scan-btn');
+      if (!file || !box) return;
+      box.style.display = 'block'; if (cBtn) cBtn.style.display = 'none'; if (prev) prev.innerHTML = ''; if (status) status.textContent = '⏳ Reading list...';
       try {
-        if (typeof window.loadTesseractLazy === 'function' && !window.Tesseract) {
-          await window.loadTesseractLazy();
-        }
-        if (!window.Tesseract) {
-          throw new Error('Scanner engine still loading — connect once to cache OCR.');
-        }
-
-        const processedCanvas = await preprocessHandwriting(file);
-        const result = await window.Tesseract.recognize(processedCanvas, 'eng');
-        const text = (result && result.data && result.data.text) || '';
-        pendingScannedItems = parseShopLines(text);
-
-        if (pendingScannedItems.length === 0) {
-          if (statusEl) statusEl.textContent = '⚠️ Could not read clear item lines. Try a brighter photo.';
-          return;
-        }
-
-        if (statusEl) statusEl.textContent = `✅ Found ${pendingScannedItems.length} item(s) — review & load:`;
-        if (previewList) {
-          previewList.innerHTML = pendingScannedItems.map((it, i) => `
-            <label style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 7px;background:#ffffff;border:1px solid #fde68a;border-radius:8px;font-size:0.78rem;margin-bottom:4px;">
-              <span><input type="checkbox" class="scan-item-chk" data-idx="${i}" checked /> <b>${it.name}</b> (${it.qty})</span>
-              <span style="font-size:0.7rem;color:#475569;">${it.category}${it.sellPrice > 0 ? ' · Price 🔒' : ''}</span>
-            </label>
-          `).join('');
-        }
-        if (confirmBtn) confirmBtn.style.display = 'block';
-      } catch (err) {
-        if (statusEl) statusEl.textContent = '⚠️ ' + (err.message || 'Scan failed, please retry.');
-      } finally {
-        scanInput.value = '';
-      }
+        if (typeof window.loadTesseractLazy === 'function' && !window.Tesseract) await window.loadTesseractLazy();
+        const res = await window.Tesseract.recognize(file, 'eng');
+        pendingScanned = ((res?.data?.text) || '').split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length >= 2).map((line) => {
+          let clean = line.replace(/^[-*•\d.)\s]+(?=[a-zA-Z])/, '').trim(), sellPrice = 0;
+          const pm = clean.match(/(?:kes|ksh|@|=|-)\s*(\d{2,6})\s*$/i);
+          if (pm) { sellPrice = Number(pm); clean = clean.slice(0, pm.index).trim(); }
+          let qty = '1 pc', name = clean;
+          const qm = clean.match(/^(\d+(?:\.\d+)?)\s*(pcs?|pieces?|rolls?|yds?|yards?|m|meters?)?\s+(.+)$/i);
+          if (qm) { qty = qm + ' ' + (qm || 'pcs'); name = qm.trim(); }
+          return { name, category: 'Other Shop Item', qty, note: 'Scanned', sellPrice };
+        });
+        if (!pendingScanned.length) { if (status) status.textContent = '⚠️ No clear lines found.'; return; }
+        if (status) status.textContent = `✅ Found ${pendingScanned.length} item(s):`;
+        if (prev) prev.innerHTML = pendingScanned.map((it, i) => `<label style="display:flex;justify-content:space-between;padding:4px 6px;background:#fff;border:1px solid #fde68a;border-radius:6px;font-size:0.76rem;margin-bottom:3px;"><span><input type="checkbox" class="scan-chk" data-idx="${i}" checked /> <b>${it.name}</b> (${it.qty})</span></label>`).join('');
+        if (cBtn) cBtn.style.display = 'block';
+      } catch (err) { if (status) status.textContent = '⚠️ Scan failed. Check connection once.'; }
+      finally { scanInp.value = ''; }
     });
   }
-
-  if (confirmBtn) {
-    confirmBtn.addEventListener('click', () => {
-      const checkedBoxes = Array.from(document.querySelectorAll('.scan-item-chk:checked'));
-      const chosen = checkedBoxes
-        .map((cb) => pendingScannedItems[Number(cb.getAttribute('data-idx'))])
-        .filter(Boolean);
-
-      if (chosen.length === 0) return;
-
-      const vault = loadVault();
-      vault.shopItems = Array.isArray(vault.shopItems) ? vault.shopItems : [];
-      vault.shopItems = [...chosen, ...vault.shopItems];
-      saveVault(vault);
-
-      reviewBox.style.display = 'none';
-      pendingScannedItems = [];
-
-      const drawer = document.getElementById('shop-directory-drawer');
-      if (drawer) drawer.style.display = 'block';
-      const countEl = document.getElementById('shop-dir-count');
-      if (countEl) countEl.textContent = String(vault.shopItems.length);
-
-      if (typeof window.renderFinanceShopPrices === 'function') window.renderFinanceShopPrices();
-      const filterEl = document.getElementById('shop-dir-filter');
-      if (filterEl) filterEl.dispatchEvent(new Event('change'));
-    });
-  }
-})();
-
-// === V45: WOMAN / MAN / CHILD / FLOWING GROUP-SPECIFIC TAILORING MATH ===
-(function initGroupAwareTailorCalc() {
-  const groupSel = document.getElementById('calc-person-group');
-  if (!groupSel) return;
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'confirm-shop-scan-btn') {
+      const chosen = Array.from(document.querySelectorAll('.scan-chk:checked')).map((c) => pendingScanned[Number(c.getAttribute('data-idx'))]).filter(Boolean);
+      if (!chosen.length) return;
+      const v = loadVault(); v.shopItems = [...chosen, ...(Array.isArray(v.shopItems) ? v.shopItems : [])]; saveVault(v);
+      const box = document.getElementById('shop-scan-review'); if (box) box.style.display = 'none';
+      const drawer = document.getElementById('shop-directory-drawer'); if (drawer) drawer.style.display = 'block';
+      renderShopDirectory(); window.renderFinanceShopPrices();
+    }
+  });
 
   const groupPresets = {
-    woman: {
-      placeholders: ['Bust (in)', 'Waist (in)', 'Hips (in)', 'Shoulder (in)', 'Sleeve (in)', 'Full Length'],
-      ease: 5,
-      extraTrimInches: 6,
-      baseHours: 2.8,
-      label: 'Woman'
-    },
-    man: {
-      placeholders: ['Chest (in)', 'Waist (in)', 'Neck/Seat (in)', 'Shoulder (in)', 'Sleeve (in)', 'Shirt/Trouser L'],
-      ease: 6,
-      extraTrimInches: 9, // collar, cuffs, placket & trouser hem turn-up
-      baseHours: 3.2,
-      label: 'Man'
-    },
-    child: {
-      placeholders: ['Chest (in)', 'Waist (in)', 'Hips (in)', 'Shoulder (in)', 'Sleeve (in)', 'Full Length'],
-      ease: 4,
-      extraTrimInches: 7, // extra growth hem allowance
-      baseHours: 1.8,
-      label: 'Child'
-    },
-    flowing: {
-      placeholders: ['Bust/Chest', 'Waist/Empire', 'Hips/Flare', 'Shoulder (in)', 'Sleeve (in)', 'Full Length'],
-      ease: 10, // generous flare & drape allowance
-      extraTrimInches: 8,
-      baseHours: 3.0,
-      label: 'Flowing/Dera'
-    }
+    woman: { ph: ['Bust (in)', 'Waist (in)', 'Hips (in)', 'Shoulder (in)', 'Sleeve (in)', 'Full Length'], ease: 5, trim: 6, hrs: 2.8, label: 'Woman' },
+    man: { ph: ['Chest (in)', 'Waist (in)', 'Neck/Seat (in)', 'Shoulder (in)', 'Sleeve (in)', 'Shirt/Trouser L'], ease: 6, trim: 9, hrs: 3.2, label: 'Man' },
+    child: { ph: ['Chest (in)', 'Waist (in)', 'Hips (in)', 'Shoulder (in)', 'Sleeve (in)', 'Full Length'], ease: 4, trim: 7, hrs: 1.8, label: 'Child' },
+    flowing: { ph: ['Bust/Chest', 'Waist/Empire', 'Hips/Flare', 'Shoulder (in)', 'Sleeve (in)', 'Full Length'], ease: 10, trim: 8, hrs: 3.0, label: 'Flowing/Dera' }
   };
-
-  function updateGroupPlaceholders() {
-    const cfg = groupPresets[groupSel.value] || groupPresets.woman;
-    const inputIds = ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length'];
-    inputIds.forEach((id, idx) => {
-      const el = document.getElementById(id);
-      if (el && cfg.placeholders[idx]) el.placeholder = cfg.placeholders[idx];
-    });
-  }
-
-  function calculateByGroup() {
-    const cfg = groupPresets[groupSel.value] || groupPresets.woman;
-    const b = Number(document.getElementById('m-bust')?.value || 0);
-    const w = Number(document.getElementById('m-waist')?.value || 0);
-    const h = Number(document.getElementById('m-hips')?.value || 0);
-    const sh = Number(document.getElementById('m-shoulder')?.value || 0);
-    const sl = Number(document.getElementById('m-sleeve')?.value || 0);
-    const len = Number(document.getElementById('m-length')?.value || 0);
-    const rollWidth = Number(document.getElementById('calc-fabric-width')?.value || 45);
-
-    const outFab = document.getElementById('calc-out-fabric');
-    const outTime = document.getElementById('calc-out-time');
+  function runFastCalculator() {
+    const grp = document.getElementById('calc-person-group')?.value || 'woman', cfg = groupPresets[grp] || groupPresets.woman;
+    const b = Number(document.getElementById('m-bust')?.value || 0), w = Number(document.getElementById('m-waist')?.value || 0), h = Number(document.getElementById('m-hips')?.value || 0), sh = Number(document.getElementById('m-shoulder')?.value || 0), sl = Number(document.getElementById('m-sleeve')?.value || 0), len = Number(document.getElementById('m-length')?.value || 0), roll = Number(document.getElementById('calc-fabric-width')?.value || 45);
+    const outFab = document.getElementById('calc-out-fabric'), outTime = document.getElementById('calc-out-time');
     if (!outFab || !outTime) return;
-
-    if (!b && !w && !h && !len) {
-      outFab.textContent = `Enter ${cfg.label} measurements in inches`;
-      outTime.textContent = '--';
-      return;
-    }
-
-    const defaultGirth = groupSel.value === 'child' ? 24 : 36;
-    const defaultLen = groupSel.value === 'child' ? 28 : 42;
-    const maxCircumference = Math.max(b, w, h, sh * 2.4, defaultGirth);
-    const requiredWidth = maxCircumference + cfg.ease;
-
-    const usableRoll = rollWidth - 1.5;
-    const needsTwoLengths = requiredWidth > usableRoll;
-    const garmentLen = len > 0 ? len : defaultLen;
-
-    const bodyInches = needsTwoLengths ? (garmentLen * 2) : garmentLen;
-    const sleeveInches = sl > 0 ? (sl + 3.5) : 0;
-    const totalInches = bodyInches + sleeveInches + cfg.extraTrimInches;
-
-    const exactMeters = Math.ceil((totalInches * 0.0254) * 4) / 4;
-    const exactYards = (Math.ceil((totalInches / 36) * 4) / 4).toFixed(2);
-
-    let estHours = cfg.baseHours;
-    if (garmentLen >= 48) estHours += 1.3;
-    else if (garmentLen >= 34) estHours += 0.6;
-    if (sl >= 16) estHours += 0.7;
-    else if (sl > 0) estHours += 0.35;
-    if (groupSel.value === 'woman' && w > 0 && h > 0 && (h - w) >= 8) estHours += 0.5;
-
-    const layoutTag = needsTwoLengths ? '2× Length' : '1× Width';
-    outFab.innerHTML = `<b>${exactMeters.toFixed(2)}m</b> (${exactYards} yds @ ${rollWidth}")`;
-    outTime.textContent = `${cfg.label} · ${layoutTag} · ~${estHours.toFixed(1)} hrs`;
+    if (!b && !w && !h && !len) { outFab.textContent = `Enter ${cfg.label} measurements in inches`; outTime.textContent = '--'; return; }
+    const maxGirth = Math.max(b, w, h, sh * 2.4, grp === 'child' ? 24 : 36), twoLengths = (maxGirth + cfg.ease) > (roll - 1.5), gLen = len > 0 ? len : (grp === 'child' ? 28 : 42);
+    const totalIn = (twoLengths ? gLen * 2 : gLen) + (sl > 0 ? sl + 3.5 : 0) + cfg.trim;
+    const meters = Math.ceil((totalIn * 0.0254) * 4) / 4, yards = (Math.ceil((totalIn / 36) * 4) / 4).toFixed(2);
+    const hrs = cfg.hrs + (gLen >= 48 ? 1.3 : gLen >= 34 ? 0.6 : 0) + (sl >= 16 ? 0.7 : sl > 0 ? 0.35 : 0);
+    outFab.innerHTML = `<b>${meters.toFixed(2)}m</b> (${yards} yds @ ${roll}")`;
+    outTime.textContent = `${cfg.label} · ${twoLengths ? '2× Length' : '1× Width'} · ~${hrs.toFixed(1)} hrs`;
   }
-
-  groupSel.addEventListener('change', () => {
-    updateGroupPlaceholders();
-    calculateByGroup();
-  }, true);
-
-  ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length', 'calc-fabric-width'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', calculateByGroup, true);
-      el.addEventListener('change', calculateByGroup, true);
-    }
+  const grpSel = document.getElementById('calc-person-group');
+  if (grpSel) grpSel.addEventListener('change', () => {
+    const cfg = groupPresets[grpSel.value] || groupPresets.woman;
+    ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length'].forEach((id, i) => { const el = document.getElementById(id); if (el) el.placeholder = cfg.ph[i]; });
+    runFastCalculator();
   });
-
-  updateGroupPlaceholders();
+  ['m-bust', 'm-waist', 'm-hips', 'm-shoulder', 'm-sleeve', 'm-length', 'calc-fabric-width'].forEach((id) => { const el = document.getElementById(id); if (el) el.addEventListener('input', runFastCalculator); });
+  document.getElementById('shop-dir-filter')?.addEventListener('change', renderShopDirectory);
+  renderShopDirectory();
 })();
