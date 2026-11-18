@@ -2361,3 +2361,179 @@
     renderFinanceShopPrices();
   }, 200);
 })();
+
+// === V44: HANDWRITTEN SHOP-LIST PHOTO SCANNER -> DIRECT TO SHOP LIST ===
+(function initShopListPhotoScanner() {
+  const VAULT_KEY = 'angaza_atelier_vault_v2';
+  function loadVault() {
+    try { return JSON.parse(localStorage.getItem(VAULT_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveVault(v) {
+    localStorage.setItem(VAULT_KEY, JSON.stringify(v));
+  }
+
+  function preprocessHandwriting(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const maxW = 1400;
+        const scale = img.width > maxW ? maxW / img.width : 1;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imgData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+          const bw = gray < 155 ? 0 : 255;
+          d[i] = d[i + 1] = d[i + 2] = bw;
+        }
+        ctx.putImageData(imgData, 0, 0);
+        URL.revokeObjectURL(url);
+        resolve(canvas);
+      };
+      img.onerror = (err) => { URL.revokeObjectURL(url); reject(err); };
+      img.src = url;
+    });
+  }
+
+  function detectCategory(text) {
+    const t = text.toLowerCase();
+    if (/dress|skirt|shirt|trouser|suit|kanzu|kaftan|dera|blouse|uniform|coat/.test(t)) return 'Ready Clothes';
+    if (/kitenge|ankara|fabric|material|tetron|satin|cotton|chiffon|linen|silk|yard|meter/.test(t)) return 'Fabrics & Materials';
+    if (/zip|button|thread|needle|elastic|lace|ribbon|lining|hook|pin|bobbin|scissors/.test(t)) return 'Sewing Accessories';
+    return 'Other Shop Item';
+  }
+
+  function parseShopLines(rawText) {
+    const lines = rawText.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length >= 2);
+    const parsed = [];
+
+    for (const line of lines) {
+      let clean = line.replace(/^[-*•\d.)\s]+(?=[a-zA-Z])/, '').trim();
+      if (clean.length < 2) continue;
+
+      let sellPrice = 0;
+      const priceMatch = clean.match(/(?:kes|ksh|@|=|-)\s*(\d{2,6})\s*$/i);
+      if (priceMatch) {
+        sellPrice = Number(priceMatch);
+        clean = clean.slice(0, priceMatch.index).trim();
+      }
+
+      let qty = '1 pc';
+      const qtyMatch = clean.match(/^(\d+(?:\.\d+)?)\s*(pcs?|pieces?|rolls?|yds?|yards?|m|meters?|packs?|pairs?)?\s+(.+)$/i);
+      let name = clean;
+      if (qtyMatch) {
+        qty = qtyMatch + ' ' + (qtyMatch || 'pcs');
+        name = qtyMatch.trim();
+      }
+
+      if (name.length >= 2) {
+        parsed.push({
+          name: name.charAt(0).toUpperCase() + name.slice(1),
+          category: detectCategory(name),
+          qty,
+          note: 'Scanned from list',
+          sellPrice,
+          date: new Date().toISOString().split('T')
+        });
+      }
+    }
+    return parsed;
+  }
+
+  let pendingScannedItems = [];
+
+  const scanInput = document.getElementById('scan-shop-list-input');
+  const reviewBox = document.getElementById('shop-scan-review');
+  const statusEl = document.getElementById('shop-scan-status');
+  const previewList = document.getElementById('shop-scan-preview-list');
+  const confirmBtn = document.getElementById('confirm-shop-scan-btn');
+  const closeBtn = document.getElementById('close-shop-scan-btn');
+
+  if (closeBtn && reviewBox) {
+    closeBtn.addEventListener('click', () => {
+      reviewBox.style.display = 'none';
+      pendingScannedItems = [];
+    });
+  }
+
+  if (scanInput) {
+    scanInput.addEventListener('change', async () => {
+      const file = scanInput.files && scanInput.files;
+      if (!file || !reviewBox) return;
+
+      reviewBox.style.display = 'block';
+      if (confirmBtn) confirmBtn.style.display = 'none';
+      if (previewList) previewList.innerHTML = '';
+      if (statusEl) statusEl.textContent = '⏳ Enhancing & reading handwritten items...';
+
+      try {
+        if (typeof window.loadTesseractLazy === 'function' && !window.Tesseract) {
+          await window.loadTesseractLazy();
+        }
+        if (!window.Tesseract) {
+          throw new Error('Scanner engine still loading — connect once to cache OCR.');
+        }
+
+        const processedCanvas = await preprocessHandwriting(file);
+        const result = await window.Tesseract.recognize(processedCanvas, 'eng');
+        const text = (result && result.data && result.data.text) || '';
+        pendingScannedItems = parseShopLines(text);
+
+        if (pendingScannedItems.length === 0) {
+          if (statusEl) statusEl.textContent = '⚠️ Could not read clear item lines. Try a brighter photo.';
+          return;
+        }
+
+        if (statusEl) statusEl.textContent = `✅ Found ${pendingScannedItems.length} item(s) — review & load:`;
+        if (previewList) {
+          previewList.innerHTML = pendingScannedItems.map((it, i) => `
+            <label style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 7px;background:#ffffff;border:1px solid #fde68a;border-radius:8px;font-size:0.78rem;margin-bottom:4px;">
+              <span><input type="checkbox" class="scan-item-chk" data-idx="${i}" checked /> <b>${it.name}</b> (${it.qty})</span>
+              <span style="font-size:0.7rem;color:#475569;">${it.category}${it.sellPrice > 0 ? ' · Price 🔒' : ''}</span>
+            </label>
+          `).join('');
+        }
+        if (confirmBtn) confirmBtn.style.display = 'block';
+      } catch (err) {
+        if (statusEl) statusEl.textContent = '⚠️ ' + (err.message || 'Scan failed, please retry.');
+      } finally {
+        scanInput.value = '';
+      }
+    });
+  }
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', () => {
+      const checkedBoxes = Array.from(document.querySelectorAll('.scan-item-chk:checked'));
+      const chosen = checkedBoxes
+        .map((cb) => pendingScannedItems[Number(cb.getAttribute('data-idx'))])
+        .filter(Boolean);
+
+      if (chosen.length === 0) return;
+
+      const vault = loadVault();
+      vault.shopItems = Array.isArray(vault.shopItems) ? vault.shopItems : [];
+      vault.shopItems = [...chosen, ...vault.shopItems];
+      saveVault(vault);
+
+      reviewBox.style.display = 'none';
+      pendingScannedItems = [];
+
+      const drawer = document.getElementById('shop-directory-drawer');
+      if (drawer) drawer.style.display = 'block';
+      const countEl = document.getElementById('shop-dir-count');
+      if (countEl) countEl.textContent = String(vault.shopItems.length);
+
+      if (typeof window.renderFinanceShopPrices === 'function') window.renderFinanceShopPrices();
+      const filterEl = document.getElementById('shop-dir-filter');
+      if (filterEl) filterEl.dispatchEvent(new Event('change'));
+    });
+  }
+})();
