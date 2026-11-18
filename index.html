@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=52" />
+  <link rel="stylesheet" href="style.css?v=53" />
 </head>
 <body>
   <header class="topbar">
@@ -44,22 +44,22 @@
 </div>
 
       <div class="hub-actions-grid" id="hub-actions-grid">
-        <button type="button" class="hub-tile tile-blue" data-jump="orders-form">
+        <button type="button" class="hub-tile tile-blue" data-jump="orders-form" onclick="document.querySelector('[data-tab=\'clients\']')?.click()">
           <span class="hub-icon">✂️</span>
           <strong>Custom Tailoring</strong>
           <small>New outfits & suits</small>
         </button>
-        <button type="button" class="hub-tile tile-purple" data-jump="tab-gallery">
+        <button type="button" class="hub-tile tile-purple" data-jump="tab-gallery" onclick="document.querySelector('[data-tab=\'gallery\']')?.click()">
           <span class="hub-icon">👗</span>
           <strong>Fashion Design</strong>
           <small>Styles, yardage & gallery</small>
         </button>
-        <button type="button" class="hub-tile tile-sky" data-jump="tab-repairs">
+        <button type="button" class="hub-tile tile-sky" data-jump="tab-repairs" onclick="document.querySelector('[data-tab=\'repairs\']')?.click()">
           <span class="hub-icon">🪡</span>
           <strong>Resizing & Fixes</strong>
           <small>Alterations, hems & zips</small>
         </button>
-        <button type="button" class="hub-tile tile-gold" data-jump="accessories-panel">
+        <button type="button" class="hub-tile tile-gold" data-jump="accessories-panel" onclick="(function(){var p=document.getElementById('accessories-panel');if(p){p.style.display=p.style.display==='none'?'block':'none';p.scrollIntoView({behavior:'smooth'});}})()">
           <span class="hub-icon">🧵</span>
           <strong>Sewing Accessories</strong>
           <small>Threads, zips, buttons & stock</small>
@@ -68,14 +68,14 @@
 
       
       <div class="card" id="shop-overview-card" style="padding:11px 12px;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;"><h4 style="margin:0;color:#1e3a8a;font-size:0.95rem;font-weight:800;">📊 Shop Overview & Stock</h4><button type="button" class="btn-small" id="toggle-overview-collapse-btn" style="width:auto;padding:4px 12px;margin:0;">Hide</button></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;"><h4 style="margin:0;color:#1e3a8a;font-size:0.95rem;font-weight:800;">📊 Shop Overview & Stock</h4><button type="button" class="btn-small" id="toggle-overview-collapse-btn" onclick="(function(b){var d=document.getElementById('overview-collapse-body');if(d){var h=d.style.display==='none';d.style.display=h?'block':'none';b.textContent=h?'Hide':'Show';}})(this)" style="width:auto;padding:4px 12px;margin:0;">Hide</button></div>
         <div id="overview-collapse-body">
           <div id="shop-stock-summary" class="shop-stock-summary">
           <div class="shop-summary-pills" id="shop-summary-pills"></div>
           
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px;">
-            <button type="button" id="open-shop-directory-btn" onclick="window.openAngazaShopModal && window.openAngazaShopModal('sheet')" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#eff6ff;color:#1e3a8a;border:1.5px solid #0284c7;cursor:pointer;white-space:nowrap;">📋 Shop List (<span id="shop-dir-count">0</span>)</button>
-            <button type="button" id="toggle-sell-item-btn" onclick="window.openAngazaShopModal && window.openAngazaShopModal('form')" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#1e3a8a;color:#ffffff;border:none;cursor:pointer;white-space:nowrap;">+ Add Item</button>
+            <button type="button" id="open-shop-directory-btn" onclick="(function(){var m=document.getElementById('shop-hub-modal');if(m){m.style.display='block';document.getElementById('sm-view-sheet').style.display='block';document.getElementById('sm-view-form').style.display='none';document.getElementById('sm-view-list').style.display='none';}})()" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#eff6ff;color:#1e3a8a;border:1.5px solid #0284c7;cursor:pointer;white-space:nowrap;">📋 Shop List (<span id="shop-dir-count">0</span>)</button>
+            <button type="button" id="toggle-sell-item-btn" onclick="(function(){var m=document.getElementById('shop-hub-modal');if(m){m.style.display='block';document.getElementById('sm-view-sheet').style.display='none';document.getElementById('sm-view-form').style.display='block';document.getElementById('sm-view-list').style.display='none';}})()" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#1e3a8a;color:#ffffff;border:none;cursor:pointer;white-space:nowrap;">+ Add Item</button>
             <label for="scan-shop-list-input" style="min-height:34px;padding:4px 6px;font-size:0.74rem;font-weight:800;border-radius:8px;background:#fde68a;color:#1e3a8a;border:1.5px solid #f59e0b;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;margin:0;white-space:nowrap;">📷 Scan List</label>
             <input type="file" id="scan-shop-list-input" accept="image/*" style="display:none;" />
           </div>
@@ -508,7 +508,7 @@
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=52" defer></script>
+  <script src="app.js?v=53" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
