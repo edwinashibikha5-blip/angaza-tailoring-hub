@@ -2522,93 +2522,143 @@ document.addEventListener('click', (e) => {
   });
 })();
 
-/* === v73 FIX: FINANCE PIN (#fin-lock / #fin-open) + CALCULATOR INLINE MEMORY === */
-(function initAngazaV73Fixes() {
-  const PIN_STORAGE_KEY = 'angaza_owner_pin_v1';
-  const getOwnerPin = () => (localStorage.getItem(PIN_STORAGE_KEY) || '1234').trim();
+/* === v76 STATIC PIN VAULT & SINGLE-SCREEN CONTROLLER === */
+(function initAngazaV76() {
+  const PIN_KEY = 'angaza_owner_pin_v1';
+  const getPin = () => (localStorage.getItem(PIN_KEY) || '1234').trim();
 
-  function setFinMessage(msg, isErr = true) {
-    const errEl = document.getElementById('pin-error');
-    if (!errEl) return;
-    errEl.textContent = msg || '';
-    errEl.style.color = isErr ? '#dc2626' : '#15803d';
-    errEl.style.fontWeight = '700';
+  // A. Hide ALL Home elements above sub-tabs when not on Home
+  function applySingleScreenView(activeTabId) {
+    const isHome = !activeTabId || activeTabId === 'tab-orders';
+    const firstSubTab = document.getElementById('tab-repairs');
+    const mainParent = firstSubTab ? firstSubTab.parentElement : null;
+
+    if (mainParent) {
+      for (const child of Array.from(mainParent.children)) {
+        if (child.id === 'tab-repairs') break;
+        if (child.tagName === 'HEADER' || child.tagName === 'NAV') continue;
+        if (isHome) {
+          child.style.removeProperty('display');
+          child.hidden = false;
+        } else {
+          child.style.setProperty('display', 'none', 'important');
+          child.hidden = true;
+        }
+      }
+    }
+
+    ['naomi-welcome-card', 'shop-overview-card', 'tab-orders'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (isHome) {
+        el.style.removeProperty('display');
+        el.hidden = false;
+      } else {
+        el.style.setProperty('display', 'none', 'important');
+        el.hidden = true;
+      }
+    });
   }
 
-  function showFinanceOpen() {
-    const lockBox = document.getElementById('fin-lock');
-    const openBox = document.getElementById('fin-open');
-    if (lockBox) lockBox.style.setProperty('display', 'none', 'important');
-    if (openBox) {
-      openBox.style.setProperty('display', 'block', 'important');
-      openBox.hidden = false;
+  // B. Pure Static PIN Login (#fin-lock / #fin-open)
+  function setPinStatus(msg, ok = false) {
+    const el = document.getElementById('pin-error');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = ok ? '#15803d' : '#dc2626';
+    el.style.fontWeight = '700';
+  }
+
+  function unlockVault() {
+    const lockCard = document.getElementById('fin-lock');
+    const openView = document.getElementById('fin-open');
+    if (lockCard) lockCard.style.setProperty('display', 'none', 'important');
+    if (openView) {
+      openView.style.setProperty('display', 'block', 'important');
+      openView.hidden = false;
     }
-    setFinMessage('');
+    setPinStatus('', true);
     if (typeof window.renderFinanceShopPrices === 'function') window.renderFinanceShopPrices();
   }
 
-  function showFinanceLocked() {
-    const lockBox = document.getElementById('fin-lock');
-    const openBox = document.getElementById('fin-open');
-    if (openBox) openBox.style.setProperty('display', 'none', 'important');
-    if (lockBox) {
-      lockBox.style.setProperty('display', 'block', 'important');
-      lockBox.hidden = false;
+  function lockVault() {
+    const lockCard = document.getElementById('fin-lock');
+    const openView = document.getElementById('fin-open');
+    if (openView) openView.style.setProperty('display', 'none', 'important');
+    if (lockCard) {
+      lockCard.style.setProperty('display', 'block', 'important');
+      lockCard.hidden = false;
     }
     const inp = document.getElementById('pin-input');
     if (inp) inp.value = '';
   }
 
-  function handlePinUnlock(e) {
+  function submitPin(e) {
     if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
     const inp = document.getElementById('pin-input');
-    const entered = (inp ? inp.value : '').trim();
-    const saved = getOwnerPin();
-    if (!entered) {
-      setFinMessage('Enter your 4+ digit Owner PIN (default: 1234).');
+    const val = (inp ? inp.value : '').trim();
+    if (!val) {
+      setPinStatus('Enter your PIN (default: 1234).');
       if (inp) inp.focus();
       return;
     }
-    if (entered === saved || entered === '1234') {
+    if (val === getPin() || val === '1234') {
       if (inp) inp.value = '';
-      showFinanceOpen();
+      unlockVault();
     } else {
-      setFinMessage('Incorrect PIN. Try again or use default 1234.');
+      setPinStatus('Wrong PIN. Try again or use 1234.');
       if (inp) { inp.value = ''; inp.focus(); }
     }
   }
 
+  // C. Event Delegation (Runs in capture phase so nothing can block it)
   document.addEventListener('click', (e) => {
-    if (e.target.closest('#pin-unlock-btn')) { handlePinUnlock(e); return; }
-    if (e.target.closest('#pin-lock-btn')) { e.preventDefault(); e.stopImmediatePropagation(); showFinanceLocked(); return; }
+    const navTrigger = e.target.closest('.nav-btn, [data-tab], .quick-tile');
+    if (navTrigger) {
+      const targetTab = navTrigger.getAttribute('data-tab') ||
+        (navTrigger.dataset && navTrigger.dataset.target) || '';
+      setTimeout(() => {
+        const activeSec = document.querySelector('section.tab-section.active, section.active');
+        applySingleScreenView(targetTab || (activeSec ? activeSec.id : 'tab-orders'));
+      }, 0);
+    }
+
+    if (e.target.closest('#pin-unlock-btn')) { submitPin(e); return; }
+    if (e.target.closest('#pin-lock-btn')) { e.preventDefault(); e.stopImmediatePropagation(); lockVault(); return; }
+
     if (e.target.closest('#save-pin')) {
       e.preventDefault(); e.stopImmediatePropagation();
       const np = document.getElementById('new-pin');
-      const val = (np ? np.value : '').trim();
-      if (!/^\d{4,8}$/.test(val)) return;
-      localStorage.setItem(PIN_STORAGE_KEY, val);
+      const nextPin = (np ? np.value : '').trim();
+      if (!/^\d{4,8}$/.test(nextPin)) {
+        setPinStatus('New PIN must be 4 to 8 digits.');
+        return;
+      }
+      localStorage.setItem(PIN_KEY, nextPin);
       if (np) np.value = '';
       const btn = document.getElementById('save-pin');
-      if (btn) { const old = btn.textContent; btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = old, 1500); }
+      if (btn) { const t = btn.textContent; btn.textContent = 'PIN Saved ✓'; setTimeout(() => btn.textContent = t, 1500); }
       return;
     }
+
+    // Calculator Memory Drawer & Inline Save Ref
     if (e.target.closest('#calc-toggle-mem-btn')) {
       e.preventDefault(); e.stopImmediatePropagation();
-      const drawer = document.getElementById('calc-memory-drawer');
-      if (drawer) drawer.style.display = drawer.style.display === 'block' ? 'none' : 'block';
+      const d = document.getElementById('calc-memory-drawer');
+      if (d) d.style.display = d.style.display === 'block' ? 'none' : 'block';
       return;
     }
     if (e.target.closest('#calc-save-mem-btn')) {
       e.preventDefault(); e.stopImmediatePropagation();
-      const drawer = document.getElementById('calc-memory-drawer');
-      if (drawer) drawer.style.display = 'block';
+      const d = document.getElementById('calc-memory-drawer');
+      if (d) d.style.display = 'block';
       let bar = document.getElementById('calc-inline-save-bar');
-      if (!bar && drawer) {
+      if (!bar && d) {
         bar = document.createElement('div');
         bar.id = 'calc-inline-save-bar';
         bar.style.cssText = 'display:flex;gap:5px;margin-bottom:6px;align-items:center;';
         bar.innerHTML = '<input type="text" id="calc-inline-label" placeholder="Client / Style name..." style="flex:1;min-height:30px;padding:3px 8px;font-size:0.78rem;border:1px solid #93c5fd;border-radius:6px;" /><button type="button" id="calc-inline-confirm" style="width:auto;min-height:30px;padding:3px 10px;font-size:0.75rem;font-weight:800;background:#16a34a;color:#fff;border:none;border-radius:6px;margin:0;">Save</button>';
-        drawer.insertBefore(bar, document.getElementById('calc-memory-list'));
+        d.insertBefore(bar, document.getElementById('calc-memory-list'));
         document.getElementById('calc-inline-confirm').addEventListener('click', (ev) => {
           ev.stopPropagation();
           const g = document.getElementById('calc-person-group');
@@ -2646,33 +2696,8 @@ document.addEventListener('click', (e) => {
   }, true);
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'pin-input') handlePinUnlock(e);
+    if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'pin-input') submitPin(e);
   }, true);
-})();
 
-/* === v74 FIX: SYNC TOP HOME CARDS WITH ACTIVE TAB === */
-(function syncHomeTopCardsWithTabs() {
-  function syncTopCards() {
-    const homeTab = document.getElementById('tab-orders');
-    const isHomeActive = homeTab && homeTab.classList.contains('active') && !homeTab.hidden && homeTab.style.display !== 'none';
-    ['naomi-welcome-card', 'shop-overview-card'].forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (isHomeActive) {
-        el.style.removeProperty('display');
-        el.hidden = false;
-      } else {
-        el.style.setProperty('display', 'none', 'important');
-        el.hidden = true;
-      }
-    });
-  }
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.nav-btn, [data-tab], .quick-tile')) {
-      setTimeout(syncTopCards, 0);
-      setTimeout(syncTopCards, 50);
-    }
-  }, true);
-  window.addEventListener('DOMContentLoaded', syncTopCards);
-  setTimeout(syncTopCards, 100);
+  window.addEventListener('DOMContentLoaded', () => applySingleScreenView('tab-orders'));
 })();
