@@ -29,7 +29,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=98'+Date.now());})(this)">↻ v98</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=98'+Date.now());})(this)">↻ v99</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -845,6 +845,6 @@
   }
 })();
 </script>
-<script id="angaza-tab-isolation-js">(function(){function setTab(id){if(!id)return;document.body.setAttribute("data-active-tab",id);document.querySelectorAll(".tab-section").forEach(function(s){s.classList.toggle("active",s.id===id);});document.querySelectorAll(".nav button[data-nav]").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-nav")===id);});window.scrollTo(0,0);}document.addEventListener("click",function(e){var btn=e.target.closest(".nav button[data-nav]");if(btn)setTab(btn.getAttribute("data-nav"));},true);setTab("tab-orders");var origShow=window.angazaShowTab;document.addEventListener("click",function(e){var b=e.target.closest(".nav button[data-nav]");if(b)setTimeout(function(){setTab(b.getAttribute("data-nav"));},0);});})();</script>
+<script id="angaza-tab-isolation-js">(function(){function setTab(id){if(!id)return;document.body.setAttribute("data-active-tab",id);["naomi-welcome-card","shop-overview-card"].forEach(function(cid){var el=document.getElementById(cid);if(el)el.style.setProperty("display",id==="tab-orders"?"":"none","important");});document.querySelectorAll(".tab-section").forEach(function(s){var on=s.id===id;s.classList.toggle("active",on);s.style.setProperty("display",on?"block":"none","important");});document.querySelectorAll(".nav button[data-nav]").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-nav")===id);});window.scrollTo(0,0);}document.addEventListener("click",function(e){var b=e.target.closest(".nav button[data-nav]");if(b){var id=b.getAttribute("data-nav");setTab(id);setTimeout(function(){setTab(id);},10);}},true);setTab("tab-orders");})();</script>
 </body>
 </html>
