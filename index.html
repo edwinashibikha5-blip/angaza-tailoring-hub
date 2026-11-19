@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=89" />
+  <link rel="stylesheet" href="style.css?v=90" />
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=89'+Date.now());})(this)">↻ v89</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=90'+Date.now());})(this)">↻ v90</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -492,10 +492,12 @@
             <button type="submit" class="btn-dark">+ Log</button>
           </form>
           <div id="exp-list" class="item-list" style="margin-bottom:12px;"></div>
-          <div class="pin-row" style="max-width:280px;">
-            <input type="password" id="new-pin" placeholder="New Owner PIN" inputmode="numeric" />
-            <button type="button" id="save-pin" class="btn-gold">Set PIN</button>
+          <div class="pin-row" style="max-width:340px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <input type="password" id="new-pin" placeholder="New 4-8 digit PIN" inputmode="numeric" style="flex:1;min-width:130px;" />
+            <button type="button" id="save-pin" class="btn-gold" style="width:auto;padding:8px 14px;">Set PIN</button>
+            <button type="button" id="pin-lock-btn-2" style="width:auto;padding:8px 12px;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;border-radius:10px;font-weight:800;">Lock 🔒</button>
           </div>
+          <p id="new-pin-status" style="margin:6px 0 0;font-size:0.78rem;font-weight:700;"></p>
         </div>
       </div>
     </section>
@@ -510,7 +512,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=89" defer></script>
+  <script src="app.js?v=90" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -693,7 +695,7 @@
     const inp = document.getElementById('pin-input');
     const code = (inp ? inp.value : '').trim();
     if (!code) { setPinMsg('Enter Owner PIN (default: 1234).', false); if (inp) inp.focus(); return; }
-    if (code === getPin() || code === '1234') {
+    if (code === getPin()) {
       if (inp) inp.value = '';
       openVault();
     } else {
@@ -711,13 +713,19 @@
       return;
     }
     if (e.target.closest('#pin-unlock-btn')) { tryUnlock(e); return; }
-    if (e.target.closest('#pin-lock-btn')) { closeVault(); return; }
+    if (e.target.closest('#pin-lock-btn, #pin-lock-btn-2')) { closeVault(); return; }
     if (e.target.closest('#save-pin')) {
       const np = document.getElementById('new-pin');
+      const st = document.getElementById('new-pin-status');
       const v = (np ? np.value : '').trim();
-      if (!/^\d{4,8}$/.test(v)) { setPinMsg('New PIN must be 4-8 digits.', false); return; }
+      if (!/^\d{4,8}$/.test(v)) {
+        if (st) { st.style.color = '#dc2626'; st.textContent = 'Enter 4 to 8 numbers for your new PIN.'; }
+        if (np) np.focus();
+        return;
+      }
       localStorage.setItem(PIN_KEY, v);
       if (np) np.value = '';
+      if (st) { st.style.color = '#15803d'; st.textContent = 'New Owner PIN saved ✓ (1234 replaced).'; }
       const b = document.getElementById('save-pin');
       if (b) { const old = b.textContent; b.textContent = 'Saved ✓'; setTimeout(() => b.textContent = old, 1500); }
       return;
