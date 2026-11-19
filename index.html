@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=78" />
+  <link rel="stylesheet" href="style.css?v=79" />
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=78'+Date.now());})(this)">↻</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=79'+Date.now());})(this)">↻</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -512,7 +512,7 @@ main class="container">
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=78" defer></script>
+  <script src="app.js?v=79" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -594,17 +594,22 @@ main class="container">
   </div>
 
 <script id="angaza-core-controller">
-(function() {
+window.addEventListener('DOMContentLoaded', function() {
   const PIN_KEY = 'angaza_owner_pin_v1';
   const getPin = () => (localStorage.getItem(PIN_KEY) || '1234').trim();
 
-  // 1. Safe Single-Screen Controller (ONLY toggles the 3 Home sections, never touches modals/panels)
-  function syncHomeVisibility() {
+  // 1. Single-Screen Tab Sync (hides Home cards whenever any sub-tab is active)
+  function syncHomeVisibility(forcedTabId) {
     const subTabs = ['tab-repairs', 'tab-clients', 'tab-gallery', 'tab-finance'];
-    const isSubActive = subTabs.some((id) => {
-      const el = document.getElementById(id);
-      return el && (el.classList.contains('active') || (!el.hidden && el.style.display === 'block'));
-    });
+    let isSubActive = false;
+    if (forcedTabId) {
+      isSubActive = subTabs.includes(forcedTabId);
+    } else {
+      isSubActive = subTabs.some((id) => {
+        const el = document.getElementById(id);
+        return el && (el.classList.contains('active') || (!el.hidden && el.style.display === 'block'));
+      });
+    }
 
     ['naomi-welcome-card', 'shop-overview-card', 'tab-orders'].forEach((id) => {
       const el = document.getElementById(id);
@@ -619,7 +624,7 @@ main class="container">
     });
   }
 
-  const obs = new MutationObserver(syncHomeVisibility);
+  const obs = new MutationObserver(() => syncHomeVisibility());
   ['tab-orders', 'tab-repairs', 'tab-clients', 'tab-gallery', 'tab-finance'].forEach((id) => {
     const sec = document.getElementById(id);
     if (sec) obs.observe(sec, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
@@ -673,9 +678,11 @@ main class="container">
   }
 
   document.addEventListener('click', (e) => {
-    if (e.target.closest('.nav-btn, [data-tab], .quick-tile')) {
-      setTimeout(syncHomeVisibility, 0);
-      setTimeout(syncHomeVisibility, 50);
+    const navBtn = e.target.closest('[data-nav], .nav-btn, .quick-tile');
+    if (navBtn) {
+      const target = navBtn.getAttribute('data-nav') || navBtn.getAttribute('data-target') || '';
+      if (target) syncHomeVisibility(target);
+      setTimeout(() => syncHomeVisibility(), 20);
     }
     if (e.target.closest('#pin-unlock-btn')) { tryUnlock(e); return; }
     if (e.target.closest('#pin-lock-btn')) { e.preventDefault(); e.stopImmediatePropagation(); closeVault(); return; }
@@ -688,6 +695,58 @@ main class="container">
       if (np) np.value = '';
       const b = document.getElementById('save-pin');
       if (b) { const old = b.textContent; b.textContent = 'Saved ✓'; setTimeout(() => b.textContent = old, 1500); }
+      return;
+    }
+    if (e.target.closest('#calc-toggle-mem-btn')) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      const d = document.getElementById('calc-memory-drawer');
+      if (d) d.style.display = d.style.display === 'block' ? 'none' : 'block';
+      return;
+    }
+    if (e.target.closest('#calc-save-mem-btn')) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      const d = document.getElementById('calc-memory-drawer');
+      if (d) d.style.display = 'block';
+      let bar = document.getElementById('calc-inline-save-bar');
+      if (!bar && d) {
+        bar = document.createElement('div');
+        bar.id = 'calc-inline-save-bar';
+        bar.style.cssText = 'display:flex;gap:5px;margin-bottom:6px;align-items:center;';
+        bar.innerHTML = '<input type="text" id="calc-inline-label" placeholder="Client / Style name..." style="flex:1;min-height:30px;padding:3px 8px;font-size:0.78rem;border:1px solid #93c5fd;border-radius:6px;" /><button type="button" id="calc-inline-confirm" style="width:auto;min-height:30px;padding:3px 10px;font-size:0.75rem;font-weight:800;background:#16a34a;color:#fff;border:none;border-radius:6px;margin:0;">Save</button>';
+        d.insertBefore(bar, document.getElementById('calc-memory-list'));
+        document.getElementById('calc-inline-confirm').addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const g = document.getElementById('calc-person-group');
+          const def = g ? g.options[g.selectedIndex].text.replace(/^[^\w]+/, '').trim() : 'Custom Ref';
+          const lbl = (document.getElementById('calc-inline-label').value || '').trim() || def;
+          const KEY = 'angaza_calc_memory_v1';
+          let list = [];
+          try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (_) {}
+          list.unshift({
+            label: lbl,
+            group: g ? g.value : 'woman_straight',
+            roll: (document.getElementById('calc-fabric-width') || {}).value || '45',
+            b: (document.getElementById('m-bust') || {}).value || '',
+            w: (document.getElementById('m-waist') || {}).value || '',
+            h: (document.getElementById('m-hips') || {}).value || '',
+            sh: (document.getElementById('m-shoulder') || {}).value || '',
+            sl: (document.getElementById('m-sleeve') || {}).value || '',
+            len: (document.getElementById('m-length') || {}).value || '',
+            summary: `${(document.getElementById('calc-out-fabric') || {}).textContent || ''} · ${(document.getElementById('calc-out-time') || {}).textContent || ''}`,
+            isSample: false
+          });
+          localStorage.setItem(KEY, JSON.stringify(list));
+          document.getElementById('calc-inline-label').value = '';
+          bar.style.display = 'none';
+          const cnt = document.getElementById('calc-mem-count');
+          if (cnt) cnt.textContent = String(list.length);
+          const listEl = document.getElementById('calc-memory-list');
+          if (listEl) {
+            listEl.innerHTML = list.map((m, idx) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #e2e8f0;font-size:0.76rem;"><div><strong>${m.label}</strong><div style="color:#64748b;font-size:0.7rem;">${m.summary}</div></div><div style="display:flex;gap:4px;"><button type="button" class="mem-load-btn" data-idx="${idx}" style="width:auto;padding:2px 8px;font-size:0.7rem;background:#dbeafe;color:#1e3a8a;border:none;border-radius:5px;margin:0;">Load</button><button type="button" class="mem-del-btn" data-idx="${idx}" style="width:auto;padding:2px 7px;font-size:0.7rem;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;margin:0;">✕</button></div></div>`).join('');
+          }
+        });
+      }
+      if (bar) { bar.style.display = 'flex'; const inp = document.getElementById('calc-inline-label'); if (inp) inp.focus(); }
     }
   }, true);
 
@@ -695,8 +754,8 @@ main class="container">
     if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'pin-input') tryUnlock(e);
   }, true);
 
-  syncHomeVisibility();
-})();
+  syncHomeVisibility('tab-orders');
+});
 </script>
 </body>
 </html>
