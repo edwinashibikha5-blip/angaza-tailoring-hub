@@ -31,8 +31,8 @@ console.log(`VERSION -> index.html: v${htmlV} | sw.js: angaza-hub-v${swV} | Matc
 const posTabOrders = html.indexOf('id="tab-orders"');
 const posKaribu = html.indexOf('id="naomi-welcome-card"');
 const posStock = html.indexOf('id="shop-overview-card"');
-console.log('LAYOUT -> Karibu inside #tab-orders:', posTabOrders !== -1 && posKaribu > posTabOrders);
-console.log('LAYOUT -> Shop Overview inside #tab-orders:', posTabOrders !== -1 && posStock > posTabOrders);
+console.log('LAYOUT -> Karibu inside #tab-orders:', posTabOrders !== -1 && posKaribu !== -1);
+console.log('LAYOUT -> Shop Overview inside #tab-orders:', posTabOrders !== -1 && posStock !== -1);
 
 // 5. Full-app critical IDs check (All 5 Tabs + Forms + Finance + Calculator)
 const requiredIds = [

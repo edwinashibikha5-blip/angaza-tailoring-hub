@@ -2649,3 +2649,30 @@ document.addEventListener('click', (e) => {
     if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'pin-input') handlePinUnlock(e);
   }, true);
 })();
+
+/* === v74 FIX: SYNC TOP HOME CARDS WITH ACTIVE TAB === */
+(function syncHomeTopCardsWithTabs() {
+  function syncTopCards() {
+    const homeTab = document.getElementById('tab-orders');
+    const isHomeActive = homeTab && homeTab.classList.contains('active') && !homeTab.hidden && homeTab.style.display !== 'none';
+    ['naomi-welcome-card', 'shop-overview-card'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (isHomeActive) {
+        el.style.removeProperty('display');
+        el.hidden = false;
+      } else {
+        el.style.setProperty('display', 'none', 'important');
+        el.hidden = true;
+      }
+    });
+  }
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.nav-btn, [data-tab], .quick-tile')) {
+      setTimeout(syncTopCards, 0);
+      setTimeout(syncTopCards, 50);
+    }
+  }, true);
+  window.addEventListener('DOMContentLoaded', syncTopCards);
+  setTimeout(syncTopCards, 100);
+})();
