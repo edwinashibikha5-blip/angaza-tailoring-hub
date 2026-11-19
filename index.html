@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=92" />
+  <link rel="stylesheet" href="style.css?v=93" />
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=92'+Date.now());})(this)">↻ v92</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=93'+Date.now());})(this)">↻ v93</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -492,10 +492,14 @@
             <button type="submit" class="btn-dark">+ Log</button>
           </form>
           <div id="exp-list" class="item-list" style="margin-bottom:12px;"></div>
-          <div class="pin-row" style="max-width:340px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <input type="password" id="new-pin" placeholder="New 4-8 digit PIN" inputmode="numeric" style="flex:1;min-width:130px;" />
-            <button type="button" id="save-pin" class="btn-gold" style="width:auto;padding:8px 14px;">Set PIN</button>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;">
+            <div id="pin-setup-controls" style="display:flex;gap:6px;align-items:center;flex:1;min-width:210px;">
+              <input type="password" id="new-pin" placeholder="New 4-8 digit PIN" inputmode="numeric" style="flex:1;min-width:120px;" />
+              <button type="button" id="save-pin" class="btn-gold" style="width:auto;padding:8px 14px;">Set PIN</button>
+            </div>
+            <span id="pin-active-badge" style="display:none;font-size:0.78rem;font-weight:800;color:#15803d;background:#dcfce7;padding:6px 10px;border-radius:999px;">Owner PIN Active ✓</span>
             <button type="button" id="pin-lock-btn-2" style="width:auto;padding:8px 12px;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;border-radius:10px;font-weight:800;">Lock 🔒</button>
+            <button type="button" id="pin-reopen-setup" style="display:none;width:auto;padding:6px 10px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-size:0.74rem;font-weight:700;">Change</button>
           </div>
           <p id="new-pin-status" style="margin:6px 0 0;font-size:0.78rem;font-weight:700;"></p>
         </div>
@@ -512,7 +516,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=92" defer></script>
+  <script src="app.js?v=93" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -705,7 +709,7 @@
   }
 
   // Bubble-phase listener so native/app handlers work cleanly without blocking
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', (e) => { if (e.target.closest('#save-pin, #pin-lock-btn, #pin-lock-btn-2')) e.stopPropagation();
     const navBtn = e.target.closest('[data-nav]');
     if (navBtn) {
       const target = navBtn.getAttribute('data-nav');
@@ -714,6 +718,26 @@
     }
     if (e.target.closest('#pin-unlock-btn')) { tryUnlock(e); return; }
     if (e.target.closest('#pin-lock-btn, #pin-lock-btn-2')) { e.preventDefault(); e.stopImmediatePropagation(); closeVault(); switchScreen('tab-finance'); return; }
+    function refreshPinSetupUI() {
+    const customSet = Boolean(localStorage.getItem(PIN_KEY));
+    const box = document.getElementById('pin-setup-controls');
+    const badge = document.getElementById('pin-active-badge');
+    const chg = document.getElementById('pin-reopen-setup');
+    if (box) box.style.display = customSet ? 'none' : 'flex';
+    if (badge) badge.style.display = customSet ? 'inline-block' : 'none';
+    if (chg) chg.style.display = customSet ? 'inline-block' : 'none';
+  }
+  refreshPinSetupUI();
+
+  if (e.target.closest('#pin-reopen-setup')) {
+      const box = document.getElementById('pin-setup-controls');
+      const chg = document.getElementById('pin-reopen-setup');
+      if (box) box.style.display = 'flex';
+      if (chg) chg.style.display = 'none';
+      const np = document.getElementById('new-pin');
+      if (np) np.focus();
+      return;
+    }
     if (e.target.closest('#save-pin')) {
       e.preventDefault(); e.stopImmediatePropagation();
       const np = document.getElementById('new-pin');
@@ -726,9 +750,9 @@
       }
       localStorage.setItem(PIN_KEY, v);
       if (np) np.value = '';
-      if (st) { st.style.color = '#15803d'; st.textContent = 'New Owner PIN saved ✓ (1234 replaced).'; }
-      const b = document.getElementById('save-pin');
-      if (b) { const old = b.textContent; b.textContent = 'Saved ✓'; setTimeout(() => b.textContent = old, 1500); }
+      if (st) { st.style.color = '#15803d'; st.textContent = 'Owner PIN saved ✓ (1234 retired).'; }
+      refreshPinSetupUI();
+      setTimeout(() => switchScreen('tab-finance'), 10);
       return;
     }
     if (e.target.closest('#calc-toggle-mem-btn')) {
