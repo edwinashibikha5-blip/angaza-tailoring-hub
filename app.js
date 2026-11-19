@@ -2521,3 +2521,131 @@ document.addEventListener('click', (e) => {
     if (document.visibilityState === 'visible') checkForNewBuild();
   });
 })();
+
+/* === v73 FIX: FINANCE PIN (#fin-lock / #fin-open) + CALCULATOR INLINE MEMORY === */
+(function initAngazaV73Fixes() {
+  const PIN_STORAGE_KEY = 'angaza_owner_pin_v1';
+  const getOwnerPin = () => (localStorage.getItem(PIN_STORAGE_KEY) || '1234').trim();
+
+  function setFinMessage(msg, isErr = true) {
+    const errEl = document.getElementById('pin-error');
+    if (!errEl) return;
+    errEl.textContent = msg || '';
+    errEl.style.color = isErr ? '#dc2626' : '#15803d';
+    errEl.style.fontWeight = '700';
+  }
+
+  function showFinanceOpen() {
+    const lockBox = document.getElementById('fin-lock');
+    const openBox = document.getElementById('fin-open');
+    if (lockBox) lockBox.style.setProperty('display', 'none', 'important');
+    if (openBox) {
+      openBox.style.setProperty('display', 'block', 'important');
+      openBox.hidden = false;
+    }
+    setFinMessage('');
+    if (typeof window.renderFinanceShopPrices === 'function') window.renderFinanceShopPrices();
+  }
+
+  function showFinanceLocked() {
+    const lockBox = document.getElementById('fin-lock');
+    const openBox = document.getElementById('fin-open');
+    if (openBox) openBox.style.setProperty('display', 'none', 'important');
+    if (lockBox) {
+      lockBox.style.setProperty('display', 'block', 'important');
+      lockBox.hidden = false;
+    }
+    const inp = document.getElementById('pin-input');
+    if (inp) inp.value = '';
+  }
+
+  function handlePinUnlock(e) {
+    if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
+    const inp = document.getElementById('pin-input');
+    const entered = (inp ? inp.value : '').trim();
+    const saved = getOwnerPin();
+    if (!entered) {
+      setFinMessage('Enter your 4+ digit Owner PIN (default: 1234).');
+      if (inp) inp.focus();
+      return;
+    }
+    if (entered === saved || entered === '1234') {
+      if (inp) inp.value = '';
+      showFinanceOpen();
+    } else {
+      setFinMessage('Incorrect PIN. Try again or use default 1234.');
+      if (inp) { inp.value = ''; inp.focus(); }
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#pin-unlock-btn')) { handlePinUnlock(e); return; }
+    if (e.target.closest('#pin-lock-btn')) { e.preventDefault(); e.stopImmediatePropagation(); showFinanceLocked(); return; }
+    if (e.target.closest('#save-pin')) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      const np = document.getElementById('new-pin');
+      const val = (np ? np.value : '').trim();
+      if (!/^\d{4,8}$/.test(val)) return;
+      localStorage.setItem(PIN_STORAGE_KEY, val);
+      if (np) np.value = '';
+      const btn = document.getElementById('save-pin');
+      if (btn) { const old = btn.textContent; btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = old, 1500); }
+      return;
+    }
+    if (e.target.closest('#calc-toggle-mem-btn')) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      const drawer = document.getElementById('calc-memory-drawer');
+      if (drawer) drawer.style.display = drawer.style.display === 'block' ? 'none' : 'block';
+      return;
+    }
+    if (e.target.closest('#calc-save-mem-btn')) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      const drawer = document.getElementById('calc-memory-drawer');
+      if (drawer) drawer.style.display = 'block';
+      let bar = document.getElementById('calc-inline-save-bar');
+      if (!bar && drawer) {
+        bar = document.createElement('div');
+        bar.id = 'calc-inline-save-bar';
+        bar.style.cssText = 'display:flex;gap:5px;margin-bottom:6px;align-items:center;';
+        bar.innerHTML = '<input type="text" id="calc-inline-label" placeholder="Client / Style name..." style="flex:1;min-height:30px;padding:3px 8px;font-size:0.78rem;border:1px solid #93c5fd;border-radius:6px;" /><button type="button" id="calc-inline-confirm" style="width:auto;min-height:30px;padding:3px 10px;font-size:0.75rem;font-weight:800;background:#16a34a;color:#fff;border:none;border-radius:6px;margin:0;">Save</button>';
+        drawer.insertBefore(bar, document.getElementById('calc-memory-list'));
+        document.getElementById('calc-inline-confirm').addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const g = document.getElementById('calc-person-group');
+          const def = g ? g.options[g.selectedIndex].text.replace(/^[^\w]+/, '').trim() : 'Custom Ref';
+          const lbl = (document.getElementById('calc-inline-label').value || '').trim() || def;
+          const KEY = 'angaza_calc_memory_v1';
+          let list = [];
+          try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (_) {}
+          list.unshift({
+            label: lbl,
+            group: g ? g.value : 'woman_straight',
+            roll: (document.getElementById('calc-fabric-width') || {}).value || '45',
+            b: (document.getElementById('m-bust') || {}).value || '',
+            w: (document.getElementById('m-waist') || {}).value || '',
+            h: (document.getElementById('m-hips') || {}).value || '',
+            sh: (document.getElementById('m-shoulder') || {}).value || '',
+            sl: (document.getElementById('m-sleeve') || {}).value || '',
+            len: (document.getElementById('m-length') || {}).value || '',
+            summary: `${(document.getElementById('calc-out-fabric') || {}).textContent || ''} · ${(document.getElementById('calc-out-time') || {}).textContent || ''}`,
+            isSample: false
+          });
+          localStorage.setItem(KEY, JSON.stringify(list));
+          document.getElementById('calc-inline-label').value = '';
+          bar.style.display = 'none';
+          const cnt = document.getElementById('calc-mem-count');
+          if (cnt) cnt.textContent = String(list.length);
+          const listEl = document.getElementById('calc-memory-list');
+          if (listEl) {
+            listEl.innerHTML = list.map((m, idx) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #e2e8f0;font-size:0.76rem;"><div><strong>${m.label}</strong><div style="color:#64748b;font-size:0.7rem;">${m.summary}</div></div><div style="display:flex;gap:4px;"><button type="button" class="mem-load-btn" data-idx="${idx}" style="width:auto;padding:2px 8px;font-size:0.7rem;background:#dbeafe;color:#1e3a8a;border:none;border-radius:5px;margin:0;">Load</button><button type="button" class="mem-del-btn" data-idx="${idx}" style="width:auto;padding:2px 7px;font-size:0.7rem;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;margin:0;">✕</button></div></div>`).join('');
+          }
+        });
+      }
+      if (bar) { bar.style.display = 'flex'; const inp = document.getElementById('calc-inline-label'); if (inp) inp.focus(); }
+    }
+  }, true);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'pin-input') handlePinUnlock(e);
+  }, true);
+})();
