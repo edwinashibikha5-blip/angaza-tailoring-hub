@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=93" />
+  <link rel="stylesheet" href="style.css?v=94" />
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=93'+Date.now());})(this)">↻ v93</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=94'+Date.now());})(this)">↻ v94</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -190,20 +190,20 @@
 
       
       
-          <div class="row-2">
-            <div>
-              <label for="acc-qty">Quantity in Shop</label>
-              <input type="text" id="acc-qty" placeholder="e.g. 24 pcs / 5 rolls" required />
-            </div>
-            <div>
-              <label for="acc-status">Stock Status</label>
-              <select id="acc-status">
-                <option value="In Stock">In Stock</option>
-                <option value="Running Low">Running Low</option>
-                <option value="Restock Soon">Restock Soon</option>
-              </select>
-            </div>
+          <div id="shop-stock-fields" class="row-2" style="display:none;margin-top:6px;">
+          <div>
+            <label for="acc-qty">Quantity in Shop</label>
+            <input type="text" id="acc-qty" value="1 pc" placeholder="e.g. 24 pcs / 5 rolls" />
           </div>
+          <div>
+            <label for="acc-status">Stock Status</label>
+            <select id="acc-status">
+              <option value="In Stock">In Stock</option>
+              <option value="Running Low">Running Low</option>
+              <option value="Restock Soon">Restock Soon</option>
+            </select>
+          </div>
+        </div>
           <button type="submit" class="btn-primary">+ Save Accessory Item</button>
         </form>
         <div id="accessories-list" class="stack-list" style="margin-top:12px;"></div>
@@ -516,7 +516,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=93" defer></script>
+  <script src="app.js?v=94" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
