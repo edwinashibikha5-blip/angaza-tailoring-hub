@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=99" />
+  <link rel="stylesheet" href="style.css?v=102" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 </head>
 <body>
@@ -29,7 +29,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=99'+Date.now());})(this)">↻ v101</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=102'+Date.now());})(this)">↻ v101</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -517,7 +517,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=99" defer></script>
+  <script src="app.js?v=102" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -846,5 +846,6 @@
 })();
 </script>
 <script id="angaza-tab-isolation-js">(function(){var subIds=["tab-repairs","tab-clients","tab-gallery","tab-finance"];function getHomeBlocks(){var list=["naomi-welcome-card","shop-overview-card","auto-fabric-time-card","tab-orders"].map(function(id){return document.getElementById(id);}).filter(Boolean);document.querySelectorAll("section,div").forEach(function(el){if(el.children.length&&el.textContent.indexOf("Active Orders & WhatsApp Alerts")!==-1&&el.offsetHeight<400&&!el.closest("#tab-repairs,#tab-clients,#tab-gallery,#tab-finance")&&el.tagName==="DIV"&&el.className.indexOf("card")!==-1)list.push(el);});return list;}function setTab(id){if(!id)return;var isHome=id==="tab-orders";document.body.setAttribute("data-active-tab",id);getHomeBlocks().forEach(function(el){el.style.setProperty("display",isHome?"":"none","important");});subIds.forEach(function(sid){var s=document.getElementById(sid);if(s){var on=sid===id;s.classList.toggle("active",on);s.style.setProperty("display",on?"block":"none","important");}});document.querySelectorAll(".nav button[data-nav]").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-nav")===id);});window.scrollTo(0,0);}document.addEventListener("click",function(e){var b=e.target.closest(".nav button[data-nav]");if(b){var id=b.getAttribute("data-nav");setTab(id);setTimeout(function(){setTab(id);},15);}},true);setTab("tab-orders");})();</script>
+<script id="angaza-daily-quote-date-js">(function(){var quotes=["Every stitch, resize, and design brings beauty and confidence to your clients.","Precision in every seam turns simple fabric into timeless elegance.","Great tailoring is patience, skill, and pride woven into every thread.","Your hands turn ideas into garments that make people stand taller.","A clean hem and a warm smile keep loyal clients coming back.","Craftsmanship is doing the hidden stitches just as neatly as the visible ones.","Every measurement taken with care saves hours at the sewing machine.","Style fades, but a well-tailored fit is always unforgettable.","From first chalk mark to final press, your work speaks excellence.","Small details—sharp collars, neat zips, smooth seams—define master tailoring.","Today is a fresh roll of fabric; create something your shop is proud of.","Steady hands, sharp scissors, and creative vision build a thriving atelier.","When a garment fits like a dream, your reputation grows with every step.","Each finished order is a masterpiece carrying Angaza Tailoring Hub quality."];function updateCard(){var card=document.getElementById("naomi-welcome-card");if(!card)return;var now=new Date();var dateStr=now.toLocaleDateString("en-KE",{weekday:"short",day:"numeric",month:"short",year:"numeric"});var badge=document.getElementById("naomi-live-date");if(!badge){var target=card.querySelector("span, .badge, .pill")||card.firstElementChild;if(target&&target.parentElement){badge=document.createElement("span");badge.id="naomi-live-date";badge.style.cssText="font-size:11px;font-weight:600;opacity:0.92;margin-left:6px;white-space:nowrap;";target.parentElement.appendChild(badge);}}if(badge)badge.textContent="📅 "+dateStr;var qEl=card.querySelector(".naomi-quote, p");if(qEl){var dayIdx=Math.floor(now.getTime()/86400000);var step=Math.floor(Date.now()/45000);var q=quotes[(dayIdx+step)%quotes.length];qEl.textContent="""+q+""";}}updateCard();setInterval(updateCard,30000);})();</script>
 </body>
 </html>
