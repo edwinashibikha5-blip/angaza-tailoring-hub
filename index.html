@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=80" />
+  <link rel="stylesheet" href="style.css?v=81" />
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=80'+Date.now());})(this)">↻</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=81'+Date.now());})(this)">↻</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -512,7 +512,7 @@ main class="container">
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=80" defer></script>
+  <script src="app.js?v=81" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -594,43 +594,49 @@ main class="container">
   </div>
 
 <script id="angaza-core-controller">
-window.addEventListener('DOMContentLoaded', function() {
+(function() {
+  const BUILD_TAG = 'v81';
   const PIN_KEY = 'angaza_owner_pin_v1';
   const getPin = () => (localStorage.getItem(PIN_KEY) || '1234').trim();
 
-  // 1. Single-Screen Tab Sync (hides Home cards whenever any sub-tab is active)
-  function syncHomeVisibility(forcedTabId) {
-    const subTabs = ['tab-repairs', 'tab-clients', 'tab-gallery', 'tab-finance'];
-    let isSubActive = false;
-    if (forcedTabId) {
-      isSubActive = subTabs.includes(forcedTabId);
-    } else {
-      isSubActive = subTabs.some((id) => {
-        const el = document.getElementById(id);
-        return el && (el.classList.contains('active') || (!el.hidden && el.style.display === 'block'));
-      });
-    }
+  // 1. Direct Tab Switcher + Home Card Hide/Show (works immediately on tap, zero loops)
+  function switchScreen(targetId) {
+    const allTabs = ['tab-orders', 'tab-repairs', 'tab-clients', 'tab-gallery', 'tab-finance'];
+    const target = allTabs.includes(targetId) ? targetId : 'tab-orders';
+    const isHome = target === 'tab-orders';
 
-    ['naomi-welcome-card', 'shop-overview-card', 'tab-orders'].forEach((id) => {
+    allTabs.forEach((id) => {
+      const sec = document.getElementById(id);
+      if (!sec) return;
+      if (id === target) {
+        sec.classList.add('active');
+        sec.style.removeProperty('display');
+        sec.hidden = false;
+      } else {
+        sec.classList.remove('active');
+        sec.style.setProperty('display', 'none', 'important');
+        sec.hidden = true;
+      }
+    });
+
+    ['naomi-welcome-card', 'shop-overview-card'].forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
-      if (isSubActive) {
-        el.style.setProperty('display', 'none', 'important');
-        el.hidden = true;
-      } else {
+      if (isHome) {
         el.style.removeProperty('display');
         el.hidden = false;
+      } else {
+        el.style.setProperty('display', 'none', 'important');
+        el.hidden = true;
       }
+    });
+
+    document.querySelectorAll('.nav button[data-nav], [data-nav]').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-nav') === target);
     });
   }
 
-  const obs = new MutationObserver(() => syncHomeVisibility());
-  ['tab-orders', 'tab-repairs', 'tab-clients', 'tab-gallery', 'tab-finance'].forEach((id) => {
-    const sec = document.getElementById(id);
-    if (sec) obs.observe(sec, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
-  });
-
-  // 2. Static PIN Vault (#fin-lock <-> #fin-open)
+  // 2. Pure Static PIN Vault (#fin-lock <-> #fin-open)
   function setPinMsg(msg, ok) {
     const err = document.getElementById('pin-error');
     if (!err) return;
@@ -677,17 +683,17 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // Bubble-phase listener so native/app handlers work cleanly without blocking
   document.addEventListener('click', (e) => {
-    const navBtn = e.target.closest('[data-nav], .nav-btn, .quick-tile');
+    const navBtn = e.target.closest('[data-nav]');
     if (navBtn) {
-      const target = navBtn.getAttribute('data-nav') || navBtn.getAttribute('data-target') || '';
-      if (target) syncHomeVisibility(target);
-      setTimeout(() => syncHomeVisibility(), 20);
+      const target = navBtn.getAttribute('data-nav');
+      if (target) switchScreen(target);
+      return;
     }
     if (e.target.closest('#pin-unlock-btn')) { tryUnlock(e); return; }
-    if (e.target.closest('#pin-lock-btn')) { e.preventDefault(); e.stopImmediatePropagation(); closeVault(); return; }
+    if (e.target.closest('#pin-lock-btn')) { closeVault(); return; }
     if (e.target.closest('#save-pin')) {
-      e.preventDefault(); e.stopImmediatePropagation();
       const np = document.getElementById('new-pin');
       const v = (np ? np.value : '').trim();
       if (!/^\d{4,8}$/.test(v)) { setPinMsg('New PIN must be 4-8 digits.', false); return; }
@@ -698,13 +704,11 @@ window.addEventListener('DOMContentLoaded', function() {
       return;
     }
     if (e.target.closest('#calc-toggle-mem-btn')) {
-      e.preventDefault(); e.stopImmediatePropagation();
       const d = document.getElementById('calc-memory-drawer');
       if (d) d.style.display = d.style.display === 'block' ? 'none' : 'block';
       return;
     }
     if (e.target.closest('#calc-save-mem-btn')) {
-      e.preventDefault(); e.stopImmediatePropagation();
       const d = document.getElementById('calc-memory-drawer');
       if (d) d.style.display = 'block';
       let bar = document.getElementById('calc-inline-save-bar');
@@ -748,14 +752,17 @@ window.addEventListener('DOMContentLoaded', function() {
       }
       if (bar) { bar.style.display = 'flex'; const inp = document.getElementById('calc-inline-label'); if (inp) inp.focus(); }
     }
-  }, true);
+  });
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'pin-input') tryUnlock(e);
-  }, true);
+  });
 
-  syncHomeVisibility('tab-orders');
-});
+  // Auto-update Service Worker cleanly on foreground
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.update()));
+  }
+})();
 </script>
 </body>
 </html>
