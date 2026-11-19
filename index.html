@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=96" />
+  <link rel="stylesheet" href="style.css?v=97" />
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=96'+Date.now());})(this)">↻ v96</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=97'+Date.now());})(this)">↻ v97</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -516,7 +516,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=96" defer></script>
+  <script src="app.js?v=97" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -755,55 +755,83 @@
       setTimeout(() => switchScreen('tab-finance'), 10);
       return;
     }
-    if (e.target.closest('#calc-toggle-mem-btn')) {
+    const MEM_KEY = 'angaza_calc_memory_v1';
+    const DEFAULT_REFS = [
+      { label: 'Sample · Woman Straight (M)', b: '36', w: '30', h: '40', sh: '15', sl: '23', len: '42', summary: '2.2 yds · ~3.5 hrs', isSample: true },
+      { label: 'Sample · Man Slim Shirt (L)', b: '40', w: '34', h: '40', sh: '18', sl: '25', len: '30', summary: '1.8 yds · ~2.5 hrs', isSample: true }
+    ];
+    let editingRefIdx = -1;
+    function getRefs() {
+      try {
+        const raw = localStorage.getItem(MEM_KEY);
+        if (!raw) { localStorage.setItem(MEM_KEY, JSON.stringify(DEFAULT_REFS)); return [...DEFAULT_REFS]; }
+        const p = JSON.parse(raw); return Array.isArray(p) ? p : [];
+      } catch (_) { return [...DEFAULT_REFS]; }
+    }
+    function saveRefs(list) {
+      localStorage.setItem(MEM_KEY, JSON.stringify(list));
+      const cnt = document.getElementById('calc-mem-count');
+      if (cnt) cnt.textContent = String(list.length);
+    }
+    function openRefForm(prefill, editIdx) {
       const d = document.getElementById('calc-memory-drawer');
-      if (d) d.style.display = d.style.display === 'block' ? 'none' : 'block';
+      if (!d) return;
+      d.style.display = 'block';
+      let form = document.getElementById('calc-inline-save-bar');
+      if (!form) {
+        form = document.createElement('div');
+        form.id = 'calc-inline-save-bar';
+        form.style.cssText = 'background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:8px;margin-bottom:8px;';
+        form.innerHTML = '<div id="ref-form-title" style="font-size:0.75rem;font-weight:800;color:#1e3a8a;margin-bottom:5px;">Save Reference to Folder</div><input type="text" id="calc-inline-label" placeholder="Client or Style name..." style="width:100%;min-height:34px;padding:5px 8px;font-size:0.8rem;border:1px solid #93c5fd;border-radius:7px;margin-bottom:6px;box-sizing:border-box;" /><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:6px;"><input type="number" step="0.5" id="ref-b" placeholder="Bust" style="min-height:30px;padding:3px 6px;font-size:0.75rem;border:1px solid #cbd5e1;border-radius:6px;" /><input type="number" step="0.5" id="ref-w" placeholder="Waist" style="min-height:30px;padding:3px 6px;font-size:0.75rem;border:1px solid #cbd5e1;border-radius:6px;" /><input type="number" step="0.5" id="ref-h" placeholder="Hips" style="min-height:30px;padding:3px 6px;font-size:0.75rem;border:1px solid #cbd5e1;border-radius:6px;" /><input type="number" step="0.5" id="ref-sh" placeholder="Shoulder" style="min-height:30px;padding:3px 6px;font-size:0.75rem;border:1px solid #cbd5e1;border-radius:6px;" /><input type="number" step="0.5" id="ref-sl" placeholder="Sleeve" style="min-height:30px;padding:3px 6px;font-size:0.75rem;border:1px solid #cbd5e1;border-radius:6px;" /><input type="number" step="0.5" id="ref-len" placeholder="Length" style="min-height:30px;padding:3px 6px;font-size:0.75rem;border:1px solid #cbd5e1;border-radius:6px;" /></div><div style="display:flex;gap:6px;justify-content:flex-end;"><button type="button" id="calc-inline-cancel" style="width:auto;min-height:30px;padding:4px 10px;font-size:0.74rem;background:#e2e8f0;color:#334155;border:none;border-radius:6px;margin:0;">Cancel</button><button type="button" id="calc-inline-confirm" style="width:auto;min-height:30px;padding:4px 12px;font-size:0.75rem;font-weight:800;background:#16a34a;color:#fff;border:none;border-radius:6px;margin:0;">Save to Folder</button></div>';
+        d.insertBefore(form, document.getElementById('calc-memory-list'));
+      }
+      editingRefIdx = typeof editIdx === 'number' ? editIdx : -1;
+      document.getElementById('ref-form-title').textContent = editingRefIdx >= 0 ? 'Edit Saved Reference' : 'Save Reference to Folder';
+      document.getElementById('calc-inline-confirm').textContent = editingRefIdx >= 0 ? 'Update' : 'Save to Folder';
+      document.getElementById('calc-inline-label').value = prefill.label || '';
+      ['b','w','h','sh','sl','len'].forEach((k) => { document.getElementById('ref-' + k).value = prefill[k] || ''; });
+      form.style.display = 'block';
+      document.getElementById('calc-inline-label').focus();
+    }
+    function renderRefList() {
+      const list = getRefs();
+      const cnt = document.getElementById('calc-mem-count');
+      if (cnt) cnt.textContent = String(list.length);
+      const el = document.getElementById('calc-memory-list');
+      if (!el) return;
+      if (!list.length) { el.innerHTML = '<div style="font-size:0.76rem;color:#64748b;padding:8px 2px;">Folder is empty. Tap Save Ref to add one.</div>'; return; }
+      el.innerHTML = list.map((m, i) => '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:7px 4px;border-bottom:1px solid #e2e8f0;font-size:0.76rem;"><div style="flex:1;min-width:0;"><div style="font-weight:800;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + m.label + '</div><div style="color:#475569;font-size:0.7rem;">' + ([m.b&&'B:'+m.b,m.w&&'W:'+m.w,m.h&&'H:'+m.h,m.sh&&'Sh:'+m.sh,m.sl&&'Sl:'+m.sl,m.len&&'L:'+m.len].filter(Boolean).join(' · ') || m.summary || '') + '</div></div><div style="display:flex;gap:4px;"><button type="button" class="ref-load-btn" data-idx="' + i + '" style="width:auto;padding:3px 7px;font-size:0.7rem;background:#dbeafe;color:#1e3a8a;border:none;border-radius:5px;margin:0;">Load</button><button type="button" class="ref-edit-btn" data-idx="' + i + '" style="width:auto;padding:3px 7px;font-size:0.7rem;background:#fef3c7;color:#92400e;border:none;border-radius:5px;margin:0;">Edit</button><button type="button" class="ref-del-btn" data-idx="' + i + '" style="width:auto;padding:3px 7px;font-size:0.7rem;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;margin:0;">✕</button></div></div>').join('');
+    }
+    if (e.target.closest('#calc-toggle-mem-btn')) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      const d = document.getElementById('calc-memory-drawer');
+      if (d) { const open = d.style.display !== 'block'; d.style.display = open ? 'block' : 'none'; const f = document.getElementById('calc-inline-save-bar'); if (f) f.style.display = 'none'; if (open) renderRefList(); }
       return;
     }
     if (e.target.closest('#calc-save-mem-btn')) {
-      const d = document.getElementById('calc-memory-drawer');
-      if (d) d.style.display = 'block';
-      let bar = document.getElementById('calc-inline-save-bar');
-      if (!bar && d) {
-        bar = document.createElement('div');
-        bar.id = 'calc-inline-save-bar';
-        bar.style.cssText = 'display:flex;gap:5px;margin-bottom:6px;align-items:center;';
-        bar.innerHTML = '<input type="text" id="calc-inline-label" placeholder="Client / Style name..." style="flex:1;min-height:30px;padding:3px 8px;font-size:0.78rem;border:1px solid #93c5fd;border-radius:6px;" /><button type="button" id="calc-inline-confirm" style="width:auto;min-height:30px;padding:3px 10px;font-size:0.75rem;font-weight:800;background:#16a34a;color:#fff;border:none;border-radius:6px;margin:0;">Save</button>';
-        d.insertBefore(bar, document.getElementById('calc-memory-list'));
-        document.getElementById('calc-inline-confirm').addEventListener('click', (ev) => {
-          ev.stopPropagation();
-          const g = document.getElementById('calc-person-group');
-          const def = g ? g.options[g.selectedIndex].text.replace(/^[^\w]+/, '').trim() : 'Custom Ref';
-          const lbl = (document.getElementById('calc-inline-label').value || '').trim() || def;
-          const KEY = 'angaza_calc_memory_v1';
-          let list = [];
-          try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (_) {}
-          list.unshift({
-            label: lbl,
-            group: g ? g.value : 'woman_straight',
-            roll: (document.getElementById('calc-fabric-width') || {}).value || '45',
-            b: (document.getElementById('m-bust') || {}).value || '',
-            w: (document.getElementById('m-waist') || {}).value || '',
-            h: (document.getElementById('m-hips') || {}).value || '',
-            sh: (document.getElementById('m-shoulder') || {}).value || '',
-            sl: (document.getElementById('m-sleeve') || {}).value || '',
-            len: (document.getElementById('m-length') || {}).value || '',
-            summary: `${(document.getElementById('calc-out-fabric') || {}).textContent || ''} · ${(document.getElementById('calc-out-time') || {}).textContent || ''}`,
-            isSample: false
-          });
-          localStorage.setItem(KEY, JSON.stringify(list));
-          document.getElementById('calc-inline-label').value = '';
-          bar.style.display = 'none';
-          const cnt = document.getElementById('calc-mem-count');
-          if (cnt) cnt.textContent = String(list.length);
-          const listEl = document.getElementById('calc-memory-list');
-          if (listEl) {
-            listEl.innerHTML = list.map((m, idx) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #e2e8f0;font-size:0.76rem;"><div><strong>${m.label}</strong><div style="color:#64748b;font-size:0.7rem;">${m.summary}</div></div><div style="display:flex;gap:4px;"><button type="button" class="mem-load-btn" data-idx="${idx}" style="width:auto;padding:2px 8px;font-size:0.7rem;background:#dbeafe;color:#1e3a8a;border:none;border-radius:5px;margin:0;">Load</button><button type="button" class="mem-del-btn" data-idx="${idx}" style="width:auto;padding:2px 7px;font-size:0.7rem;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;margin:0;">✕</button></div></div>`).join('');
-          }
-        });
-      }
-      if (bar) { bar.style.display = 'flex'; const inp = document.getElementById('calc-inline-label'); if (inp) inp.focus(); }
+      e.preventDefault(); e.stopImmediatePropagation(); renderRefList();
+      openRefForm({ label: '', b: (document.getElementById('m-bust')||{}).value||'', w: (document.getElementById('m-waist')||{}).value||'', h: (document.getElementById('m-hips')||{}).value||'', sh: (document.getElementById('m-shoulder')||{}).value||'', sl: (document.getElementById('m-sleeve')||{}).value||'', len: (document.getElementById('m-length')||{}).value||'' }, -1);
+      return;
     }
+    if (e.target.closest('#calc-inline-cancel')) { const f = document.getElementById('calc-inline-save-bar'); if (f) f.style.display = 'none'; editingRefIdx = -1; return; }
+    if (e.target.closest('#calc-inline-confirm')) {
+      const g = document.getElementById('calc-person-group');
+      const def = g ? g.options[g.selectedIndex].text.replace(/^[^\w]+/, '').trim() : 'Custom Ref';
+      const entry = { label: (document.getElementById('calc-inline-label').value||'').trim() || def, b: document.getElementById('ref-b').value.trim(), w: document.getElementById('ref-w').value.trim(), h: document.getElementById('ref-h').value.trim(), sh: document.getElementById('ref-sh').value.trim(), sl: document.getElementById('ref-sl').value.trim(), len: document.getElementById('ref-len').value.trim(), isSample: false };
+      const list = getRefs();
+      if (editingRefIdx >= 0 && editingRefIdx < list.length) list[editingRefIdx] = entry; else list.unshift(entry);
+      saveRefs(list); editingRefIdx = -1;
+      const f = document.getElementById('calc-inline-save-bar'); if (f) f.style.display = 'none';
+      renderRefList(); return;
+    }
+    if (e.target.closest('.ref-load-btn')) {
+      const item = getRefs()[Number(e.target.closest('.ref-load-btn').getAttribute('data-idx'))];
+      if (item) { ['b','w','h','sh','sl','len'].forEach((k,i) => { const el = document.getElementById(['m-bust','m-waist','m-hips','m-shoulder','m-sleeve','m-length'][i]); if (el) el.value = item[k]||''; }); const cb = document.getElementById('calc-run-btn'); if (cb) cb.click(); }
+      return;
+    }
+    if (e.target.closest('.ref-edit-btn')) { const idx = Number(e.target.closest('.ref-edit-btn').getAttribute('data-idx')); const item = getRefs()[idx]; if (item) openRefForm(item, idx); return; }
+    if (e.target.closest('.ref-del-btn')) { const idx = Number(e.target.closest('.ref-del-btn').getAttribute('data-idx')); const list = getRefs(); if (idx >= 0 && idx < list.length) { list.splice(idx, 1); saveRefs(list); renderRefList(); } return; }
+
   });
 
   document.addEventListener('keydown', (e) => {
