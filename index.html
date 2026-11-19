@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=77" />
+  <link rel="stylesheet" href="style.css?v=78" />
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
   
       <div class="header-bottom-actions">
         <button type="button" id="btn-quick-scan" class="hdr-scan-btn" title="Scan Measurements">📷 Scan</button>
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=77'+Date.now());})(this)">↻</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=78'+Date.now());})(this)">↻</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -512,7 +512,7 @@ main class="container">
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
   <script src="https://jsdelivr.net"></script>
-  <script src="app.js?v=77" defer></script>
+  <script src="app.js?v=78" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -595,59 +595,37 @@ main class="container">
 
 <script id="angaza-core-controller">
 (function() {
-  const BUILD_VER = 'v77';
   const PIN_KEY = 'angaza_owner_pin_v1';
   const getPin = () => (localStorage.getItem(PIN_KEY) || '1234').trim();
 
-  // 1. Live Single-Screen Enforcer (hides ALL Home blocks when any sub-tab is active)
-  function enforceSingleScreen() {
+  // 1. Safe Single-Screen Controller (ONLY toggles the 3 Home sections, never touches modals/panels)
+  function syncHomeVisibility() {
     const subTabs = ['tab-repairs', 'tab-clients', 'tab-gallery', 'tab-finance'];
-    let activeSub = null;
-    for (const id of subTabs) {
+    const isSubActive = subTabs.some((id) => {
       const el = document.getElementById(id);
-      if (el && (el.classList.contains('active') || (!el.hidden && el.style.display === 'block'))) {
-        activeSub = id;
-        break;
-      }
-    }
-    const isHome = !activeSub;
-
-    // Hide/show everything before #tab-repairs inside its container
-    const rep = document.getElementById('tab-repairs');
-    if (rep && rep.parentElement) {
-      for (const node of Array.from(rep.parentElement.children)) {
-        if (node.id === 'tab-repairs') break;
-        if (node.tagName === 'HEADER' || node.tagName === 'NAV' || node.tagName === 'SCRIPT') continue;
-        if (isHome) {
-          node.style.removeProperty('display');
-          node.hidden = false;
-        } else {
-          node.style.setProperty('display', 'none', 'important');
-          node.hidden = true;
-        }
-      }
-    }
+      return el && (el.classList.contains('active') || (!el.hidden && el.style.display === 'block'));
+    });
 
     ['naomi-welcome-card', 'shop-overview-card', 'tab-orders'].forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
-      if (isHome) {
-        el.style.removeProperty('display');
-        el.hidden = false;
-      } else {
+      if (isSubActive) {
         el.style.setProperty('display', 'none', 'important');
         el.hidden = true;
+      } else {
+        el.style.removeProperty('display');
+        el.hidden = false;
       }
     });
   }
 
-  // Observe class/style changes on all tab sections so switching tabs ALWAYS syncs immediately
-  const obs = new MutationObserver(enforceSingleScreen);
-  document.querySelectorAll('section.tab-section, section[id^="tab-"]').forEach((sec) => {
-    obs.observe(sec, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+  const obs = new MutationObserver(syncHomeVisibility);
+  ['tab-orders', 'tab-repairs', 'tab-clients', 'tab-gallery', 'tab-finance'].forEach((id) => {
+    const sec = document.getElementById(id);
+    if (sec) obs.observe(sec, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
   });
 
-  // 2. Pure Static PIN Vault (#fin-lock <-> #fin-open)
+  // 2. Static PIN Vault (#fin-lock <-> #fin-open)
   function setPinMsg(msg, ok) {
     const err = document.getElementById('pin-error');
     if (!err) return;
@@ -656,7 +634,7 @@ main class="container">
     err.style.fontWeight = '700';
   }
 
-  function openFinanceVault() {
+  function openVault() {
     const lk = document.getElementById('fin-lock');
     const op = document.getElementById('fin-open');
     if (lk) lk.style.setProperty('display', 'none', 'important');
@@ -668,7 +646,7 @@ main class="container">
     if (typeof window.renderFinanceShopPrices === 'function') window.renderFinanceShopPrices();
   }
 
-  function closeFinanceVault() {
+  function closeVault() {
     const lk = document.getElementById('fin-lock');
     const op = document.getElementById('fin-open');
     if (op) op.style.setProperty('display', 'none', 'important');
@@ -684,14 +662,10 @@ main class="container">
     if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
     const inp = document.getElementById('pin-input');
     const code = (inp ? inp.value : '').trim();
-    if (!code) {
-      setPinMsg('Enter Owner PIN (default: 1234).', false);
-      if (inp) inp.focus();
-      return;
-    }
+    if (!code) { setPinMsg('Enter Owner PIN (default: 1234).', false); if (inp) inp.focus(); return; }
     if (code === getPin() || code === '1234') {
       if (inp) inp.value = '';
-      openFinanceVault();
+      openVault();
     } else {
       setPinMsg('Incorrect PIN. Try again or enter 1234.', false);
       if (inp) { inp.value = ''; inp.focus(); }
@@ -700,11 +674,11 @@ main class="container">
 
   document.addEventListener('click', (e) => {
     if (e.target.closest('.nav-btn, [data-tab], .quick-tile')) {
-      setTimeout(enforceSingleScreen, 0);
-      setTimeout(enforceSingleScreen, 40);
+      setTimeout(syncHomeVisibility, 0);
+      setTimeout(syncHomeVisibility, 50);
     }
     if (e.target.closest('#pin-unlock-btn')) { tryUnlock(e); return; }
-    if (e.target.closest('#pin-lock-btn')) { e.preventDefault(); e.stopImmediatePropagation(); closeFinanceVault(); return; }
+    if (e.target.closest('#pin-lock-btn')) { e.preventDefault(); e.stopImmediatePropagation(); closeVault(); return; }
     if (e.target.closest('#save-pin')) {
       e.preventDefault(); e.stopImmediatePropagation();
       const np = document.getElementById('new-pin');
@@ -721,7 +695,7 @@ main class="container">
     if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'pin-input') tryUnlock(e);
   }, true);
 
-  enforceSingleScreen();
+  syncHomeVisibility();
 })();
 </script>
 </body>
