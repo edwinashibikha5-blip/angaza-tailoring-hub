@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=127" />
+  <link rel="stylesheet" href="style.css?v=128" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=127'+Date.now());})(this)">↻ v127</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=128'+Date.now());})(this)">↻ v128</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=127" defer></script>
+  <script src="app.js?v=128" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -933,5 +933,136 @@
 })();
 </script>
 <!-- /V127_ONETOUCH -->
+<!-- V128_UNIFIED_SCAN -->
+<script>
+(function(){
+  const VK='angaza_atelier_vault_v2';
+  const getV=()=>{try{return JSON.parse(localStorage.getItem(VK)||'{}')}catch(e){return{}}};
+  const setV=(v)=>localStorage.setItem(VK,JSON.stringify(v));
+
+  window._v128ScanImg=async function(file,onMsg){
+    const dataUrl=await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>{const img=new Image();img.onload=()=>{const s=Math.min(1,760/(img.width||760));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));const ctx=c.getContext('2d');ctx.filter='contrast(1.35) brightness(1.06)';ctx.drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',0.64));};img.onerror=rej;img.src=r.result;};
+      r.onerror=rej;r.readAsDataURL(file);
+    });
+    if(!window.Tesseract){
+      if(onMsg)onMsg('Loading OCR...');
+      await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://unpkg.com;});
+    }
+    if(onMsg)onMsg('Transcribing...');
+    const out=await window.Tesseract.recognize(dataUrl,'eng');
+    return {dataUrl,text:(out&&out.data&&out.data.text)?out.data.text.trim():''};
+  };
+
+  window._v128SaveStock=function(raw){
+    const lines=String(raw||'').split(/\n|;/).map(s=>s.trim()).filter(Boolean);
+    const v=getV(); if(!Array.isArray(v.shopItems))v.shopItems=[];
+    let added=0;
+    lines.forEach(ln=>{
+      const pm=ln.match(/(?:kes|ksh)?\s*(\d{2,6})\s*$/i);
+      const qm=ln.match(/(?:x|qty)\s*(\d+)/i);
+      const price=pm?Number(pm.slice(1,2).join('')):0;
+      const numQty=qm?Number(qm.slice(1,2).join('')):1;
+      const name=ln.replace(/(?:kes|ksh)?\s*\d{2,6}\s*$/i,'').replace(/(?:x|qty)\s*\d+/i,'').replace(/[\-:|]+$/g,'').trim();
+      if(name.length>=2){
+        v.shopItems.unshift({id:'sc_'+Date.now()+'_'+added,name,category:'Stock Taking',numQty,unit:'pcs',qty:numQty+' pcs',sellPrice:price,note:'KES '+price,done:false});
+        added+=1;
+      }
+    });
+    if(added>0){setV(v);if(window._angazaEnsure29)window._angazaEnsure29();const d=document.getElementById('shop-directory-drawer');if(d)d.style.display='block';}
+    return added;
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const VK='angaza_atelier_vault_v2';
+  const getV=()=>{try{return JSON.parse(localStorage.getItem(VK)||'{}')}catch(e){return{}}};
+  const setV=(v)=>localStorage.setItem(VK,JSON.stringify(v));
+
+  function drawClientsDir(){
+    const box=document.getElementById('v128-cli-dir'); if(!box)return;
+    const list=Array.isArray(getV().clients)?getV().clients:[];
+    if(!list.length){box.innerHTML='<div style="font-size:0.76rem;color:#64748b;">No transcribed clients yet.</div>';return;}
+    box.innerHTML=list.slice(0,15).map((c,idx)=>{
+      const m=[['B',c.chest],['W',c.waist],['H',c.hips],['Sh',c.shoulder],['Sl',c.sleeve],['FL',c.length],['Tr',c.outseam],['Nk',c.neck]].filter(([,v])=>v).map(([k,v])=>k+':'+v).join(' · ');
+      const img=c.photo?'<img src="'+c.photo+'" style="width:42px;height:42px;object-fit:cover;border-radius:7px;border:1px solid #cbd5e1;" />':'';
+      return '<div style="display:flex;gap:7px;align-items:center;padding:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:5px;">'+img
+        +'<div style="flex:1;min-width:0;"><div style="font-size:0.8rem;font-weight:700;color:#0f172a;">'+(c.name||'Client')+' <span style="font-weight:400;color:#475569;">'+(c.phone||'')+'</span></div><div style="font-size:0.72rem;color:#1e40af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(m||c.notes||'')+'</div></div>'
+        +'<button type="button" data-v128-load="'+idx+'" class="btn-small" style="width:auto;padding:4px 7px;font-size:0.7rem;">Load</button>'
+        +'<button type="button" data-v128-del="'+idx+'" style="width:24px;height:24px;border-radius:6px;border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;font-weight:800;">×</button></div>';
+    }).join('');
+  }
+
+  function saveClients(raw,photo){
+    const clean=String(raw||'').replace(/\r/g,'\n').trim(); if(!clean)return 0;
+    const chunks=clean.includes(';')?clean.split(';'):clean.split(/\n(?=\s*[A-Za-z]{2,}\s*[:\-])/);
+    const rules=[['chest',/\b(?:b|bust|chest)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['waist',/\b(?:w|waist)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['hips',/\b(?:h|hip|hips)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['shoulder',/\b(?:shl|sh|shoulder)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['sleeve',/\b(?:slv|sl|sleeve)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['length',/\b(?:fl|l|len|length)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['outseam',/\b(?:tr|outseam|trouser)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['neck',/\b(?:nk|th|neck|thigh|slit|pd)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i]];
+    const v=getV(); if(!Array.isArray(v.clients))v.clients=[];
+    let cnt=0;
+    chunks.map(s=>s.trim()).filter(Boolean).forEach((ch,idx)=>{
+      const pm=ch.match(/(?:\+?254|0)\d{8}/);
+      let name=ch.split(/[:\-\d]/).slice(0,1).join('').replace(/[^A-Za-z\s']/g,'').trim();
+      if(name.length<2)name=((document.getElementById('cli-name')||{}).value||'').trim()||('Scanned Client '+(idx+1));
+      const rec={id:'cli_'+Date.now()+'_'+idx,name,phone:pm?pm.slice(0,1).join(''):((document.getElementById('cli-phone')||{}).value||'0700000000'),group:(document.getElementById('cli-group')||{}).value||'Women',unit:(document.getElementById('cli-unit')||{}).value||'in',chest:'',waist:'',hips:'',shoulder:'',sleeve:'',length:'',outseam:'',neck:'',photo:photo||'',notes:ch};
+      rules.forEach(([k,rx])=>{const m=ch.match(rx);if(m){const[,val]=m;if(val)rec[k]=val;}});
+      v.clients.unshift(rec);
+      if(cnt===0)[['cli-name',rec.name],['cli-phone',rec.phone],['m-chest',rec.chest],['m-waist',rec.waist],['m-hips',rec.hips],['m-shoulder',rec.shoulder],['m-sleeve',rec.sleeve],['m-length',rec.length],['m-outseam',rec.outseam],['m-neck',rec.neck]].forEach(([id,val])=>{const el=document.getElementById(id);if(el&&val)el.value=val;});
+      cnt+=1;
+    });
+    setV(v); drawClientsDir(); return cnt;
+  }
+
+  function mount(){
+    const cf=document.getElementById('client-form');
+    if(cf&&!document.getElementById('v128-hub')){
+      const d=document.createElement('div'); d.id='v128-hub';
+      d.style.cssText='background:#f8fafc;border:1.5px solid #2563eb;border-radius:10px;padding:9px;margin-bottom:10px;';
+      d.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><strong style="font-size:0.82rem;color:#1e3a8a;">Unified Scan -> Transcribe -> Directory</strong><span id="v128-st" style="font-size:0.7rem;background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:999px;font-weight:700;">Ready</span></div>'
+        +'<textarea id="v128-txt" rows="2" placeholder="Scanned notes appear here, or type: Mary 0712345678 B 38 W 32 H 42 Sh 15 Sl 23 FL 56" style="width:100%;font-size:0.8rem;padding:6px;border:1px solid #cbd5e1;border-radius:7px;margin-bottom:6px;background:#fff;"></textarea>'
+        +'<div style="display:flex;gap:6px;margin-bottom:8px;"><button type="button" id="v128-save-cli" class="btn-primary" style="flex:1;padding:7px;font-size:0.78rem;">Save as Client</button><button type="button" id="v128-save-shp" class="btn-small" style="width:auto;padding:7px 9px;background:#0f766e;color:#fff;font-size:0.78rem;">Add to Shop List</button></div>'
+        +'<div id="v128-cli-dir"></div>';
+      cf.parentNode.insertBefore(d,cf); drawClientsDir();
+    }
+  }
+
+  document.addEventListener('change',async function(e){
+    const t=e.target; if(!t)return;
+    const isCli=(t.id==='ocr-meas-photo'||t.id==='v124-global-scan-input');
+    const isShp=(t.id==='scan-shop-list-input');
+    if(!isCli&&!isShp)return;
+    e.stopImmediatePropagation();
+    const f=t.files&&t.files.item(0); if(!f)return;
+    if(isCli){const ct=document.querySelector('[data-tab="clients"], #nav-clients, button[onclick*="clients"]');if(ct)ct.click();}
+    mount();
+    const st=document.getElementById('v128-st'), tx=document.getElementById('v128-txt');
+    try{
+      const res=await window._v128ScanImg(f,(m)=>{if(st)st.textContent=m;});
+      window._v128Photo=res.dataUrl; if(tx)tx.value=res.text||'Type shorthand here & tap Save';
+      if(isShp){
+        const n=window._v128SaveStock(res.text);
+        if(st)st.textContent=n>0?('Added '+n+' stock item(s)!'):'Scanned — review & tap Add to Shop List';
+        const btn=document.getElementById('open-shop-directory-btn'); if(btn&&n>0)btn.click();
+      }else{
+        const n=res.text?saveClients(res.text,res.dataUrl):0;
+        if(st)st.textContent=n>0?('Saved '+n+' client(s)!'):'Edit text & tap Save as Client';
+      }
+    }catch(err){if(st)st.textContent='Photo ready — type & Save';}
+  },true);
+
+  document.addEventListener('click',function(e){
+    const t=e.target; if(!t)return;
+    if(t.id==='v128-save-cli'){const n=saveClients((document.getElementById('v128-txt')||{}).value,window._v128Photo||'');const st=document.getElementById('v128-st');if(st)st.textContent=n>0?('Saved '+n+' client(s)!'):'Enter shorthand';}
+    else if(t.id==='v128-save-shp'){const n=window._v128SaveStock((document.getElementById('v128-txt')||{}).value);const st=document.getElementById('v128-st');if(st)st.textContent=n>0?('Added '+n+' item(s) to Shop List!'):'Enter stock lines';}
+    else if(t.hasAttribute('data-v128-load')){const i=Number(t.getAttribute('data-v128-load')),c=(getV().clients||[]).slice(i,i+1).pop();if(c)[['cli-name',c.name],['cli-phone',c.phone],['m-chest',c.chest],['m-waist',c.waist],['m-hips',c.hips],['m-shoulder',c.shoulder],['m-sleeve',c.sleeve],['m-length',c.length],['m-outseam',c.outseam],['m-neck',c.neck]].forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val||'';});}
+    else if(t.hasAttribute('data-v128-del')){const i=Number(t.getAttribute('data-v128-del')),v=getV();if(Array.isArray(v.clients)){v.clients.splice(i,1);setV(v);drawClientsDir();}}
+  },true);
+
+  mount(); setTimeout(mount,400);
+})();
+</script>
+<!-- /V128_UNIFIED_SCAN -->
 </body>
 </html>
