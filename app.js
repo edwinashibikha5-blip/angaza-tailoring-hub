@@ -3291,7 +3291,7 @@ document.addEventListener('click', (e) => {
 
   document.addEventListener('change', async (e) => {
     const t = e.target; if (!t) return;
-    if (t.id === 'ocr-meas-photo') {
+    if ((t.id === 'ocr-meas-photo' || t.id === 'v124-global-scan-input')) {
       e.stopImmediatePropagation(); const f = t.files && t.files.item(0); if (!f) return; mountV123UI();
       const st = document.getElementById('v123-status'), tx = document.getElementById('v123-ocr-text'), pw = document.getElementById('ocr-preview-wrap'), pi = document.getElementById('ocr-preview-img');
       if (pw) pw.style.display = 'flex';
