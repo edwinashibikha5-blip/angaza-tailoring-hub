@@ -3202,8 +3202,9 @@ document.addEventListener('click', (e) => {
 
   function syncShop29() {
     const v = getV();
-    const onlySamples = Array.isArray(v.shopItems) && v.shopItems.length > 0 && v.shopItems.every(x => x && x.isSample);
-    if (!Array.isArray(v.shopItems) || v.shopItems.length === 0 || onlySamples) { v.shopItems = SEED29.slice(); setV(v); }
+    const existing = Array.isArray(v.shopItems) ? v.shopItems.filter(x => x && !x.isSample) : [];
+    const has29 = existing.some(x => x.name === 'Thread Rolls (Assorted)');
+    if (!has29) { v.shopItems = existing.concat(SEED29); setV(v); }
     const cnt = document.getElementById('shop-dir-count');
     if (cnt) cnt.textContent = String(v.shopItems.length);
     if (typeof window.renderShopDirectory === 'function') window.renderShopDirectory();
