@@ -3174,3 +3174,26 @@ document.addEventListener('click', (e) => {
     if (typeof renderShopDirectory === "function") renderShopDirectory(); const cEl = document.getElementById("shop-dir-count"); if (cEl) cEl.textContent = String(v.shopItems.length);
   } catch (err) {}
 })();
+
+(() => {
+  if (localStorage.getItem("angaza_budget_seed_v116")) return;
+  const items = [
+    { name: "Jug big (Budget)", category: "Budget", qty: "2 pcs", note: "150 each", sellPrice: 300 },
+    { name: "Jug small (Budget)", category: "Budget", qty: "2 pcs", note: "70 each", sellPrice: 140 },
+    { name: "Jug x-small (Budget)", category: "Budget", qty: "2 pcs", note: "50 each", sellPrice: 100 },
+    { name: "Bucket (Budget)", category: "Budget", qty: "5 pcs", note: "115 each", sellPrice: 575 },
+    { name: "Clear bucket 2L (Budget)", category: "Budget", qty: "2 pcs", note: "200 each", sellPrice: 400 },
+    { name: "Kofia watoto", category: "Budget", qty: "3 pcs", note: "150 each", sellPrice: 450 },
+    { name: "Socks small", category: "Budget", qty: "1 pc", note: "0-1", sellPrice: 150 },
+    { name: "Kinyasa", category: "Budget", qty: "3 pcs", note: "90 each", sellPrice: 270 }
+  ];
+  try {
+    const v = JSON.parse(localStorage.getItem("angaza_atelier_vault_v2") || "{}");
+    v.shopItems = Array.isArray(v.shopItems) ? v.shopItems : [];
+    const seen = new Set(v.shopItems.map((x) => (x.name || "").toLowerCase()));
+    items.slice().reverse().forEach((it) => { if (!seen.has(it.name.toLowerCase())) v.shopItems.unshift(it); });
+    localStorage.setItem("angaza_atelier_vault_v2", JSON.stringify(v));
+    localStorage.setItem("angaza_budget_seed_v116", "1");
+    if (typeof renderShopDirectory === "function") renderShopDirectory();
+  } catch (err) {}
+})();
