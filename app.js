@@ -3177,12 +3177,12 @@ document.addEventListener('click', (e) => {
     return { dataUrl, text: (out && out.data && out.data.text) ? out.data.text.trim() : '' };
   }
 
-// === V120: DIRECT SCAN-TO-DIRECTORY & 29-ITEM SEED ===
-(function initAngazaV120() {
+// === V123: FULL-STACK SCAN -> TRANSCRIBE -> DIRECTORY ===
+(function initAngazaV123() {
   const VK = 'angaza_atelier_vault_v2';
   const getV = () => { try { return JSON.parse(localStorage.getItem(VK) || '{}'); } catch (e) { return {}; } };
   const setV = (v) => localStorage.setItem(VK, JSON.stringify(v));
-  const LIST29 = [
+  const SEED29 = [
     ['Thread Rolls (Assorted)','Stock Taking','24 rolls','KES 1,200',1200],['Invisible Zippers 16in','Stock Taking','18 pcs','KES 540',540],
     ['Nylon Zippers 8in','Stock Taking','20 pcs','KES 400',400],['Fusing / Interfacing Roll','Stock Taking','5 rolls','KES 750',750],
     ['Elastic Band 1in (Meters)','Stock Taking','15 m','KES 450',450],['Shirt Buttons (Pack)','Stock Taking','10 pkts','KES 300',300],
@@ -3200,44 +3200,47 @@ document.addEventListener('click', (e) => {
     ['Budget: Chalk Wheel Pen','Budget Item','2 pcs','KES 370',370]
   ].map(([name, category, qty, note, sellPrice]) => ({ name, category, qty, note, sellPrice }));
 
-  function refreshAll() {
+  function syncShop29() {
     const v = getV();
-    const hasSamplesOnly = Array.isArray(v.shopItems) && v.shopItems.length > 0 && v.shopItems.every(x => x && x.isSample);
-    if (!Array.isArray(v.shopItems) || v.shopItems.length === 0 || hasSamplesOnly) { v.shopItems = LIST29.slice(); setV(v); }
-    const n = v.shopItems.length;
-    document.querySelectorAll('.shop-modal-tab').forEach(b => { if (b.getAttribute('data-smview') === 'list') b.textContent = 'Shop List (' + n + ')'; });
-    const tb = document.getElementById('toggle-shop-dir-btn'); if (tb) tb.textContent = 'Shop List (' + n + ')';
+    const onlySamples = Array.isArray(v.shopItems) && v.shopItems.length > 0 && v.shopItems.every(x => x && x.isSample);
+    if (!Array.isArray(v.shopItems) || v.shopItems.length === 0 || onlySamples) { v.shopItems = SEED29.slice(); setV(v); }
+    const cnt = document.getElementById('shop-dir-count');
+    if (cnt) cnt.textContent = String(v.shopItems.length);
     if (typeof window.renderShopDirectory === 'function') window.renderShopDirectory();
-    if (typeof window.renderClients === 'function') window.renderClients();
-    if (typeof window.renderClientList === 'function') window.renderClientList();
-    if (typeof window.renderAngazaClientTable === 'function') window.renderAngazaClientTable();
+    const sl = document.getElementById('sell-items-list');
+    if (sl && !sl.innerHTML.trim()) {
+      sl.innerHTML = v.shopItems.map(it => '<div class="item" style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;"><div><strong>' + it.name + '</strong><div style="font-size:0.74rem;color:#475569;">' + (it.category || '') + ' · ' + (it.qty || '') + '</div></div><span style="font-weight:700;color:#1e3a8a;font-size:0.8rem;">' + (it.note || '') + '</span></div>').join('');
+    }
   }
-  window.addEventListener('DOMContentLoaded', refreshAll);
-  setTimeout(refreshAll, 400);
-})();
 
-// === V120B: SCAN -> TRANSCRIBE -> SAVE DIRECTORY ===
-(function initScanTransSaveV120() {
-  const VK = 'angaza_atelier_vault_v2';
-  const getV = () => { try { return JSON.parse(localStorage.getItem(VK) || '{}'); } catch (e) { return {}; } };
-  const setV = (v) => localStorage.setItem(VK, JSON.stringify(v));
-
-  async function scanImg(file, maxW, q, cb) {
+  async function scanPhotoV123(file, maxW, q, onStatus) {
     const dataUrl = await new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = () => { const img = new Image(); img.onload = () => { const s = Math.min(1, maxW / (img.width || maxW)); const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s)); const ctx = c.getContext('2d'); ctx.filter = 'contrast(1.35) brightness(1.06)'; ctx.drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', q)); }; img.onerror = rej; img.src = r.result; };
       r.onerror = rej; r.readAsDataURL(file);
     });
     if (!window.Tesseract) {
-      if (cb) cb('Loading OCR...');
+      if (onStatus) onStatus('Loading OCR...');
       await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://unpkg.com'; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
     }
-    if (cb) cb('Transcribing...');
+    if (onStatus) onStatus('Transcribing...');
     const out = await window.Tesseract.recognize(dataUrl, 'eng');
     return { dataUrl, text: (out && out.data && out.data.text) ? out.data.text.trim() : '' };
   }
 
-  function saveParsed(raw, photo) {
+  function renderVisibleClientsDir() {
+    const v = getV(); const list = Array.isArray(v.clients) ? v.clients : [];
+    const box = document.getElementById('v123-live-clients-dir');
+    if (!box) return;
+    if (!list.length) { box.innerHTML = '<div style="font-size:0.78rem;color:#64748b;">No scanned clients yet.</div>'; return; }
+    box.innerHTML = list.slice(0, 15).map((c) => {
+      const m = [['B',c.chest],['W',c.waist],['H',c.hips],['Sh',c.shoulder],['Sl',c.sleeve],['FL',c.length],['Tr',c.outseam],['Nk',c.neck]].filter(([,val])=>val).map(([k,val])=>k+':'+val).join(' · ');
+      const img = c.photo ? '<img src="' + c.photo + '" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #cbd5e1;" />' : '';
+      return '<div style="display:flex;gap:8px;align-items:center;padding:6px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;margin-bottom:5px;">' + img + '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:0.82rem;color:#0f172a;">' + (c.name || 'Client') + ' <span style="font-weight:400;color:#475569;">' + (c.phone || '') + '</span></div><div style="font-size:0.75rem;color:#1e40af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (m || c.notes || '') + '</div></div></div>';
+    }).join('');
+  }
+
+  function saveParsedClientsV123(raw, photo) {
     const clean = String(raw || '').replace(/\r/g, '\n').trim(); if (!clean) return 0;
     const chunks = clean.includes(';') ? clean.split(';') : clean.split(/\n(?=\s*[A-Za-z]{2,}\s*[:\-])/);
     const rules = [['chest',/\b(?:b|bust|chest)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['waist',/\b(?:w|waist)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['hips',/\b(?:h|hip|hips)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['shoulder',/\b(?:shl|sh|shoulder)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['sleeve',/\b(?:slv|sl|sleeve)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['length',/\b(?:fl|l|len|length)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['outseam',/\b(?:tr|outseam|trouser)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['neck',/\b(?:nk|th|neck|thigh|slit|pd)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i]];
@@ -3253,46 +3256,81 @@ document.addEventListener('click', (e) => {
       if (cnt === 0) [['cli-name',rec.name],['cli-phone',rec.phone],['m-chest',rec.chest],['m-waist',rec.waist],['m-hips',rec.hips],['m-shoulder',rec.shoulder],['m-sleeve',rec.sleeve],['m-length',rec.length],['m-outseam',rec.outseam],['m-neck',rec.neck]].forEach(([id,val])=>{const el=document.getElementById(id);if(el&&val)el.value=val;});
       cnt += 1;
     });
-    setV(v);
+    setV(v); renderVisibleClientsDir();
     if (typeof window.renderClients === 'function') window.renderClients();
-    if (typeof window.renderClientList === 'function') window.renderClientList();
     if (typeof window.renderAngazaClientTable === 'function') window.renderAngazaClientTable();
     return cnt;
   }
 
-  function mountUI() {
+  function processShopScanV123(raw) {
+    const lines = String(raw || '').split(/\n|;/).map(s => s.trim()).filter(Boolean);
+    const v = getV(); if (!Array.isArray(v.shopItems)) v.shopItems = [];
+    let added = 0;
+    lines.forEach((ln) => {
+      const pm = ln.match(/(?:kes|ksh)?\s*(\d{2,6})\s*$/i);
+      const qm = ln.match(/(?:x|qty)\s*(\d+)/i);
+      const price = pm ? Number(pm.slice(1, 2).join('')) : 0;
+      const name = ln.replace(/(?:kes|ksh)?\s*\d{2,6}\s*$/i, '').replace(/(?:x|qty)\s*\d+/i, '').replace(/[\-:|]+$/g, '').trim();
+      if (name.length >= 2) { v.shopItems.unshift({ name, category: 'Scanned Stock', qty: qm ? (qm.slice(1, 2).join('') + ' pcs') : '1 pc', note: price ? ('KES ' + price) : 'Scanned', sellPrice: price }); added += 1; }
+    });
+    if (added > 0) { setV(v); const sl = document.getElementById('sell-items-list'); if (sl) sl.innerHTML = ''; syncShop29(); }
+    return added;
+  }
+
+  function mountV123UI() {
+    syncShop29();
     const cf = document.getElementById('client-form');
-    if (cf && !document.getElementById('v120-scan-card')) {
-      const d = document.createElement('div'); d.id = 'v120-scan-card';
-      d.style.cssText = 'background:#f8fafc;border:1.5px solid #2563eb;border-radius:10px;padding:9px;margin-bottom:10px;';
-      d.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><strong style="font-size:0.82rem;color:#1e3a8a;">Scan -> Transcribe -> Directory</strong><span id="v120-badge" style="font-size:0.7rem;background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:999px;font-weight:700;">Ready</span></div><textarea id="v120-text" rows="2" placeholder="Scanned measurements transcribe here, or type: Mary 0712345678 B 38 W 32 H 42 Sh 15 Sl 23 FL 56" style="width:100%;font-size:0.8rem;padding:6px;border:1px solid #cbd5e1;border-radius:7px;margin-bottom:6px;background:#fff;"></textarea><button type="button" id="v120-save-btn" class="btn-primary" style="width:100%;padding:7px;font-size:0.8rem;">Transcribe & Save to Directory</button>';
-      const pw = document.getElementById('ocr-preview-wrap');
-      if (pw && pw.parentNode) pw.parentNode.appendChild(d); else cf.insertBefore(d, cf.firstChild);
+    if (cf && !document.getElementById('v123-dir-card')) {
+      const card = document.createElement('div'); card.id = 'v123-dir-card';
+      card.style.cssText = 'background:#f8fafc;border:1.5px solid #2563eb;border-radius:10px;padding:9px;margin-bottom:10px;';
+      card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><strong style="font-size:0.82rem;color:#1e3a8a;">Scan -> Transcribe -> Directory</strong><span id="v123-status" style="font-size:0.7rem;background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:999px;font-weight:700;">Ready</span></div><textarea id="v123-ocr-text" rows="2" placeholder="Scanned text appears here, or type: Mary 0712345678 B 38 W 32 H 42 Sh 15 Sl 23 FL 56" style="width:100%;font-size:0.8rem;padding:6px;border:1px solid #cbd5e1;border-radius:7px;margin-bottom:6px;background:#fff;"></textarea><button type="button" id="v123-save-btn" class="btn-primary" style="width:100%;padding:7px;font-size:0.8rem;margin-bottom:8px;">Process & Save to Directory</button><div style="font-size:0.75rem;font-weight:700;color:#334155;margin-bottom:4px;">Live Transcribed Directory</div><div id="v123-live-clients-dir"></div>';
+      cf.parentNode.insertBefore(card, cf);
+      renderVisibleClientsDir();
     }
   }
 
   document.addEventListener('change', async (e) => {
-    if (!e.target || e.target.id !== 'ocr-meas-photo') return;
-    e.stopImmediatePropagation(); const f = e.target.files && e.target.files.item(0); if (!f) return; mountUI();
-    const st = document.getElementById('ocr-status'), pw = document.getElementById('ocr-preview-wrap'), pi = document.getElementById('ocr-preview-img'), tx = document.getElementById('v120-text'), bg = document.getElementById('v120-badge');
-    if (pw) pw.style.display = 'flex';
-    try {
-      const res = await scanImg(f, 720, 0.62, (m) => { if (st) st.textContent = m; if (bg) bg.textContent = m; });
-      window._v120Photo = res.dataUrl; if (pi) pi.src = res.dataUrl;
-      if (tx) tx.value = res.text || 'Type shorthand here & tap Save';
-      const n = res.text ? saveParsed(res.text, res.dataUrl) : 0;
-      if (st) st.textContent = n > 0 ? ('Saved ' + n + ' client(s)!') : 'Edit text & tap Save';
-      if (bg) bg.textContent = n > 0 ? ('Saved (' + n + ')') : 'Edit & Save';
-    } catch (err) { if (st) st.textContent = 'Photo ready — type shorthand & Save'; }
+    const t = e.target; if (!t) return;
+    if (t.id === 'ocr-meas-photo') {
+      e.stopImmediatePropagation(); const f = t.files && t.files.item(0); if (!f) return; mountV123UI();
+      const st = document.getElementById('v123-status'), tx = document.getElementById('v123-ocr-text'), pw = document.getElementById('ocr-preview-wrap'), pi = document.getElementById('ocr-preview-img');
+      if (pw) pw.style.display = 'flex';
+      try {
+        const res = await scanPhotoV123(f, 720, 0.62, (m) => { if (st) st.textContent = m; });
+        window._v123Photo = res.dataUrl; if (pi) pi.src = res.dataUrl;
+        if (tx) tx.value = res.text || 'Type shorthand here & tap Process';
+        const n = res.text ? saveParsedClientsV123(res.text, res.dataUrl) : 0;
+        if (st) st.textContent = n > 0 ? ('Saved ' + n + ' record(s)!') : 'Edit text & tap Process';
+      } catch (err) { if (st) st.textContent = 'Photo attached — type & Process'; }
+    } else if (t.id === 'scan-shop-list-input') {
+      e.stopImmediatePropagation(); const f = t.files && t.files.item(0); if (!f) return;
+      const drawer = document.getElementById('shop-directory-drawer'); if (drawer) drawer.style.display = 'block';
+      const cnt = document.getElementById('shop-dir-count'); if (cnt) cnt.textContent = '...';
+      try {
+        const res = await scanPhotoV123(f, 840, 0.68);
+        processShopScanV123(res.text);
+      } catch (err) { syncShop29(); }
+    }
   }, true);
 
   document.addEventListener('click', (e) => {
-    if (!e.target || e.target.id !== 'v120-save-btn') return;
-    const tx = document.getElementById('v120-text'), bg = document.getElementById('v120-badge');
-    const n = saveParsed(tx ? tx.value : '', window._v120Photo || '');
-    if (bg) bg.textContent = n > 0 ? ('Saved (' + n + ')') : 'Enter shorthand';
+    const t = e.target; if (!t) return;
+    if (t.id === 'v123-save-btn') {
+      const tx = document.getElementById('v123-ocr-text'), st = document.getElementById('v123-status');
+      const n = saveParsedClientsV123(tx ? tx.value : '', window._v123Photo || '');
+      if (st) st.textContent = n > 0 ? ('Saved ' + n + ' record(s)!') : 'Enter shorthand first';
+    } else if (t.closest('#btn-quick-scan')) {
+      e.stopImmediatePropagation();
+      const cliTab = document.querySelector('[data-tab="clients"], #nav-clients, button[onclick*="clients"]');
+      if (cliTab) cliTab.click();
+      mountV123UI();
+      const inp = document.getElementById('ocr-meas-photo'); if (inp) inp.click();
+    } else if (t.closest('#open-shop-directory-btn')) {
+      syncShop29();
+    }
   }, true);
 
-  window.addEventListener('DOMContentLoaded', mountUI);
-  setTimeout(mountUI, 400);
+  window.addEventListener('DOMContentLoaded', mountV123UI);
+  setTimeout(mountV123UI, 350);
+  setInterval(() => { const c = document.getElementById('shop-dir-count'); if (c && c.textContent === '0') syncShop29(); }, 1500);
 })();
