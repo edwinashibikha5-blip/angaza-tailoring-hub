@@ -2194,6 +2194,14 @@
 
   function renderShopDirectory() {
     const vault = loadVault();
+  if (!localStorage.getItem("angaza_all_items_v117")) {
+    const seed = [{"name":"Flask","category":"Shop Stock","qty":"2 pcs","note":"650 -> 480","sellPrice":480},{"name":"Jug","category":"Shop Stock","qty":"5 pcs","note":"","sellPrice":100},{"name":"Jug big","category":"Shop Stock","qty":"2 pcs","note":"","sellPrice":200},{"name":"Washing bucket","category":"Shop Stock","qty":"2 pcs","note":"+ 1 keeping","sellPrice":250},{"name":"Knife","category":"Shop Stock","qty":"4 pcs","note":"","sellPrice":150},{"name":"Knife small","category":"Shop Stock","qty":"4 pcs","note":"","sellPrice":70},{"name":"Spoon","category":"Shop Stock","qty":"6 pcs","note":"","sellPrice":150},{"name":"Serving spoon","category":"Shop Stock","qty":"6 pcs","note":"","sellPrice":50},{"name":"Cups new","category":"Shop Stock","qty":"1 dozen","note":"600 + 200","sellPrice":600},{"name":"Cups mabati","category":"Shop Stock","qty":"2 pcs","note":"","sellPrice":200},{"name":"Mwiko","category":"Shop Stock","qty":"6 pcs","note":"","sellPrice":50},{"name":"Coloured bucket","category":"Shop Stock","qty":"3 pcs","note":"","sellPrice":170},{"name":"Clear bucket","category":"Shop Stock","qty":"3 pcs","note":"","sellPrice":170},{"name":"Small clear bucket","category":"Shop Stock","qty":"4 pcs","note":"","sellPrice":130},{"name":"Folks (Forks)","category":"Shop Stock","qty":"1 set","note":"","sellPrice":170},{"name":"Sufuria","category":"Shop Stock","qty":"4 pcs","note":"","sellPrice":0},{"name":"Sufuria nzito","category":"Shop Stock","qty":"4 pcs","note":"300 / 350 / 400 / 450","sellPrice":300},{"name":"Kikombe big","category":"Shop Stock","qty":"1 pc","note":"","sellPrice":100},{"name":"Kikombe small","category":"Shop Stock","qty":"6 pcs","note":"","sellPrice":20},{"name":"Karai / Durbini","category":"Shop Stock","qty":"3 pcs","note":"","sellPrice":100},{"name":"Hand basin small","category":"Shop Stock","qty":"5-6 pcs","note":"","sellPrice":100},{"name":"Jug big (Budget)","category":"Budget","qty":"2 pcs","note":"150 each","sellPrice":300},{"name":"Jug small (Budget)","category":"Budget","qty":"2 pcs","note":"70 each","sellPrice":140},{"name":"Jug x-small (Budget)","category":"Budget","qty":"2 pcs","note":"50 each","sellPrice":100},{"name":"Bucket (Budget)","category":"Budget","qty":"5 pcs","note":"115 each","sellPrice":575},{"name":"Clear bucket 2L (Budget)","category":"Budget","qty":"2 pcs","note":"200 each","sellPrice":400},{"name":"Kofia watoto","category":"Budget","qty":"3 pcs","note":"150 each","sellPrice":450},{"name":"Socks small","category":"Budget","qty":"1 pc","note":"0-1","sellPrice":150},{"name":"Kinyasa","category":"Budget","qty":"3 pcs","note":"90 each","sellPrice":270}];
+    vault.shopItems = Array.isArray(vault.shopItems) ? vault.shopItems : [];
+    const seen = new Set(vault.shopItems.map((x) => (x.name || "").toLowerCase()));
+    seed.slice().reverse().forEach((it) => { if (!seen.has(it.name.toLowerCase())) vault.shopItems.unshift(it); });
+    saveVault(vault);
+    localStorage.setItem("angaza_all_items_v117", "1");
+  }
     const items = Array.isArray(vault.shopItems) ? vault.shopItems : [];
     const filter = document.getElementById('shop-dir-filter')?.value || 'all';
     const countEl = document.getElementById('shop-dir-count');
@@ -3134,66 +3142,4 @@ document.addEventListener('click', (e) => {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') checkForNewBuild();
   });
-})();
-
-(() => {
-  if (localStorage.getItem("angaza_stock_seed_v115")) return;
-  const seed = [
-    { name: "Flask", category: "Shop Stock", qty: "2 pcs", note: "650 -> 480", sellPrice: 480 },
-    { name: "Jug", category: "Shop Stock", qty: "5 pcs", note: "", sellPrice: 100 },
-    { name: "Jug big", category: "Shop Stock", qty: "2 pcs", note: "", sellPrice: 200 },
-    { name: "Washing bucket", category: "Shop Stock", qty: "2 pcs", note: "+ 1 keeping", sellPrice: 250 },
-    { name: "Knife", category: "Shop Stock", qty: "4 pcs", note: "", sellPrice: 150 },
-    { name: "Knife small", category: "Shop Stock", qty: "4 pcs", note: "", sellPrice: 70 },
-    { name: "Spoon", category: "Shop Stock", qty: "6 pcs", note: "", sellPrice: 150 },
-    { name: "Serving spoon", category: "Shop Stock", qty: "6 pcs", note: "", sellPrice: 50 },
-    { name: "Cups new", category: "Shop Stock", qty: "1 dozen", note: "600 + 200", sellPrice: 600 },
-    { name: "Cups mabati", category: "Shop Stock", qty: "2 pcs", note: "", sellPrice: 200 },
-    { name: "Mwiko", category: "Shop Stock", qty: "6 pcs", note: "", sellPrice: 50 },
-    { name: "Coloured bucket", category: "Shop Stock", qty: "3 pcs", note: "", sellPrice: 170 },
-    { name: "Clear bucket", category: "Shop Stock", qty: "3 pcs", note: "", sellPrice: 170 },
-    { name: "Small clear bucket", category: "Shop Stock", qty: "4 pcs", note: "", sellPrice: 130 },
-    { name: "Folks (Forks)", category: "Shop Stock", qty: "1 set", note: "", sellPrice: 170 },
-    { name: "Sufuria", category: "Shop Stock", qty: "4 pcs", note: "", sellPrice: 0 },
-    { name: "Sufuria nzito", category: "Shop Stock", qty: "4 pcs", note: "300 / 350 / 400 / 450", sellPrice: 300 },
-    { name: "Kikombe big", category: "Shop Stock", qty: "1 pc", note: "", sellPrice: 100 },
-    { name: "Kikombe small", category: "Shop Stock", qty: "6 pcs", note: "", sellPrice: 20 },
-    { name: "Karai / Durbini", category: "Shop Stock", qty: "3 pcs", note: "", sellPrice: 100 },
-    { name: "Hand basin small", category: "Shop Stock", qty: "5-6 pcs", note: "", sellPrice: 100 }
-  ];
-  try {
-    const v = typeof loadVault === "function" ? loadVault() : JSON.parse(localStorage.getItem("angaza_atelier_vault_v2") || "{}");
-    v.shopItems = Array.isArray(v.shopItems) ? v.shopItems : [];
-    const existing = new Set(v.shopItems.map((x) => (x.name || "").toLowerCase()));
-    seed.slice().reverse().forEach((item) => {
-      if (!existing.has(item.name.toLowerCase())) v.shopItems.unshift(item);
-    });
-    if (typeof saveVault === "function") saveVault(v);
-    else localStorage.setItem("angaza_atelier_vault_v2", JSON.stringify(v));
-    localStorage.setItem("angaza_stock_seed_v115", "1");
-    if (typeof renderShopDirectory === "function") renderShopDirectory(); const cEl = document.getElementById("shop-dir-count"); if (cEl) cEl.textContent = String(v.shopItems.length);
-  } catch (err) {}
-})();
-
-(() => {
-  if (localStorage.getItem("angaza_budget_seed_v116")) return;
-  const items = [
-    { name: "Jug big (Budget)", category: "Budget", qty: "2 pcs", note: "150 each", sellPrice: 300 },
-    { name: "Jug small (Budget)", category: "Budget", qty: "2 pcs", note: "70 each", sellPrice: 140 },
-    { name: "Jug x-small (Budget)", category: "Budget", qty: "2 pcs", note: "50 each", sellPrice: 100 },
-    { name: "Bucket (Budget)", category: "Budget", qty: "5 pcs", note: "115 each", sellPrice: 575 },
-    { name: "Clear bucket 2L (Budget)", category: "Budget", qty: "2 pcs", note: "200 each", sellPrice: 400 },
-    { name: "Kofia watoto", category: "Budget", qty: "3 pcs", note: "150 each", sellPrice: 450 },
-    { name: "Socks small", category: "Budget", qty: "1 pc", note: "0-1", sellPrice: 150 },
-    { name: "Kinyasa", category: "Budget", qty: "3 pcs", note: "90 each", sellPrice: 270 }
-  ];
-  try {
-    const v = JSON.parse(localStorage.getItem("angaza_atelier_vault_v2") || "{}");
-    v.shopItems = Array.isArray(v.shopItems) ? v.shopItems : [];
-    const seen = new Set(v.shopItems.map((x) => (x.name || "").toLowerCase()));
-    items.slice().reverse().forEach((it) => { if (!seen.has(it.name.toLowerCase())) v.shopItems.unshift(it); });
-    localStorage.setItem("angaza_atelier_vault_v2", JSON.stringify(v));
-    localStorage.setItem("angaza_budget_seed_v116", "1");
-    if (typeof renderShopDirectory === "function") renderShopDirectory();
-  } catch (err) {}
 })();
