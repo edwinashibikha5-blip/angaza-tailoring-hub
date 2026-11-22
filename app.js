@@ -550,10 +550,10 @@
   function attachPhoto(clientName) {
     if (!window._angazaLastScanPhoto) return;
     try {
-      const v = JSON.parse(localStorage.getItem("angaza_vault_v1") || "{}");
+      const v = JSON.parse(localStorage.getItem("angaza_atelier_vault_v2") || "{}");
       if (Array.isArray(v.clients) && v.clients.length) {
         const t = v.clients.find((c) => c.name === clientName) || v.clients.at(0);
-        if (t && !t.photo) { t.photo = window._angazaLastScanPhoto; localStorage.setItem("angaza_vault_v1", JSON.stringify(v)); }
+        if (t && !t.photo) { t.photo = window._angazaLastScanPhoto; localStorage.setItem("angaza_atelier_vault_v2", JSON.stringify(v)); }
       }
     } catch (err) {}
   }
@@ -3137,7 +3137,7 @@ document.addEventListener('click', (e) => {
 })();
 
 (() => {
-  if (localStorage.getItem("angaza_stock_seed_v113")) return;
+  if (localStorage.getItem("angaza_stock_seed_v114")) return;
   const seed = [
     { name: "Flask", category: "Shop Stock", qty: "2 pcs", note: "650 -> 480", sellPrice: 480 },
     { name: "Jug", category: "Shop Stock", qty: "5 pcs", note: "", sellPrice: 100 },
@@ -3162,15 +3162,15 @@ document.addEventListener('click', (e) => {
     { name: "Hand basin small", category: "Shop Stock", qty: "5-6 pcs", note: "", sellPrice: 100 }
   ];
   try {
-    const v = typeof loadVault === "function" ? loadVault() : JSON.parse(localStorage.getItem("angaza_vault_v1") || "{}");
+    const v = typeof loadVault === "function" ? loadVault() : JSON.parse(localStorage.getItem("angaza_atelier_vault_v2") || "{}");
     v.shopItems = Array.isArray(v.shopItems) ? v.shopItems : [];
     const existing = new Set(v.shopItems.map((x) => (x.name || "").toLowerCase()));
     seed.slice().reverse().forEach((item) => {
       if (!existing.has(item.name.toLowerCase())) v.shopItems.unshift(item);
     });
     if (typeof saveVault === "function") saveVault(v);
-    else localStorage.setItem("angaza_vault_v1", JSON.stringify(v));
-    localStorage.setItem("angaza_stock_seed_v113", "1");
-    if (typeof renderShopDirectory === "function") renderShopDirectory();
+    else localStorage.setItem("angaza_atelier_vault_v2", JSON.stringify(v));
+    localStorage.setItem("angaza_stock_seed_v114", "1");
+    if (typeof renderShopDirectory === "function") renderShopDirectory(); const cEl = document.getElementById("shop-dir-count"); if (cEl) cEl.textContent = String(v.shopItems.length);
   } catch (err) {}
 })();
