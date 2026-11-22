@@ -531,6 +531,283 @@
   const img = document.getElementById("ocr-preview-img");
   const rescan = document.getElementById("ocr-rescan-btn");
   if (rescan) rescan.onclick = () => { ocrInput.value = ""; ocrInput.click(); };
+  const box = ocrInput.parentElement;
+  if (box && !document.getElementById("ocr-quick-bar")) {
+    const bar = document.createElement("div");
+    bar.id = "ocr-quick-bar";
+    bar.style.cssText = "display:flex;gap:6px;margin-top:8px;";
+    bar.innerHTML = '<input id="ocr-quick-txt" type="text" placeholder="Shorthand (; for 2+): Irene B 34 W 28 H 36 Shl 15 Slv 10/14 FL 25" style="flex:1;padding:7px 9px;border:1px solid #93c5fd;border-radius:8px;font-size:.78rem;background:#fff;" /><button type="button" id="ocr-quick-go" class="btn-sm" style="background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:0 11px;font-weight:700;">Auto-Save</button>';
+    box.appendChild(bar);
+    document.getElementById("ocr-quick-go").onclick = () => {
+      const val = (document.getElementById("ocr-quick-txt").value || "").trim();
+      if (!val) return;
+      const parts = val.split(/;|\n+/).map((x) => x.trim()).filter(Boolean);
+      parts.forEach((p) => applyAndSave(p, true));
+      document.getElementById("ocr-quick-txt").value = "";
+      ocrStatus.textContent = "✅ Saved " + parts.length + " client(s) to Saved Clients!";
+    };
+  }
+  function attachPhoto(clientName) {
+    if (!window._angazaLastScanPhoto) return;
+    try {
+      const v = JSON.parse(localStorage.getItem("angaza_vault_v1") || "{}");
+      if (Array.isArray(v.clients) && v.clients.length) {
+        const t = v.clients.find((c) => c.name === clientName) || v.clients.at(0);
+        if (t && !t.photo) { t.photo = window._angazaLastScanPhoto; localStorage.setItem("angaza_vault_v1", JSON.stringify(v)); }
+      }
+    } catch (err) {}
+  }
+  function applyAndSave(rawText, autoSubmit) {
+    const filled = parseMeasurements(rawText);
+    const notesEl = document.getElementById("cli-notes");
+    if (notesEl) notesEl.value = (notesEl.value ? notesEl.value + "\n" : "") + "Note: " + rawText.replace(/\s+/g, " ").trim();
+    const nameEl = document.getElementById("cli-name");
+    const phoneEl = document.getElementById("cli-phone");
+    if (autoSubmit && (filled > 0 || (nameEl && nameEl.value.trim()) || window._angazaLastScanPhoto)) {
+      if (nameEl && !nameEl.value.trim()) nameEl.value = "Notebook Client " + new Date().toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit" });
+      const savedName = nameEl ? nameEl.value.trim() : "";
+      if (phoneEl && !phoneEl.value.trim()) phoneEl.value = "0700000000";
+      const form = document.getElementById("client-form");
+      if (form) {
+        form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+        setTimeout(() => attachPhoto(savedName), 120);
+        ocrStatus.textContent = "✅ Saved " + savedName + " (" + filled + " field(s) + notebook photo)!";
+        return;
+      }
+    }
+    ocrStatus.textContent = "⚠️ Photo attached! Type shorthand above (e.g. Irene B 34 W 28 FL 25) & tap Auto-Save.";
+  }
+  ocrInput.addEventListener("change", async () => {
+    const file = ocrInput.files && ocrInput.files.item(0);
+    if (!file) return;
+    ocrStatus.textContent = "⏳ Attaching notebook photo & scanning...";
+    try {
+      const proc = await enhanceAndCompress(file);
+      if (typeof window.loadTesseractLazy === "function" && !window.Tesseract) await window.loadTesseractLazy();
+      if (!window.Tesseract) throw new Error("offline");
+      const res = await window.Tesseract.recognize(proc, "eng");
+      const txt = (res && res.data && res.data.text || "").trim();
+      applyAndSave(txt || "Photo attached", true);
+    } catch (err) {
+      applyAndSave("Photo attached (offline)", true);
+    }
+  });
+  setInterval(() => {
+    const onHome = document.getElementById("tab-orders") && document.getElementById("tab-orders").style.display !== "none";
+    document.querySelectorAll("p, div, small, span").forEach((el) => {
+      if (el.children.length === 0 && (el.textContent || "").trim() === "No orders logged yet." && !el.closest("#tab-orders")) el.style.display = onHome ? "" : "none";
+    });
+  }, 400);
+})();
+
+(() => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+  const shareBtn = document.getElementById('btn-share-app');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const appUrl = 'https://angaza-tailoring-hub.onrender.com';
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: "ANGAZA TAILORING HUB", url: "https://angaza-tailoring-hub.onrender.com" });
+          return;
+        } catch {}
+      }
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(appUrl);
+        alert('Copied full app link: ' + appUrl);
+      } else {
+        prompt('Copy this full app link:', appUrl);
+      }
+    });
+  }
+})();
+
+(() => {
+  document.body.addEventListener('click', (e) => {
+    const platform = e.target.dataset.webSearch;
+    if (!platform) return;
+    const raw = (document.getElementById('online-style-query')?.value || '').trim();
+    const activeChip = document.querySelector('#catalog-chips .chip.active')?.dataset.cat;
+    const groupPrefix = activeChip && activeChip !== 'ALL' ? activeChip + ' ' : '';
+    const query = encodeURIComponent((raw || (groupPrefix + 'African Kitenge tailoring fashion')).trim());
+
+    const urls = {
+      google: "https://google.com" + query,
+      pinterest: "https://pinterest.com" + query,
+      instagram: "https://google.com+" + query,
+      jumia: "https://jumia.co.ke" + query
+    };
+    if (urls[platform]) window.open(urls[platform], '_blank', 'noopener');
+  });
+})();
+
+(() => {
+  const auditBtn = document.getElementById('btn-audit-pdf');
+  if (!auditBtn) return;
+
+  auditBtn.addEventListener('click', () => {
+    const v = JSON.parse(localStorage.getItem('angaza_atelier_vault_v2') || '{}');
+    const orders = v.orders || [];
+    const repairs = v.repairs || [];
+    const expenses = v.expenses || [];
+    const clients = v.clients || [];
+
+    const billed = orders.reduce((s, o) => s + Number(o.price || 0), 0);
+    const paid = orders.reduce((s, o) => s + Number(o.deposit || 0), 0);
+    const pending = Math.max(0, billed - paid);
+    const repTotal = repairs.reduce((s, r) => s + Number(r.amount || 0), 0);
+    const expTotal = expenses.reduce((s, e) => s + Number(e.cost || 0), 0);
+    const net = paid + repTotal - expTotal;
+    const fmt = (n) => 'KES ' + Number(n || 0).toLocaleString('en-KE');
+    const nowStr = new Date().toLocaleString('en-KE');
+
+    const orderRows = orders.length
+      ? orders.map((o, i) => {
+          const bal = Math.max(0, Number(o.price) - Number(o.deposit));
+          return `<tr><td>${i + 1}</td><td>${o.clientName}</td><td>${o.style} (${o.category})</td><td>${o.status}</td><td>${fmt(o.price)}</td><td>${fmt(o.deposit)}</td><td>${fmt(bal)}</td></tr>`;
+        }).join('')
+      : '<tr><td colspan="7">No custom orders recorded.</td></tr>';
+
+    const repairRows = repairs.length
+      ? repairs.map((r, i) => `<tr><td>${i + 1}</td><td>${r.date || '-'}</td><td>${r.client}</td><td>${r.group || '-'}</td><td>${r.notes || '-'}</td><td>${fmt(r.amount)}</td></tr>`).join('')
+      : '<tr><td colspan="6">No repair records logged.</td></tr>';
+
+    const expRows = expenses.length
+      ? expenses.map((e, i) => `<tr><td>${i + 1}</td><td>${e.item}</td><td>${fmt(e.cost)}</td></tr>`).join('')
+      : '<tr><td colspan="3">No expenses logged.</td></tr>';
+
+    const area = document.getElementById('print-receipt-area');
+    area.innerHTML = `
+      <div style="font-family:sans-serif;color:#111;line-height:1.45;">
+        <div style="border-bottom:3px solid #1e3a8a;padding-bottom:8px;margin-bottom:12px;">
+          <h1 style="margin:0;font-size:20px;color:#1e3a8a;">ANGAZA TAILORING HUB — AUDIT REPORT</h1>
+          <p style="margin:3px 0 0;font-size:12px;">Contact: Naomi (+254 106 35228 / +254 725 240629) • Generated: ${nowStr}</p>
+        </div>
+
+        <h3 style="margin:10px 0 6px;font-size:14px;color:#581c87;">1. Financial &amp; Shop Summary</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;" border="1" cellpadding="6">
+          <tr><td><strong>Saved Clients:</strong> ${clients.length}</td><td><strong>Total Orders:</strong> ${orders.length}</td><td><strong>Total Repairs:</strong> ${repairs.length}</td></tr>
+          <tr><td><strong>Custom Orders Billed:</strong> ${fmt(billed)}</td><td><strong>Custom Deposits Paid:</strong> ${fmt(paid)}</td><td><strong>Pending Balances:</strong> ${fmt(pending)}</td></tr>
+          <tr><td><strong>Repair Money Total:</strong> ${fmt(repTotal)}</td><td><strong>Material Expenses:</strong> ${fmt(expTotal)}</td><td><strong>Net Cash In Hand:</strong> ${fmt(net)}</td></tr>
+        </table>
+
+        <h3 style="margin:10px 0 6px;font-size:14px;color:#581c87;">2. Custom Tailoring Orders Ledger</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;" border="1" cellpadding="5">
+          <tr style="background:#eef7ff;"><th>#</th><th>Client</th><th>Garment</th><th>Status</th><th>Price</th><th>Paid</th><th>Balance</th></tr>
+          ${orderRows}
+        </table>
+
+        <h3 style="margin:10px 0 6px;font-size:14px;color:#581c87;">3. Repair Money Ledger</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;" border="1" cellpadding="5">
+          <tr style="background:#eef7ff;"><th>#</th><th>Date</th><th>Customer / Garment</th><th>Group</th><th>Notes</th><th>Amount</th></tr>
+          ${repairRows}
+        </table>
+
+        <h3 style="margin:10px 0 6px;font-size:14px;color:#581c87;">4. Material &amp; Trim Expenses</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;" border="1" cellpadding="5">
+          <tr style="background:#eef7ff;"><th>#</th><th>Expense Item</th><th>Cost</th></tr>
+          ${expRows}
+        </table>
+      </div>
+    `;
+    window.print();
+  });
+})();
+
+(() => {
+  const dashPanel = document.querySelector('.dashboard-panel');
+  const kpiGrid = dashPanel?.querySelector('.kpi-grid');
+  const toggleBtn = document.getElementById('toggle-dash-btn');
+  if (!dashPanel || !kpiGrid || !toggleBtn) return;
+
+  function setDashCollapsed(collapsed) {
+    kpiGrid.style.display = collapsed ? 'none' : 'grid';
+    dashPanel.style.padding = collapsed ? '9px 14px' : '14px';
+    dashPanel.querySelector('.dash-header').style.marginBottom = collapsed ? '0' : '10px';
+    toggleBtn.textContent = collapsed ? 'Show' : 'Hide';
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    const isHidden = kpiGrid.style.display === 'none';
+    setDashCollapsed(!isHidden);
+  });
+
+  document.querySelectorAll('.nav button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      setDashCollapsed(btn.dataset.nav !== 'tab-orders');
+    });
+  });
+})();
+
+(() => {
+  const ENGINES = {
+    google: { base: 'https://google.com', param: 'q', extra: { tbm: 'isch' } },
+    pinterest: { base: 'https://pinterest.com', param: 'q' },
+    instagram: { base: 'https://google.com', param: 'q', prefix: 'site:instagram.com ' },
+    jumia: { base: 'https://jumia.co.ke', param: 'q' }
+  };
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-web-search]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    const cfg = ENGINES[btn.dataset.webSearch];
+    if (!cfg) return;
+
+    const raw = (document.getElementById('online-style-query')?.value || '').trim();
+    const activeCat = document.querySelector('#catalog-chips .chip.active')?.dataset.cat;
+    const catWord = activeCat && activeCat !== 'ALL' ? activeCat + ' ' : '';
+    const searchTerm = (cfg.prefix || '') + (raw || (catWord + 'African Kitenge tailoring fashion')).trim();
+
+    const targetUrl = new URL(cfg.base);
+    targetUrl.searchParams.set(cfg.param, searchTerm);
+    if (cfg.extra) {
+      Object.entries(cfg.extra).forEach(([k, v]) => targetUrl.searchParams.set(k, v));
+    }
+
+    window.open(targetUrl.toString(), '_blank', 'noopener,noreferrer');
+  }, true);
+})();
+
+(() => {
+  function attachDownloadButtons() {
+    document.querySelectorAll('.gal-item').forEach((card) => {
+      if (card.querySelector('[data-dl-img]')) return;
+      const img = card.querySelector('img');
+      const title = card.querySelector('.item-title')?.textContent?.trim() || 'angaza-style';
+      const delBtn = card.querySelector('[data-del-gal]');
+      if (!img || !delBtn) return;
+
+      const dlBtn = document.createElement('a');
+      dlBtn.href = img.src;
+      dlBtn.download = title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.png';
+      dlBtn.className = 'btn-sm';
+      dlBtn.dataset.dlImg = '1';
+      dlBtn.textContent = '⬇ Save';
+      dlBtn.style.marginRight = '4px';
+      delBtn.parentElement.insertBefore(dlBtn, delBtn);
+    });
+  }
+
+  attachDownloadButtons();
+  const galList = document.getElementById('gallery-list');
+  if (galList) {
+    new MutationObserver(attachDownloadButtons).observe(galList, { childList: true, subtree: true });
+  }
+})();
+
+(() => {
+  const ocrInput = document.getElementById("ocr-meas-photo");
+  const ocrStatus = document.getElementById("ocr-status");
+  if (!ocrInput || !ocrStatus) return;
+  const wrap = document.getElementById("ocr-preview-wrap");
+  const img = document.getElementById("ocr-preview-img");
+  const rescan = document.getElementById("ocr-rescan-btn");
+  if (rescan) rescan.onclick = () => { ocrInput.value = ""; ocrInput.click(); };
 
   const box = ocrInput.parentElement;
   if (box && !document.getElementById("ocr-quick-bar")) {
