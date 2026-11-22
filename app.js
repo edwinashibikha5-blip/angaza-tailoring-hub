@@ -24,7 +24,7 @@
         orders: Array.isArray(p.orders) ? p.orders : [],
         repairs: Array.isArray(p.repairs) ? p.repairs : [],
         expenses: Array.isArray(p.expenses) ? p.expenses : [],
-        gallery: Array.isArray(p.gallery) ? p.gallery : []
+        gallery: Array.isArray(p.gallery) ? p.gallery : [], shopItems: Array.isArray(p.shopItems) ? p.shopItems : []
       };
     } catch { return { pin: '1234', clients: [], orders: [], repairs: [], expenses: [], gallery: [] }; }
   }
@@ -3137,7 +3137,7 @@ document.addEventListener('click', (e) => {
 })();
 
 (() => {
-  if (localStorage.getItem("angaza_stock_seed_v114")) return;
+  if (localStorage.getItem("angaza_stock_seed_v115")) return;
   const seed = [
     { name: "Flask", category: "Shop Stock", qty: "2 pcs", note: "650 -> 480", sellPrice: 480 },
     { name: "Jug", category: "Shop Stock", qty: "5 pcs", note: "", sellPrice: 100 },
@@ -3170,7 +3170,7 @@ document.addEventListener('click', (e) => {
     });
     if (typeof saveVault === "function") saveVault(v);
     else localStorage.setItem("angaza_atelier_vault_v2", JSON.stringify(v));
-    localStorage.setItem("angaza_stock_seed_v114", "1");
+    localStorage.setItem("angaza_stock_seed_v115", "1");
     if (typeof renderShopDirectory === "function") renderShopDirectory(); const cEl = document.getElementById("shop-dir-count"); if (cEl) cEl.textContent = String(v.shopItems.length);
   } catch (err) {}
 })();
