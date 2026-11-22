@@ -3144,3 +3144,234 @@ document.addEventListener('click', (e) => {
     if (document.visibilityState === 'visible') checkForNewBuild();
   });
 })();
+
+  async function scanPhoto(file, maxW, q, onMsg) {
+    const dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const s = Math.min(1, maxW / (img.width || maxW));
+          const c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.width * s));
+          c.height = Math.max(1, Math.round(img.height * s));
+          const ctx = c.getContext('2d');
+          ctx.filter = 'contrast(1.35) brightness(1.06)';
+          ctx.drawImage(img, 0, 0, c.width, c.height);
+          res(c.toDataURL('image/jpeg', q));
+        };
+        img.onerror = rej; img.src = r.result;
+      };
+      r.onerror = rej; r.readAsDataURL(file);
+    });
+    if (!window.Tesseract) {
+      if (onMsg) onMsg('Loading OCR...');
+      await new Promise((res, rej) => {
+        const sc = document.createElement('script');
+        sc.src = 'https://jsdelivr.net';
+        sc.onload = res; sc.onerror = rej; document.head.appendChild(sc);
+      });
+    }
+    if (onMsg) onMsg('Transcribing...');
+    const out = await window.Tesseract.recognize(dataUrl, 'eng');
+    return { dataUrl, text: (out && out.data && out.data.text) ? out.data.text.trim() : '' };
+  }
+
+// === V118: FULL-STACK SCAN-TO-DIRECTORY ENGINE ===
+(function initAngazaScanDirectoryV118() {
+  const VKEY = 'angaza_atelier_vault_v2';
+  const readV = () => { try { return JSON.parse(localStorage.getItem(VKEY) || '{}'); } catch (e) { return {}; } };
+  const writeV = (v) => localStorage.setItem(VKEY, JSON.stringify(v));
+  const DEFAULT_29 = [
+    ['Thread Rolls (Assorted)','Stock Taking',24,'KES 1200'],['Invisible Zippers 16in','Stock Taking',18,'KES 540'],
+    ['Nylon Zippers 8in','Stock Taking',20,'KES 400'],['Fusing / Interfacing Roll','Stock Taking',5,'KES 750'],
+    ['Elastic Band 1in (Meters)','Stock Taking',15,'KES 450'],['Shirt Buttons (Pack)','Stock Taking',10,'KES 300'],
+    ['Hook and Eye Sets','Stock Taking',12,'KES 240'],['Machine Needles DBx1','Stock Taking',4,'KES 400'],
+    ['Bobbin Cases','Stock Taking',3,'KES 450'],['Metal Bobbins','Stock Taking',15,'KES 300'],
+    ['Tailors Chalk Box','Stock Taking',2,'KES 240'],['Measuring Tapes 60in','Stock Taking',6,'KES 300'],
+    ['Seam Rippers','Stock Taking',5,'KES 250'],['Dressmaker Pins Box','Stock Taking',4,'KES 320'],
+    ['Bias Binding Rolls','Stock Taking',8,'KES 480'],['Shoulder Pads (Pairs)','Stock Taking',10,'KES 500'],
+    ['Trouser Hooks (Pack)','Stock Taking',5,'KES 350'],['Lining Fabric (Meters)','Stock Taking',12,'KES 1800'],
+    ['Velcro Tape (Meters)','Stock Taking',6,'KES 360'],['Machine Oil Bottle','Stock Taking',2,'KES 300'],
+    ['Pattern Brown Paper','Stock Taking',10,'KES 500'],['Budget: Heavy Duty Needles','Budget Item',2,'KES 300'],
+    ['Budget: Satin Ribbon Pack','Budget Item',3,'KES 285'],['Budget: Pearl Buttons','Budget Item',4,'KES 320'],
+    ['Budget: Lace Trim (Meters)','Budget Item',5,'KES 450'],['Budget: Press Studs Kit','Budget Item',2,'KES 260'],
+    ['Budget: Hemming Web Roll','Budget Item',2,'KES 220'],['Budget: Safety Pins Bulk','Budget Item',3,'KES 180'],
+    ['Budget: Chalk Wheel Pen','Budget Item',2,'KES 370']
+  ].map(([name, category, qty, note]) => ({ name, category, qty, note }));
+
+  function ensureShopSeeded() {
+    const v = readV();
+    if (!Array.isArray(v.shopItems) || v.shopItems.length === 0) { v.shopItems = DEFAULT_29.slice(); writeV(v); }
+    const b = document.getElementById('toggle-shop-dir-btn');
+    if (b) b.textContent = 'Shop List (' + v.shopItems.length + ')';
+  }
+
+  async function scanPhoto(file, maxW, q, onMsg) {
+    const dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const s = Math.min(1, maxW / (img.width || maxW));
+          const c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.width * s));
+          c.height = Math.max(1, Math.round(img.height * s));
+          const ctx = c.getContext('2d');
+          ctx.filter = 'contrast(1.35) brightness(1.06)';
+          ctx.drawImage(img, 0, 0, c.width, c.height);
+          res(c.toDataURL('image/jpeg', q));
+        };
+        img.onerror = rej; img.src = r.result;
+      };
+      r.onerror = rej; r.readAsDataURL(file);
+    });
+    if (!window.Tesseract) {
+      if (onMsg) onMsg('Loading OCR...');
+      await new Promise((res, rej) => {
+        const sc = document.createElement('script');
+        sc.src = 'https://unpkg.com';
+        sc.onload = res; sc.onerror = rej; document.head.appendChild(sc);
+      });
+    }
+    if (onMsg) onMsg('Transcribing...');
+    const out = await window.Tesseract.recognize(dataUrl, 'eng');
+    return { dataUrl, text: (out && out.data && out.data.text) ? out.data.text.trim() : '' };
+  }
+
+  function parseAndSaveClients(raw, photo) {
+    const clean = String(raw || '').replace(/\r/g, '\n').trim();
+    if (!clean) return 0;
+    const chunks = clean.includes(';') ? clean.split(';') : clean.split(/\n(?=\s*[A-Za-z]{2,}\s*[:\-])/);
+    const rules = [
+      ['FL', /\b(?:fl|full\s*length|length)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],
+      ['Shl', /\b(?:shl|shoulder)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],
+      ['Slv', /\b(?:slv|sleeve)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],
+      ['Th', /\b(?:th|thigh)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],
+      ['B', /\b(?:b|bust|chest)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],
+      ['W', /\b(?:w|waist)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],
+      ['H', /\b(?:h|hip|hips)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],
+      ['Tr', /\b(?:tr|trouser)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],
+      ['Slit', /\b(?:slit)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],
+      ['PD', /\b(?:pd)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i]
+    ];
+    const v = readV();
+    if (!Array.isArray(v.clients)) v.clients = [];
+    let saved = 0;
+    chunks.map(s => s.trim()).filter(Boolean).forEach((ch, idx) => {
+      const pm = ch.match(/(?:\+?254|0)\d{8}/);
+      const phone = pm ? pm.slice(0, 1).join('') : '';
+      let name = ch.split(/[:\-\d]/).slice(0, 1).join('').replace(/[^A-Za-z\s']/g, '').trim();
+      if (name.length < 2) { const cn = document.getElementById('c-name'); name = (cn && cn.value.trim()) ? cn.value.trim() : ('Scanned Client ' + (idx + 1)); }
+      const pairs = [];
+      rules.forEach(([lbl, rx]) => { const m = ch.match(rx); if (m) { const [, val] = m; if (val) pairs.push(lbl + ':' + val); } });
+      const rec = { name, phone, group: 'Women', measurements: pairs.length ? pairs.join(', ') : ch, notes: 'Scanned', photo: photo || '', updatedAt: new Date().toISOString() };
+      const ei = v.clients.findIndex(c => c.name && c.name.toLowerCase() === name.toLowerCase());
+      if (ei >= 0) { const prev = v.clients.slice(ei, ei + 1).pop(); v.clients.splice(ei, 1, Object.assign({}, prev, rec, { photo: photo || prev.photo || '' })); }
+      else v.clients.unshift(rec);
+      if (saved === 0) {
+        const nE = document.getElementById('c-name'), pE = document.getElementById('c-phone'), mE = document.getElementById('c-meas');
+        if (nE) nE.value = rec.name; if (pE && rec.phone) pE.value = rec.phone; if (mE) mE.value = rec.measurements;
+      }
+      saved += 1;
+    });
+    writeV(v);
+    if (typeof window.renderClients === 'function') window.renderClients();
+    if (typeof window.renderAngazaClientTable === 'function') window.renderAngazaClientTable();
+    return saved;
+  }
+
+  function processShopRaw(raw) {
+    const lines = String(raw || '').split(/\n|;/).map(s => s.trim()).filter(Boolean);
+    if (!lines.length) return 0;
+    const v = readV();
+    if (!Array.isArray(v.shopItems)) v.shopItems = [];
+    let added = 0;
+    lines.forEach((ln) => {
+      const pm = ln.match(/(?:kes|ksh)?\s*(\d{2,6})\s*$/i);
+      const qm = ln.match(/(?:x|qty)\s*(\d+)/i);
+      const name = ln.replace(/(?:kes|ksh)?\s*\d{2,6}\s*$/i, '').replace(/(?:x|qty)\s*\d+/i, '').replace(/[\-:|]+$/g, '').trim();
+      if (name.length >= 2) {
+        v.shopItems.unshift({ name, category: 'Scanned Stock', qty: qm ? Number(qm.slice(1, 2).join('')) : 1, note: pm ? ('KES ' + pm.slice(1, 2).join('')) : 'Scanned' });
+        added += 1;
+      }
+    });
+    if (added > 0) { writeV(v); ensureShopSeeded(); if (typeof window.renderShopDirectory === 'function') window.renderShopDirectory(); }
+    return added;
+  }
+
+  function mountPanels() {
+    ensureShopSeeded();
+    const ct = document.getElementById('tab-clients');
+    if (ct && !document.getElementById('v118-client-scan-hub')) {
+      const h = document.createElement('div');
+      h.id = 'v118-client-scan-hub'; h.className = 'card';
+      h.style.cssText = 'border:1.5px solid #2563eb;background:#f8fafc;margin-bottom:12px;';
+      h.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><strong style="color:#1e3a8a;font-size:0.9rem;">Scan -> Transcribe -> Save Directory</strong><span id="v118-scan-badge" style="font-size:0.72rem;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:999px;font-weight:700;">Ready</span></div><div id="v118-scan-preview-row" style="display:none;gap:8px;align-items:center;margin-bottom:6px;"><img id="v118-scan-thumb" alt="Scan" style="width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;" /><span style="font-size:0.75rem;color:#334155;">Photo compressed (~35 KB) & linked</span></div><textarea id="v118-transcribed-text" rows="3" placeholder="Transcribed text appears here after scan, or type: Mary 0712345678 FL 56 Shl 15 B 38 W 32 H 42" style="width:100%;font-size:0.82rem;padding:8px;border:1px solid #cbd5e1;border-radius:8px;margin-bottom:6px;background:#fff;"></textarea><div style="display:flex;gap:6px;"><button type="button" id="v118-process-clients-btn" class="btn-primary" style="flex:1;padding:8px;font-size:0.82rem;">Process & Save to Directory</button><button type="button" id="v118-clear-scan-btn" class="btn-small" style="width:auto;padding:8px 10px;">Clear</button></div>';
+      const oi = document.getElementById('ocr-meas-photo');
+      const anc = oi ? (oi.closest('.card') || oi.parentElement) : ct.firstElementChild;
+      if (anc && anc.parentNode) anc.parentNode.insertBefore(h, anc.nextSibling);
+    }
+    const sd = document.getElementById('shop-directory-drawer');
+    if (sd && !document.getElementById('v118-shop-scan-box')) {
+      const b = document.createElement('div');
+      b.id = 'v118-shop-scan-box'; b.style.cssText = 'background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px;margin-bottom:8px;';
+      b.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><strong style="font-size:0.8rem;color:#1e3a8a;">Scan / Paste Stock List</strong><label for="v118-shop-photo-input" class="btn-small" style="width:auto;padding:4px 8px;background:#1d4ed8;color:#fff;cursor:pointer;margin:0;">Camera Scan</label><input type="file" id="v118-shop-photo-input" accept="image/*" capture="environment" style="display:none;" /></div><textarea id="v118-shop-transcribe-text" rows="2" placeholder="Transcribed stock lines (e.g. White Thread x6 KES 300)..." style="width:100%;font-size:0.78rem;padding:6px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:6px;background:#fff;"></textarea><div style="display:flex;justify-content:space-between;align-items:center;"><span id="v118-shop-scan-status" style="font-size:0.73rem;color:#475569;">29 items seeded</span><button type="button" id="v118-shop-process-btn" class="btn-small" style="width:auto;padding:5px 10px;background:#0f766e;color:#fff;">Process & Add</button></div>';
+      sd.insertBefore(b, sd.firstChild);
+    }
+  }
+
+  document.addEventListener('change', async (e) => {
+    const t = e.target; if (!t) return;
+    if (t.id === 'ocr-meas-photo') {
+      e.stopImmediatePropagation();
+      const f = t.files && t.files.item(0); if (!f) return;
+      mountPanels();
+      const bg = document.getElementById('v118-scan-badge'), bx = document.getElementById('v118-transcribed-text'), pr = document.getElementById('v118-scan-preview-row'), pi = document.getElementById('v118-scan-thumb');
+      try {
+        const res = await scanPhoto(f, 720, 0.62, (m) => { if (bg) bg.textContent = m; });
+        window._angazaLastScanPhoto = res.dataUrl;
+        if (pi) pi.src = res.dataUrl; if (pr) pr.style.display = 'flex';
+        if (bx) bx.value = res.text || 'Type shorthand here & tap Process';
+        const n = res.text ? parseAndSaveClients(res.text, res.dataUrl) : 0;
+        if (bg) bg.textContent = n > 0 ? ('Saved ' + n + ' record(s)') : 'Edit text & tap Process';
+      } catch (err) { if (bg) bg.textContent = 'Photo ready — type & Process'; }
+    } else if (t.id === 'v118-shop-photo-input') {
+      e.stopImmediatePropagation();
+      const f = t.files && t.files.item(0); if (!f) return;
+      const st = document.getElementById('v118-shop-scan-status'), tx = document.getElementById('v118-shop-transcribe-text');
+      try {
+        const res = await scanPhoto(f, 840, 0.68, (m) => { if (st) st.textContent = m; });
+        if (tx) tx.value = res.text;
+        const n = processShopRaw(res.text);
+        if (st) st.textContent = n > 0 ? ('Added ' + n + ' item(s)') : 'Edit lines & tap Process';
+      } catch (err) { if (st) st.textContent = 'Type lines & tap Process'; }
+    }
+  }, true);
+
+  document.addEventListener('click', (e) => {
+    const t = e.target; if (!t) return;
+    if (t.closest('#toggle-shop-dir-btn') || t.closest('#scan-shop-list-btn')) {
+      ensureShopSeeded(); mountPanels();
+      if (t.closest('#scan-shop-list-btn')) {
+        const d = document.getElementById('shop-directory-drawer'); if (d) d.style.display = 'block';
+        if (typeof window.renderShopDirectory === 'function') window.renderShopDirectory();
+        const inp = document.getElementById('v118-shop-photo-input'); if (inp) inp.click();
+      }
+    } else if (t.id === 'v118-process-clients-btn') {
+      const bx = document.getElementById('v118-transcribed-text'), bg = document.getElementById('v118-scan-badge');
+      const n = parseAndSaveClients(bx ? bx.value : '', window._angazaLastScanPhoto || '');
+      if (bg) bg.textContent = n > 0 ? ('Saved ' + n + ' record(s)') : 'Enter shorthand first';
+    } else if (t.id === 'v118-clear-scan-btn') {
+      const bx = document.getElementById('v118-transcribed-text'), pr = document.getElementById('v118-scan-preview-row'), bg = document.getElementById('v118-scan-badge');
+      window._angazaLastScanPhoto = ''; if (bx) bx.value = ''; if (pr) pr.style.display = 'none'; if (bg) bg.textContent = 'Ready';
+    } else if (t.id === 'v118-shop-process-btn') {
+      const tx = document.getElementById('v118-shop-transcribe-text'), st = document.getElementById('v118-shop-scan-status');
+      const n = processShopRaw(tx ? tx.value : '');
+      if (st) st.textContent = n > 0 ? ('Added ' + n + ' item(s)') : 'Enter item lines first';
+    }
+  }, true);
+
+  window.addEventListener('DOMContentLoaded', () => { ensureShopSeeded(); mountPanels(); if (typeof window.renderShopDirectory === 'function') window.renderShopDirectory(); });
+  setTimeout(() => { ensureShopSeeded(); mountPanels(); }, 300);
+})();
