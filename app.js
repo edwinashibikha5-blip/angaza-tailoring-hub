@@ -57,7 +57,7 @@
     document.getElementById("kpi-clients-count").textContent = v.clients.length;
   }
 
-  function renderClients(v) {
+  window.renderClients = function renderClients(v) {
     document.getElementById('ord-client').innerHTML = v.clients.length
       ? v.clients.map((c) => `<option value="${c.id}">${c.name} (${c.group})</option>`).join('')
       : '<option value="">-- Add Client in "Clients" --</option>';
@@ -2193,7 +2193,7 @@
   }
 
   setTimeout(() => { try { renderShopDirectory(); } catch (e) {} }, 250);
-  function renderShopDirectory() {
+  window.renderShopDirectory = function renderShopDirectory() {
     const vault = loadVault();
   if (!localStorage.getItem("angaza_all_items_v118")) {
     const seed = [{"name":"Flask","category":"Shop Stock","qty":"2 pcs","note":"650 -> 480","sellPrice":480},{"name":"Jug","category":"Shop Stock","qty":"5 pcs","note":"","sellPrice":100},{"name":"Jug big","category":"Shop Stock","qty":"2 pcs","note":"","sellPrice":200},{"name":"Washing bucket","category":"Shop Stock","qty":"2 pcs","note":"+ 1 keeping","sellPrice":250},{"name":"Knife","category":"Shop Stock","qty":"4 pcs","note":"","sellPrice":150},{"name":"Knife small","category":"Shop Stock","qty":"4 pcs","note":"","sellPrice":70},{"name":"Spoon","category":"Shop Stock","qty":"6 pcs","note":"","sellPrice":150},{"name":"Serving spoon","category":"Shop Stock","qty":"6 pcs","note":"","sellPrice":50},{"name":"Cups new","category":"Shop Stock","qty":"1 dozen","note":"600 + 200","sellPrice":600},{"name":"Cups mabati","category":"Shop Stock","qty":"2 pcs","note":"","sellPrice":200},{"name":"Mwiko","category":"Shop Stock","qty":"6 pcs","note":"","sellPrice":50},{"name":"Coloured bucket","category":"Shop Stock","qty":"3 pcs","note":"","sellPrice":170},{"name":"Clear bucket","category":"Shop Stock","qty":"3 pcs","note":"","sellPrice":170},{"name":"Small clear bucket","category":"Shop Stock","qty":"4 pcs","note":"","sellPrice":130},{"name":"Folks (Forks)","category":"Shop Stock","qty":"1 set","note":"","sellPrice":170},{"name":"Sufuria","category":"Shop Stock","qty":"4 pcs","note":"","sellPrice":0},{"name":"Sufuria nzito","category":"Shop Stock","qty":"4 pcs","note":"300 / 350 / 400 / 450","sellPrice":300},{"name":"Kikombe big","category":"Shop Stock","qty":"1 pc","note":"","sellPrice":100},{"name":"Kikombe small","category":"Shop Stock","qty":"6 pcs","note":"","sellPrice":20},{"name":"Karai / Durbini","category":"Shop Stock","qty":"3 pcs","note":"","sellPrice":100},{"name":"Hand basin small","category":"Shop Stock","qty":"5-6 pcs","note":"","sellPrice":100},{"name":"Jug big (Budget)","category":"Budget","qty":"2 pcs","note":"150 each","sellPrice":300},{"name":"Jug small (Budget)","category":"Budget","qty":"2 pcs","note":"70 each","sellPrice":140},{"name":"Jug x-small (Budget)","category":"Budget","qty":"2 pcs","note":"50 each","sellPrice":100},{"name":"Bucket (Budget)","category":"Budget","qty":"5 pcs","note":"115 each","sellPrice":575},{"name":"Clear bucket 2L (Budget)","category":"Budget","qty":"2 pcs","note":"200 each","sellPrice":400},{"name":"Kofia watoto","category":"Budget","qty":"3 pcs","note":"150 each","sellPrice":450},{"name":"Socks small","category":"Budget","qty":"1 pc","note":"0-1","sellPrice":150},{"name":"Kinyasa","category":"Budget","qty":"3 pcs","note":"90 each","sellPrice":270}];
@@ -3177,13 +3177,12 @@ document.addEventListener('click', (e) => {
     return { dataUrl, text: (out && out.data && out.data.text) ? out.data.text.trim() : '' };
   }
 
-// === V119: FULL-STACK SCAN-TO-DIRECTORY ENGINE ===
-(function initAngazaScanDirectoryV119() {
-  const VKEY = 'angaza_atelier_vault_v2';
-  const readV = () => { try { return JSON.parse(localStorage.getItem(VKEY) || '{}'); } catch (e) { return {}; } };
-  const writeV = (v) => localStorage.setItem(VKEY, JSON.stringify(v));
-
-  const ITEMS_29 = [
+// === V120: DIRECT SCAN-TO-DIRECTORY & 29-ITEM SEED ===
+(function initAngazaV120() {
+  const VK = 'angaza_atelier_vault_v2';
+  const getV = () => { try { return JSON.parse(localStorage.getItem(VK) || '{}'); } catch (e) { return {}; } };
+  const setV = (v) => localStorage.setItem(VK, JSON.stringify(v));
+  const LIST29 = [
     ['Thread Rolls (Assorted)','Stock Taking','24 rolls','KES 1,200',1200],['Invisible Zippers 16in','Stock Taking','18 pcs','KES 540',540],
     ['Nylon Zippers 8in','Stock Taking','20 pcs','KES 400',400],['Fusing / Interfacing Roll','Stock Taking','5 rolls','KES 750',750],
     ['Elastic Band 1in (Meters)','Stock Taking','15 m','KES 450',450],['Shirt Buttons (Pack)','Stock Taking','10 pkts','KES 300',300],
@@ -3201,168 +3200,99 @@ document.addEventListener('click', (e) => {
     ['Budget: Chalk Wheel Pen','Budget Item','2 pcs','KES 370',370]
   ].map(([name, category, qty, note, sellPrice]) => ({ name, category, qty, note, sellPrice }));
 
-  function forceSeed29IfEmpty() {
-    const v = readV();
-    if (!Array.isArray(v.shopItems) || v.shopItems.length === 0) {
-      v.shopItems = ITEMS_29.slice();
-      writeV(v);
-    }
-    const cnt = v.shopItems.length;
-    document.querySelectorAll('.shop-modal-tab').forEach((b) => {
-      if (b.getAttribute('data-smview') === 'list') b.textContent = 'Shop List (' + cnt + ')';
-    });
-    const tb = document.getElementById('toggle-shop-dir-btn');
-    if (tb) tb.textContent = 'Shop List (' + cnt + ')';
+  function refreshAll() {
+    const v = getV();
+    const hasSamplesOnly = Array.isArray(v.shopItems) && v.shopItems.length > 0 && v.shopItems.every(x => x && x.isSample);
+    if (!Array.isArray(v.shopItems) || v.shopItems.length === 0 || hasSamplesOnly) { v.shopItems = LIST29.slice(); setV(v); }
+    const n = v.shopItems.length;
+    document.querySelectorAll('.shop-modal-tab').forEach(b => { if (b.getAttribute('data-smview') === 'list') b.textContent = 'Shop List (' + n + ')'; });
+    const tb = document.getElementById('toggle-shop-dir-btn'); if (tb) tb.textContent = 'Shop List (' + n + ')';
+    if (typeof window.renderShopDirectory === 'function') window.renderShopDirectory();
+    if (typeof window.renderClients === 'function') window.renderClients();
+    if (typeof window.renderClientList === 'function') window.renderClientList();
+    if (typeof window.renderAngazaClientTable === 'function') window.renderAngazaClientTable();
   }
+  window.addEventListener('DOMContentLoaded', refreshAll);
+  setTimeout(refreshAll, 400);
+})();
 
-  async function runPhotoScan(file, maxW, q, setStatus) {
+// === V120B: SCAN -> TRANSCRIBE -> SAVE DIRECTORY ===
+(function initScanTransSaveV120() {
+  const VK = 'angaza_atelier_vault_v2';
+  const getV = () => { try { return JSON.parse(localStorage.getItem(VK) || '{}'); } catch (e) { return {}; } };
+  const setV = (v) => localStorage.setItem(VK, JSON.stringify(v));
+
+  async function scanImg(file, maxW, q, cb) {
     const dataUrl = await new Promise((res, rej) => {
       const r = new FileReader();
-      r.onload = () => {
-        const img = new Image();
-        img.onload = () => {
-          const s = Math.min(1, maxW / (img.width || maxW));
-          const c = document.createElement('canvas');
-          c.width = Math.max(1, Math.round(img.width * s));
-          c.height = Math.max(1, Math.round(img.height * s));
-          const ctx = c.getContext('2d');
-          ctx.filter = 'contrast(1.35) brightness(1.06)';
-          ctx.drawImage(img, 0, 0, c.width, c.height);
-          res(c.toDataURL('image/jpeg', q));
-        };
-        img.onerror = rej; img.src = r.result;
-      };
+      r.onload = () => { const img = new Image(); img.onload = () => { const s = Math.min(1, maxW / (img.width || maxW)); const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s)); const ctx = c.getContext('2d'); ctx.filter = 'contrast(1.35) brightness(1.06)'; ctx.drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', q)); }; img.onerror = rej; img.src = r.result; };
       r.onerror = rej; r.readAsDataURL(file);
     });
     if (!window.Tesseract) {
-      if (setStatus) setStatus('Loading OCR engine...');
-      await new Promise((res, rej) => {
-        const sc = document.createElement('script');
-        sc.src = 'https://unpkg.com';
-        sc.onload = res; sc.onerror = rej; document.head.appendChild(sc);
-      });
+      if (cb) cb('Loading OCR...');
+      await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://unpkg.com'; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
     }
-    if (setStatus) setStatus('Transcribing text...');
+    if (cb) cb('Transcribing...');
     const out = await window.Tesseract.recognize(dataUrl, 'eng');
     return { dataUrl, text: (out && out.data && out.data.text) ? out.data.text.trim() : '' };
   }
 
-  function parseAndSaveClientsV119(raw, photo) {
-    const clean = String(raw || '').replace(/\r/g, '\n').trim();
-    if (!clean) return 0;
+  function saveParsed(raw, photo) {
+    const clean = String(raw || '').replace(/\r/g, '\n').trim(); if (!clean) return 0;
     const chunks = clean.includes(';') ? clean.split(';') : clean.split(/\n(?=\s*[A-Za-z]{2,}\s*[:\-])/);
-    const map = [
-      ['chest', /\b(?:b|bust|chest)\s*[:=\-]?\s*(\d+(?:\.\d+)?(?:\s*1\/2)?)/i],
-      ['waist', /\b(?:w|waist)\s*[:=\-]?\s*(\d+(?:\.\d+)?(?:\s*1\/2)?)/i],
-      ['hips', /\b(?:h|hip|hips)\s*[:=\-]?\s*(\d+(?:\.\d+)?(?:\s*1\/2)?)/i],
-      ['shoulder', /\b(?:shl|sh|shoulder)\s*[:=\-]?\s*(\d+(?:\.\d+)?(?:\s*1\/2)?)/i],
-      ['sleeve', /\b(?:slv|sl|sleeve)\s*[:=\-]?\s*(\d+(?:\.\d+)?(?:\s*1\/2)?)/i],
-      ['length', /\b(?:fl|l|len|length|dress)\s*[:=\-]?\s*(\d+(?:\.\d+)?(?:\s*1\/2)?)/i],
-      ['outseam', /\b(?:tr|outseam|trouser|skirt)\s*[:=\-]?\s*(\d+(?:\.\d+)?(?:\s*1\/2)?)/i],
-      ['neck', /\b(?:nk|th|neck|thigh|slit|pd)\s*[:=\-]?\s*(\d+(?:\.\d+)?(?:\s*1\/2)?)/i]
-    ];
-    const v = readV();
-    if (!Array.isArray(v.clients)) v.clients = [];
-    let count = 0;
+    const rules = [['chest',/\b(?:b|bust|chest)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['waist',/\b(?:w|waist)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['hips',/\b(?:h|hip|hips)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['shoulder',/\b(?:shl|sh|shoulder)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['sleeve',/\b(?:slv|sl|sleeve)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['length',/\b(?:fl|l|len|length)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['outseam',/\b(?:tr|outseam|trouser)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i],['neck',/\b(?:nk|th|neck|thigh|slit|pd)\s*[:=\-]?\s*(\d+(?:\.\d+)?)/i]];
+    const v = getV(); if (!Array.isArray(v.clients)) v.clients = [];
+    let cnt = 0;
     chunks.map(s => s.trim()).filter(Boolean).forEach((ch, idx) => {
       const pm = ch.match(/(?:\+?254|0)\d{8}/);
-      const phone = pm ? pm.slice(0, 1).join('') : ((document.getElementById('cli-phone') || {}).value || '0700000000');
       let name = ch.split(/[:\-\d]/).slice(0, 1).join('').replace(/[^A-Za-z\s']/g, '').trim();
       if (name.length < 2) name = ((document.getElementById('cli-name') || {}).value || '').trim() || ('Scanned Client ' + (idx + 1));
-      const rec = { id: 'cli_' + Date.now() + '_' + idx, name, phone, group: (document.getElementById('cli-group') || {}).value || 'Women', unit: (document.getElementById('cli-unit') || {}).value || 'in', chest: '', waist: '', hips: '', shoulder: '', sleeve: '', length: '', outseam: '', neck: '', photo: photo || '', notes: ch };
-      map.forEach(([k, rx]) => { const m = ch.match(rx); if (m) { const [, val] = m; if (val) rec[k] = val.trim(); } });
-      const ei = v.clients.findIndex(c => c.name && c.name.toLowerCase() === name.toLowerCase());
-      if (ei >= 0) { const prev = v.clients.slice(ei, ei + 1).pop(); v.clients.splice(ei, 1, Object.assign({}, prev, rec, { photo: photo || prev.photo || '' })); }
-      else v.clients.unshift(rec);
-      if (count === 0) {
-        [['cli-name',rec.name],['cli-phone',rec.phone],['m-chest',rec.chest],['m-waist',rec.waist],['m-hips',rec.hips],['m-shoulder',rec.shoulder],['m-sleeve',rec.sleeve],['m-length',rec.length],['m-outseam',rec.outseam],['m-neck',rec.neck]].forEach(([id,val])=>{const el=document.getElementById(id);if(el&&val)el.value=val;});
-      }
-      count += 1;
+      const rec = { id: 'cli_' + Date.now() + '_' + idx, name, phone: pm ? pm.slice(0, 1).join('') : ((document.getElementById('cli-phone') || {}).value || '0700000000'), group: (document.getElementById('cli-group') || {}).value || 'Women', unit: (document.getElementById('cli-unit') || {}).value || 'in', chest: '', waist: '', hips: '', shoulder: '', sleeve: '', length: '', outseam: '', neck: '', photo: photo || '', notes: ch };
+      rules.forEach(([k, rx]) => { const m = ch.match(rx); if (m) { const [, val] = m; if (val) rec[k] = val; } });
+      v.clients.unshift(rec);
+      if (cnt === 0) [['cli-name',rec.name],['cli-phone',rec.phone],['m-chest',rec.chest],['m-waist',rec.waist],['m-hips',rec.hips],['m-shoulder',rec.shoulder],['m-sleeve',rec.sleeve],['m-length',rec.length],['m-outseam',rec.outseam],['m-neck',rec.neck]].forEach(([id,val])=>{const el=document.getElementById(id);if(el&&val)el.value=val;});
+      cnt += 1;
     });
-    writeV(v); document.dispatchEvent(new Event('angaza:vault-updated'));
+    setV(v);
     if (typeof window.renderClients === 'function') window.renderClients();
-    return count;
+    if (typeof window.renderClientList === 'function') window.renderClientList();
+    if (typeof window.renderAngazaClientTable === 'function') window.renderAngazaClientTable();
+    return cnt;
   }
 
-  function processShopListRaw(raw) {
-    const lines = String(raw || '').split(/\n|;/).map(s => s.trim()).filter(Boolean);
-    const v = readV(); if (!Array.isArray(v.shopItems)) v.shopItems = [];
-    let added = 0;
-    lines.forEach((ln) => {
-      const pm = ln.match(/(?:kes|ksh)?\s*(\d{2,6})\s*$/i);
-      const qm = ln.match(/(?:x|qty)\s*(\d+)/i);
-      const price = pm ? Number(pm.slice(1, 2).join('')) : 0;
-      const name = ln.replace(/(?:kes|ksh)?\s*\d{2,6}\s*$/i, '').replace(/(?:x|qty)\s*\d+/i, '').replace(/[\-:|]+$/g, '').trim();
-      if (name.length >= 2) { v.shopItems.unshift({ name, category: 'Scanned Stock', qty: qm ? (qm.slice(1, 2).join('') + ' pcs') : '1 pc', note: price ? ('KES ' + price) : 'Scanned', sellPrice: price }); added += 1; }
-    });
-    if (added > 0) { writeV(v); forceSeed29IfEmpty(); const fe = document.getElementById('shop-dir-filter'); if (fe) fe.dispatchEvent(new Event('change')); }
-    return added;
-  }
-
-  function mountV119Directories() {
-    forceSeed29IfEmpty();
+  function mountUI() {
     const cf = document.getElementById('client-form');
-    if (cf && !document.getElementById('v119-scan-box')) {
-      const box = document.createElement('div'); box.id = 'v119-scan-box';
-      box.style.cssText = 'background:#f8fafc;border:1.5px solid #2563eb;border-radius:10px;padding:9px;margin-bottom:10px;';
-      box.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><strong style="font-size:0.82rem;color:#1e3a8a;">Transcribed Measurements & Auto-Save</strong><span id="v119-cli-badge" style="font-size:0.7rem;background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:999px;font-weight:700;">Ready</span></div><textarea id="v119-cli-text" rows="2" placeholder="Scanned notes appear here, or type: Mary 0712345678 B 38 W 32 H 42 Sh 15 Sl 23 FL 56" style="width:100%;font-size:0.8rem;padding:6px;border:1px solid #cbd5e1;border-radius:7px;margin-bottom:6px;background:#fff;"></textarea><div style="display:flex;gap:6px;"><button type="button" id="v119-cli-save-btn" class="btn-primary" style="flex:1;padding:7px;font-size:0.8rem;">Transcribe & Save Client</button><button type="button" id="v119-cli-clear-btn" class="btn-small" style="width:auto;padding:7px 10px;">Clear</button></div>';
+    if (cf && !document.getElementById('v120-scan-card')) {
+      const d = document.createElement('div'); d.id = 'v120-scan-card';
+      d.style.cssText = 'background:#f8fafc;border:1.5px solid #2563eb;border-radius:10px;padding:9px;margin-bottom:10px;';
+      d.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><strong style="font-size:0.82rem;color:#1e3a8a;">Scan -> Transcribe -> Directory</strong><span id="v120-badge" style="font-size:0.7rem;background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:999px;font-weight:700;">Ready</span></div><textarea id="v120-text" rows="2" placeholder="Scanned measurements transcribe here, or type: Mary 0712345678 B 38 W 32 H 42 Sh 15 Sl 23 FL 56" style="width:100%;font-size:0.8rem;padding:6px;border:1px solid #cbd5e1;border-radius:7px;margin-bottom:6px;background:#fff;"></textarea><button type="button" id="v120-save-btn" class="btn-primary" style="width:100%;padding:7px;font-size:0.8rem;">Transcribe & Save to Directory</button>';
       const pw = document.getElementById('ocr-preview-wrap');
-      if (pw && pw.parentNode) pw.parentNode.appendChild(box); else cf.insertBefore(box, cf.firstChild);
-    }
-    const smList = document.getElementById('sm-view-list');
-    if (smList && !document.getElementById('v119-shop-box')) {
-      const sb = document.createElement('div'); sb.id = 'v119-shop-box';
-      sb.style.cssText = 'background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px;margin-bottom:8px;';
-      sb.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><strong style="font-size:0.8rem;color:#1e3a8a;">Scan / Paste Shop Stock List</strong><label for="v119-shop-file" class="btn-small" style="width:auto;padding:4px 8px;background:#1d4ed8;color:#fff;cursor:pointer;margin:0;">Scan Photo</label><input type="file" id="v119-shop-file" accept="image/*" capture="environment" style="display:none;" /></div><textarea id="v119-shop-text" rows="2" placeholder="e.g. White Thread x6 KES 300" style="width:100%;font-size:0.78rem;padding:6px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:5px;background:#fff;"></textarea><div style="display:flex;justify-content:space-between;align-items:center;"><span id="v119-shop-msg" style="font-size:0.72rem;color:#475569;">29 items ready</span><button type="button" id="v119-shop-add-btn" class="btn-small" style="width:auto;padding:5px 10px;background:#0f766e;color:#fff;">Process & Add</button></div>';
-      smList.insertBefore(sb, smList.firstChild);
+      if (pw && pw.parentNode) pw.parentNode.appendChild(d); else cf.insertBefore(d, cf.firstChild);
     }
   }
 
   document.addEventListener('change', async (e) => {
-    const t = e.target; if (!t) return;
-    if (t.id === 'ocr-meas-photo') {
-      e.stopImmediatePropagation(); const f = t.files && t.files.item(0); if (!f) return; mountV119Directories();
-      const st = document.getElementById('ocr-status'), pw = document.getElementById('ocr-preview-wrap'), pi = document.getElementById('ocr-preview-img'), tx = document.getElementById('v119-cli-text'), bg = document.getElementById('v119-cli-badge');
-      if (pw) pw.style.display = 'flex';
-      try {
-        const res = await runPhotoScan(f, 720, 0.62, (m) => { if (st) st.textContent = m; if (bg) bg.textContent = m; });
-        window._angazaLastScanPhoto = res.dataUrl; if (pi) pi.src = res.dataUrl;
-        if (tx) tx.value = res.text || 'Type shorthand here & tap Transcribe & Save Client';
-        const n = res.text ? parseAndSaveClientsV119(res.text, res.dataUrl) : 0;
-        if (st) st.textContent = n > 0 ? ('Transcribed & Saved ' + n + ' client(s)!') : 'Photo ready — edit shorthand & tap Save';
-        if (bg) bg.textContent = n > 0 ? ('Saved (' + n + ')') : 'Edit & Save';
-      } catch (err) { if (st) st.textContent = 'Photo attached — type shorthand & tap Save'; }
-    } else if (t.id === 'v119-shop-file') {
-      e.stopImmediatePropagation(); const f = t.files && t.files.item(0); if (!f) return;
-      const msgEl = document.getElementById('v119-shop-msg'), tx = document.getElementById('v119-shop-text');
-      try {
-        const res = await runPhotoScan(f, 840, 0.68, (m) => { if (msgEl) msgEl.textContent = m; });
-        if (tx) tx.value = res.text; const n = processShopListRaw(res.text);
-        if (msgEl) msgEl.textContent = n > 0 ? ('Added ' + n + ' item(s)!') : 'Edit lines & tap Process';
-      } catch (err) { if (msgEl) msgEl.textContent = 'Type lines & tap Process'; }
-    }
+    if (!e.target || e.target.id !== 'ocr-meas-photo') return;
+    e.stopImmediatePropagation(); const f = e.target.files && e.target.files.item(0); if (!f) return; mountUI();
+    const st = document.getElementById('ocr-status'), pw = document.getElementById('ocr-preview-wrap'), pi = document.getElementById('ocr-preview-img'), tx = document.getElementById('v120-text'), bg = document.getElementById('v120-badge');
+    if (pw) pw.style.display = 'flex';
+    try {
+      const res = await scanImg(f, 720, 0.62, (m) => { if (st) st.textContent = m; if (bg) bg.textContent = m; });
+      window._v120Photo = res.dataUrl; if (pi) pi.src = res.dataUrl;
+      if (tx) tx.value = res.text || 'Type shorthand here & tap Save';
+      const n = res.text ? saveParsed(res.text, res.dataUrl) : 0;
+      if (st) st.textContent = n > 0 ? ('Saved ' + n + ' client(s)!') : 'Edit text & tap Save';
+      if (bg) bg.textContent = n > 0 ? ('Saved (' + n + ')') : 'Edit & Save';
+    } catch (err) { if (st) st.textContent = 'Photo ready — type shorthand & Save'; }
   }, true);
 
   document.addEventListener('click', (e) => {
-    const t = e.target; if (!t) return;
-    if (t.id === 'v119-cli-save-btn') {
-      const tx = document.getElementById('v119-cli-text'), bg = document.getElementById('v119-cli-badge'), st = document.getElementById('ocr-status');
-      const n = parseAndSaveClientsV119(tx ? tx.value : '', window._angazaLastScanPhoto || '');
-      if (bg) bg.textContent = n > 0 ? ('Saved (' + n + ')') : 'Enter shorthand';
-      if (st && n > 0) st.textContent = 'Saved ' + n + ' client record(s) to directory!';
-    } else if (t.id === 'v119-cli-clear-btn') {
-      const tx = document.getElementById('v119-cli-text'), pw = document.getElementById('ocr-preview-wrap'), bg = document.getElementById('v119-cli-badge');
-      window._angazaLastScanPhoto = ''; if (tx) tx.value = ''; if (pw) pw.style.display = 'none'; if (bg) bg.textContent = 'Ready';
-    } else if (t.id === 'v119-shop-add-btn') {
-      const tx = document.getElementById('v119-shop-text'), msgEl = document.getElementById('v119-shop-msg');
-      const n = processShopListRaw(tx ? tx.value : '');
-      if (msgEl) msgEl.textContent = n > 0 ? ('Added ' + n + ' item(s)!') : 'Enter item lines';
-    } else if (t.closest('.shop-modal-tab') || t.closest('#toggle-shop-dir-btn') || t.closest('#scan-shop-list-btn')) {
-      forceSeed29IfEmpty(); mountV119Directories();
-      const fe = document.getElementById('shop-dir-filter'); if (fe) fe.dispatchEvent(new Event('change'));
-    }
+    if (!e.target || e.target.id !== 'v120-save-btn') return;
+    const tx = document.getElementById('v120-text'), bg = document.getElementById('v120-badge');
+    const n = saveParsed(tx ? tx.value : '', window._v120Photo || '');
+    if (bg) bg.textContent = n > 0 ? ('Saved (' + n + ')') : 'Enter shorthand';
   }, true);
 
-  window.addEventListener('DOMContentLoaded', () => { forceSeed29IfEmpty(); mountV119Directories(); });
-  setTimeout(() => { forceSeed29IfEmpty(); mountV119Directories(); }, 350);
+  window.addEventListener('DOMContentLoaded', mountUI);
+  setTimeout(mountUI, 400);
 })();
