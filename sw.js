@@ -1,4 +1,4 @@
-const CACHE_NAME = 'angaza-hub-v157';
+const CACHE_NAME = 'angaza-hub-v158';
 const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/manifest.json'];
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -26,5 +26,5 @@ self.addEventListener('fetch', (e) => {
     }));
     return;
   }
-  e.respondWith(fetch(e.request).catch(() => caches.match(e.request).then((r) => r || new Response('', { status: 200 }))));
+  e.respondWith(caches.match(e.request).then((c) => c || fetch(e.request).then((r) => { if (r && r.ok) { const cp = r.clone(); caches.open(CACHE_NAME).then((ca) => ca.put(e.request, cp)); } return r; }).catch(() => new Response('', { status: 200 }))));
 });
