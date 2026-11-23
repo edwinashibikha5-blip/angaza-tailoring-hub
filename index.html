@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=135" />
+  <link rel="stylesheet" href="style.css?v=136" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=135'+Date.now());})(this)">↻ v135</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=136'+Date.now());})(this)">↻ v136</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=135" defer></script>
+  <script src="app.js?v=136" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1494,5 +1494,110 @@
 })();
 </script>
 <!-- /V135_MARKET_INDEX -->
+<!-- V136_PROFIT_SUITE -->
+<script>
+(function(){
+  const VK='angaza_atelier_vault_v2', BKEY='angaza_last_backup_ts';
+  const getV=()=>{try{return JSON.parse(localStorage.getItem(VK)||'{}')}catch(e){return{}}};
+  const kePhone=(p)=>{const d=String(p||'').replace(/\D/g,'');if(d.startsWith('0'))return '254'+d.slice(1);if(d.startsWith('254'))return d;return '';};
+
+  window._v136SendWaReceipt=function(title,phone,total,paid,dueDate){
+    const tot=Number(total)||0, dep=Number(paid)||0, bal=Math.max(0,tot-dep);
+    const msg='*ANGAZA TAILORING HUB - RECEIPT*\n'
+      +'• Item: '+title+'\n'
+      +'• Total: KES '+tot.toLocaleString()+'\n'
+      +'• Paid: KES '+dep.toLocaleString()+'\n'
+      +'• Balance Due: *KES '+bal.toLocaleString()+'*\n'
+      +(dueDate?'• Ready/Fitting Date: '+dueDate+'\n':'')
+      +'• M-Pesa / Inquiries: +254 725 240629\nAsante kwa biashara!';
+    const num=kePhone(phone);
+    const url=num?('https://wa.me):('https://wa.me);
+    window.open(url,'_blank');
+  };
+
+  document.addEventListener('click',function(e){
+    const t=e.target; if(!t)return;
+    const ordBtn=t.closest('[data-v136-order]');
+    if(ordBtn){
+      const c=(getV().clients||[]).slice(Number(ordBtn.getAttribute('data-v136-order')),Number(ordBtn.getAttribute('data-v136-order'))+1).pop();
+      if(c){
+        const homeTab=document.querySelector('[data-tab="orders"], #nav-orders, button[onclick*="orders"]'); if(homeTab)homeTab.click();
+        setTimeout(()=>{
+          const ms=[['B',c.chest],['W',c.waist],['H',c.hips],['Sh',c.shoulder],['Sl',c.sleeve],['FL',c.length]].filter(([,v])=>v).map(([k,v])=>k+':'+v).join(' ');
+          [['ord-client',c.name],['order-client',c.name],['ord-phone',c.phone],['order-phone',c.phone],['ord-notes',ms],['order-notes',ms]].forEach(([id,val])=>{const el=document.getElementById(id);if(el&&val)el.value=val;});
+          const f=document.getElementById('order-form')||document.getElementById('ord-form'); if(f)f.scrollIntoView({behavior:'smooth'});
+        },80);
+      }
+      return;
+    }
+    const waBtn=t.closest('[data-v136-wa]');
+    if(waBtn){
+      window._v136SendWaReceipt(waBtn.getAttribute('data-t'),waBtn.getAttribute('data-p'),waBtn.getAttribute('data-tot'),waBtn.getAttribute('data-dep'),waBtn.getAttribute('data-dt'));
+    }
+  },true);
+})();
+</script>
+
+<script>
+(function(){
+  const VK='angaza_atelier_vault_v2', BKEY='angaza_last_backup_ts';
+  const getV=()=>{try{return JSON.parse(localStorage.getItem(VK)||'{}')}catch(e){return{}}};
+
+  function enhanceUI(){
+    // 1. Add "+ Order" button next to every "Load" button in Saved Clients directory
+    document.querySelectorAll('[data-v128-load]').forEach(btn=>{
+      const idx=btn.getAttribute('data-v128-load');
+      if(btn.parentElement&&!btn.parentElement.querySelector('[data-v136-order]')){
+        const ob=document.createElement('button'); ob.type='button'; ob.setAttribute('data-v136-order',idx);
+        ob.className='btn-small'; ob.style.cssText='width:auto;padding:4px 7px;font-size:0.7rem;background:#1d4ed8;color:#fff;';
+        ob.textContent='+ Order';
+        btn.parentElement.insertBefore(ob,btn);
+      }
+    });
+
+    // 2. Add WhatsApp Receipt button to Repair cards
+    const reps=Array.isArray(getV().repairs)?getV().repairs:[];
+    document.querySelectorAll('[data-rep-del]').forEach(delBtn=>{
+      const idx=Number(delBtn.getAttribute('data-rep-del'));
+      const r=reps.slice(idx,idx+1).pop();
+      if(r&&delBtn.parentElement&&!delBtn.parentElement.querySelector('[data-v136-wa]')){
+        const wb=document.createElement('button'); wb.type='button'; wb.setAttribute('data-v136-wa','1');
+        wb.setAttribute('data-t',(r.client||'Repair')+' ('+(r.notes||'Repair')+')');
+        wb.setAttribute('data-p',(String(r.notes||'').match(/(?:\+?254|0)\d{8}/)||['']).slice(0,1).join(''));
+        wb.setAttribute('data-tot',r.amount||0); wb.setAttribute('data-dep',r.done?(r.amount||0):0); wb.setAttribute('data-dt',r.date||'');
+        wb.style.cssText='padding:3px 6px;border-radius:6px;border:none;background:#16a34a;color:#fff;font-size:0.68rem;font-weight:700;flex-shrink:0;';
+        wb.textContent='WA';
+        delBtn.parentElement.insertBefore(wb,delBtn);
+      }
+    });
+
+    // 3. Inject Net Profit Pulse & 7-Day Backup Reminder in Finance tab
+    const fin=document.getElementById('tab-finance');
+    if(fin&&!document.getElementById('v136-profit-pulse')){
+      const v=getV();
+      const ordRev=(Array.isArray(v.orders)?v.orders:[]).reduce((s,o)=>s+(Number(o.paid||o.deposit||o.price||o.total)||0),0);
+      const repRev=(Array.isArray(v.repairs)?v.repairs:[]).reduce((s,r)=>s+(Number(r.amount)||0),0);
+      const expSum=(Array.isArray(v.expenses)?v.expenses:[]).reduce((s,x)=>s+(Number(x.amount)||0),0);
+      const net=ordRev+repRev-expSum;
+      const lastTs=Number(localStorage.getItem(BKEY))||0;
+      const daysAgo=lastTs?Math.floor((Date.now()-lastTs)/86400000):99;
+      const card=document.createElement('div'); card.id='v136-profit-pulse'; card.className='card';
+      card.style.cssText='border:1.5px solid #0f766e;background:#f0fdf4;margin-bottom:10px;';
+      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><strong style="font-size:0.86rem;color:#065f46;">Net Shop Profit Pulse</strong><span style="font-size:0.7rem;padding:2px 7px;border-radius:999px;font-weight:700;background:'+(daysAgo>=7?'#fef3c7':'#dcfce7')+';color:'+(daysAgo>=7?'#92400e':'#166534')+';">'+(daysAgo>=7?'Backup Due ('+(lastTs?daysAgo+'d ago':'Never')+')':'Backed Up ✓')+'</span></div>'
+        +'<div style="font-size:1.05rem;font-weight:800;color:#0f766e;margin-bottom:3px;">Net Cashflow: KES '+net.toLocaleString()+'</div>'
+        +'<div style="font-size:0.73rem;color:#334155;">Orders: KES '+ordRev.toLocaleString()+' + Repairs: KES '+repRev.toLocaleString()+' − Expenses: KES '+expSum.toLocaleString()+'</div>';
+      fin.insertBefore(card,fin.firstChild);
+    }
+  }
+
+  document.addEventListener('click',function(e){
+    const btn=e.target&&e.target.closest('#btn-backup, button[onclick*="backup"], button[id*="export"]');
+    if(btn&&(btn.textContent||'').toLowerCase().includes('backup'))localStorage.setItem(BKEY,String(Date.now()));
+  },true);
+
+  setInterval(enhanceUI,700);
+})();
+</script>
+<!-- /V136_PROFIT_SUITE -->
 </body>
 </html>
