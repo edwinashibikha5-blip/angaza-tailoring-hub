@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=129" />
+  <link rel="stylesheet" href="style.css?v=130" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=129'+Date.now());})(this)">↻ v129</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=130'+Date.now());})(this)">↻ v130</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=129" defer></script>
+  <script src="app.js?v=130" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1064,5 +1064,74 @@
 })();
 </script>
 <!-- /V128_UNIFIED_SCAN -->
+<!-- V130_REPAIRS -->
+<script>
+(function(){
+  const VK='angaza_atelier_vault_v2';
+  const getV=()=>{try{return JSON.parse(localStorage.getItem(VK)||'{}')}catch(e){return{}}};
+  const setV=(v)=>localStorage.setItem(VK,JSON.stringify(v));
+  const todayStr=()=>new Date().toISOString().slice(0,10);
+
+  function renderRepairsV130(){
+    const v=getV(); const list=Array.isArray(v.repairs)?v.repairs:[];
+    const q=((document.getElementById('repair-search')||{}).value||'').toLowerCase().trim();
+    const td=todayStr();
+    const total=list.reduce((s,r)=>s+(Number(r.amount)||0),0);
+    const todaySum=list.filter(r=>(r.date||'')===td).reduce((s,r)=>s+(Number(r.amount)||0),0);
+    const curAmt=Number((document.getElementById('rep-amount')||{}).value)||0;
+
+    const tEl=document.getElementById('repair-total-display'); if(tEl)tEl.textContent='KES '+total.toLocaleString();
+    const dEl=document.getElementById('repair-today-display'); if(dEl)dEl.textContent='Today: KES '+todaySum.toLocaleString();
+    const pEl=document.getElementById('repair-live-preview'); if(pEl)pEl.textContent='Live Total (with current entry): KES '+(total+curAmt).toLocaleString();
+
+    const box=document.getElementById('repairs-list'); if(!box)return;
+    const filtered=list.filter(r=>!q||[r.client,r.desc,r.group,r.notes,r.date].some(x=>String(x||'').toLowerCase().includes(q)));
+    if(!filtered.length){box.innerHTML='<p class="empty-msg">No repair entries logged yet.</p>';return;}
+    box.innerHTML=filtered.map(r=>{
+      const idx=list.indexOf(r);
+      const title=r.client||r.desc||'Repair Job';
+      return '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:'+(r.done?'#f0fdf4':'#fff')+';border:1px solid '+(r.done?'#86efac':'#e2e8f0')+';border-radius:9px;margin-bottom:6px;">'
+        +'<button type="button" data-rep-ok="'+idx+'" style="width:24px;height:24px;border-radius:6px;border:1.5px solid #2563eb;background:'+(r.done?'#16a34a':'#fff')+';color:#fff;font-weight:800;flex-shrink:0;">'+(r.done?'✓':'')+'</button>'
+        +'<div style="flex:1;min-width:0;"><div style="font-size:0.82rem;font-weight:700;color:#0f172a;text-decoration:'+(r.done?'line-through':'none')+';">'+title+' <span style="font-size:0.7rem;background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:999px;">'+(r.group||'Women')+'</span></div>'
+        +'<div style="font-size:0.72rem;color:#475569;">'+(r.date||td)+(r.notes?' · '+r.notes:'')+'</div></div>'
+        +'<strong style="font-size:0.82rem;color:#0f766e;white-space:nowrap;">KES '+(Number(r.amount)||0).toLocaleString()+'</strong>'
+        +'<button type="button" data-rep-del="'+idx+'" style="width:24px;height:24px;border-radius:6px;border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;font-weight:800;flex-shrink:0;">×</button></div>';
+    }).join('');
+  }
+
+  document.addEventListener('submit',function(e){
+    const form=e.target; if(!form||!form.closest('#tab-repairs'))return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    const firstTxt=form.querySelector('input[type="text"]:not(#rep-notes)');
+    const client=(firstTxt&&firstTxt.value.trim())||'Walk-in Repair';
+    const group=(document.getElementById('rep-group')||{}).value||'Women';
+    const amount=Number((document.getElementById('rep-amount')||{}).value)||0;
+    const date=(document.getElementById('rep-date')||{}).value||todayStr();
+    const notes=((document.getElementById('rep-notes')||{}).value||'').trim();
+    const v=getV(); if(!Array.isArray(v.repairs))v.repairs=[];
+    v.repairs.unshift({id:'rep_'+Date.now(),client,desc:client,group,amount,date,notes,done:false});
+    setV(v);
+    if(firstTxt)firstTxt.value='';
+    const aEl=document.getElementById('rep-amount'); if(aEl)aEl.value='';
+    const nEl=document.getElementById('rep-notes'); if(nEl)nEl.value='';
+    renderRepairsV130();
+  },true);
+
+  document.addEventListener('input',function(e){
+    if(e.target&&(e.target.id==='rep-amount'||e.target.id==='repair-search'))renderRepairsV130();
+  });
+
+  document.addEventListener('click',function(e){
+    const t=e.target; if(!t)return;
+    if(t.hasAttribute('data-rep-ok')){const i=Number(t.getAttribute('data-rep-ok')),v=getV();if(v.repairs&&v.repairs[i]){v.repairs[i].done=!v.repairs[i].done;setV(v);renderRepairsV130();}}
+    else if(t.hasAttribute('data-rep-del')){const i=Number(t.getAttribute('data-rep-del')),v=getV();if(Array.isArray(v.repairs)){v.repairs.splice(i,1);setV(v);renderRepairsV130();}}
+    else if(t.closest('[data-tab="repairs"], #nav-repairs, button[onclick*="repairs"]')){setTimeout(renderRepairsV130,60);}
+  },true);
+
+  const dIn=document.getElementById('rep-date'); if(dIn&&!dIn.value)dIn.value=todayStr();
+  renderRepairsV130(); setTimeout(renderRepairsV130,350);
+})();
+</script>
+<!-- /V130_REPAIRS -->
 </body>
 </html>
