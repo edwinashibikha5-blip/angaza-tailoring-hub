@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=139" />
+  <link rel="stylesheet" href="style.css?v=140" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=139'+Date.now());})(this)">↻ v139</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=140'+Date.now());})(this)">↻ v140</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=139" defer></script>
+  <script src="app.js?v=140" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1666,11 +1666,13 @@
 </script>
 <!-- /V137_FABRIC_VISUALS -->
 
-<!-- V139_HIDE_REVENUE -->
+
+<!-- V140_HOME_VISUALS -->
 <script>
 (function(){
   const VK='angaza_atelier_vault_v2';
   const getV=()=>{try{return JSON.parse(localStorage.getItem(VK)||'{}')}catch(e){return{}}};
+
   window._v138BuildDashboardHtml=function(){
     const v=getV();
     const clis=Array.isArray(v.clients)?v.clients:[], ords=Array.isArray(v.orders)?v.orders:[], reps=Array.isArray(v.repairs)?v.repairs:[], gals=Array.isArray(v.gallery)?v.gallery:[], shps=Array.isArray(v.shopItems)?v.shopItems:[];
@@ -1679,29 +1681,38 @@
     const tot=Math.max(1,cntW+cntM+cntK+cntR);
     const pW=Math.round((cntW/tot)*100), pM=Math.round((cntM/tot)*100), pK=Math.round((cntK/tot)*100), pR=Math.max(0,100-pW-pM-pK);
     const c=220, dW=(pW/100)*c, dM=(pM/100)*c, dK=(pK/100)*c, dR=(pR/100)*c;
-    const donut='<svg viewBox="0 0 100 100" style="width:96px;height:96px;flex-shrink:0;"><circle cx="50" cy="50" r="35" fill="none" stroke="#e2e8f0" stroke-width="14"/><circle cx="50" cy="50" r="35" fill="none" stroke="#2563eb" stroke-width="14" stroke-dasharray="'+dW+' '+c+'" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="35" fill="none" stroke="#7c3aed" stroke-width="14" stroke-dasharray="'+dM+' '+c+'" stroke-dashoffset="'+(-dW)+'" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="35" fill="none" stroke="#10b981" stroke-width="14" stroke-dasharray="'+dK+' '+c+'" stroke-dashoffset="'+(-(dW+dM))+'" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="35" fill="none" stroke="#f59e0b" stroke-width="14" stroke-dasharray="'+dR+' '+c+'" stroke-dashoffset="'+(-(dW+dM+dK))+'" transform="rotate(-90 50 50)"/><text x="50" y="48" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">'+allJobs.length+'</text><text x="50" y="60" text-anchor="middle" font-size="8" fill="#64748b">Jobs</text></svg>';
+    const donut='<svg viewBox="0 0 100 100" style="width:94px;height:94px;flex-shrink:0;"><circle cx="50" cy="50" r="35" fill="none" stroke="#e2e8f0" stroke-width="14"/><circle cx="50" cy="50" r="35" fill="none" stroke="#2563eb" stroke-width="14" stroke-dasharray="'+dW+' '+c+'" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="35" fill="none" stroke="#7c3aed" stroke-width="14" stroke-dasharray="'+dM+' '+c+'" stroke-dashoffset="'+(-dW)+'" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="35" fill="none" stroke="#10b981" stroke-width="14" stroke-dasharray="'+dK+' '+c+'" stroke-dashoffset="'+(-(dW+dM))+'" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="35" fill="none" stroke="#f59e0b" stroke-width="14" stroke-dasharray="'+dR+' '+c+'" stroke-dashoffset="'+(-(dW+dM+dK))+'" transform="rotate(-90 50 50)"/><text x="50" y="48" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">'+allJobs.length+'</text><text x="50" y="60" text-anchor="middle" font-size="8" fill="#64748b">Jobs</text></svg>';
     const pts=[0.35,0.52,0.48,0.72,0.68,1].map((m,i)=>(12+i*42)+','+(62-Math.round(m*46))).join(' ');
     const lineSvg='<svg viewBox="0 0 235 72" style="width:100%;height:72px;"><polyline fill="none" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round" points="'+pts+'"/><circle cx="222" cy="16" r="3.5" fill="#1d4ed8"/></svg>';
     return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;"><div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:7px;"><div style="font-size:0.68rem;color:#1e40af;font-weight:700;">Total Clients</div><div style="font-size:1rem;font-weight:800;">'+clis.length+'</div></div><div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:9px;padding:7px;"><div style="font-size:0.68rem;color:#5b21b6;font-weight:700;">Orders & Repairs</div><div style="font-size:1rem;font-weight:800;">'+allJobs.length+'</div></div><div style="background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:7px;"><div style="font-size:0.68rem;color:#92400e;font-weight:700;">Catalog Designs</div><div style="font-size:1rem;font-weight:800;">'+gals.length+'</div></div><div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:9px;padding:7px;"><div style="font-size:0.68rem;color:#065f46;font-weight:700;">Shop Stock Items</div><div style="font-size:1rem;font-weight:800;color:#0f766e;">'+shps.length+'</div></div></div><div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:8px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:800;"><span>Workshop Activity Trend</span><span style="color:#2563eb;">'+allJobs.length+' Active</span></div>'+lineSvg+'</div><div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:8px;"><div style="font-size:0.75rem;font-weight:800;margin-bottom:4px;">Jobs by Category</div><div style="display:flex;align-items:center;gap:10px;">'+donut+'<div style="flex:1;font-size:0.72rem;line-height:1.55;"><div><span style="color:#2563eb;">●</span> Women: <strong>'+pW+'%</strong> ('+cntW+')</div><div><span style="color:#7c3aed;">●</span> Men: <strong>'+pM+'%</strong> ('+cntM+')</div><div><span style="color:#10b981;">●</span> Kids: <strong>'+pK+'%</strong> ('+cntK+')</div><div><span style="color:#f59e0b;">●</span> Repairs: <strong>'+pR+'%</strong> ('+cntR+')</div></div></div></div>';
   };
 
+  function placeDashboardOnHome(){
+    const finCard=document.getElementById('v138-exec-card');
+    if(finCard)finCard.style.display='none';
+    const home=document.getElementById('tab-orders')||document.getElementById('tab-home');
+    if(!home)return;
+    let hCard=document.getElementById('v140-home-dash');
+    if(!hCard){
+      hCard=document.createElement('div'); hCard.id='v140-home-dash'; hCard.className='card';
+      hCard.style.cssText='border:1.5px solid #2563eb;background:#f8fafc;margin-top:10px;';
+      hCard.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><strong style="font-size:0.86rem;color:#1e3a8a;">Atelier Overview & Charts</strong><button type="button" id="v140-dash-tog" class="btn-small" style="width:auto;padding:3px 8px;font-size:0.7rem;">Hide</button></div><div id="v140-dash-body"></div>';
+      home.appendChild(hCard);
+    }
+    const b=document.getElementById('v140-dash-body');
+    if(b&&b.style.display!=='none')b.innerHTML=window._v138BuildDashboardHtml();
+  }
 
-  setInterval(function(){
-    const pulse=document.getElementById('v136-profit-pulse');
-    if(pulse){
-      const divs=pulse.querySelectorAll('div');
-      if(divs[1])divs[1].textContent='Revenue Details: Hidden (Privacy Mode)';
-      if(divs[2])divs[2].textContent='Orders & Repairs active · Backup status monitored';
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.id==='v140-dash-tog'){
+      const b=document.getElementById('v140-dash-body');
+      if(b){const h=b.style.display!=='none';b.style.display=h?'none':'block';e.target.textContent=h?'Show':'Hide';}
     }
-    const fin=document.getElementById('tab-finance');
-    if(fin){
-      fin.querySelectorAll('#angaza-finance-upgrade-js, .fin-summary-card, .stat-card').forEach(el=>{
-        if((el.textContent||'').match(/Revenue|Profit|Balance|Orders Total/i))el.style.display='none';
-      });
-    }
-  },500);
+  },true);
+
+  placeDashboardOnHome(); setInterval(placeDashboardOnHome,1200);
 })();
 </script>
-<!-- /V139_HIDE_REVENUE -->
+<!-- /V140_HOME_VISUALS -->
 </body>
 </html>
