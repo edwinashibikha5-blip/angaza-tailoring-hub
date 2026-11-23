@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=148" />
+  <link rel="stylesheet" href="style.css?v=149" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=148'+Date.now());})(this)">↻ v148</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=149'+Date.now());})(this)">↻ v149</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=148" defer></script>
+  <script src="app.js?v=149" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1918,6 +1918,30 @@
   document.addEventListener('click',e=>{if(e.target.closest('#open-shop-directory-btn,[data-smview="sheet"],#btn-open-shop-hub'))setTimeout(renderAngazaShopSheet,60);});
   document.addEventListener('input',e=>{if(e.target?.id==='sm-search-inp')renderAngazaShopSheet();});
   window.addEventListener('load',()=>setTimeout(renderAngazaShopSheet,400));
+})();
+</script>
+<script id="V149_EXPENSE_GUARD">
+(function(){
+  const K='angaza_atelier_vault_v2';
+  function getV(){try{return JSON.parse(localStorage.getItem(K)||'{}')}catch(e){return{}}}
+  function setV(v){localStorage.setItem(K,JSON.stringify(v));}
+  document.addEventListener('submit',function(e){
+    if(e.target&&e.target.id==='exp-form'){
+      e.preventDefault(); e.stopImmediatePropagation();
+      const itEl=document.getElementById('exp-item'), csEl=document.getElementById('exp-cost');
+      const item=(itEl?.value||'').trim(), cost=Number(csEl?.value||0);
+      if(!item||cost<=0) return;
+      const v=getV(); if(!Array.isArray(v.expenses)) v.expenses=[];
+      v.expenses.push({id:'exp_'+Date.now(),date:new Date().toISOString().slice(0,10),item,cost});
+      setV(v); if(itEl)itEl.value=''; if(csEl)csEl.value='';
+      if(typeof renderAll==='function') try{renderAll();}catch(err){}
+      const box=document.getElementById('exp-list');
+      if(box){
+        box.innerHTML=v.expenses.slice().reverse().map((x,i)=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid #e2e8f0;font-size:.82rem;"><span><b>'+x.item+'</b> <small style="color:#64748b;">('+(x.date||'')+')</small></span><b style="color:#b91c1c;">- KES '+Number(x.cost||0).toLocaleString()+'</b></div>').join('');
+      }
+      if(typeof showToast==='function') showToast('Expense Logged ✓');
+    }
+  },true);
 })();
 </script>
 </body>
