@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=147" />
+  <link rel="stylesheet" href="style.css?v=148" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=147'+Date.now());})(this)">↻ v147</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=148'+Date.now());})(this)">↻ v148</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=147" defer></script>
+  <script src="app.js?v=148" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1874,6 +1874,50 @@
     if (document.visibilityState === 'visible') checkUpdate();
   });
   window.addEventListener('online', checkUpdate);
+})();
+</script>
+<script id="V148_UNIFIED_SPREADSHEET">
+(function(){
+  const K='angaza_atelier_vault_v2';
+  const rv=()=>{try{return JSON.parse(localStorage.getItem(K)||'{}')}catch(e){return{}}};
+  const wv=v=>localStorage.setItem(K,JSON.stringify(v));
+  function rows(){
+    const v=rv(), saved=Array.isArray(v.shopItems)?v.shopItems:[], seen=new Set(saved.map(x=>(x.name||'').toLowerCase()));
+    const out=[...saved];
+    Object.keys(localStorage).filter(k=>/127|onetouch|shop/i.test(k)&&k!==K).forEach(k=>{
+      try{const a=JSON.parse(localStorage.getItem(k)||'[]');if(Array.isArray(a))a.forEach(x=>{
+        const n=(x.name||x.item||'').trim();
+        if(n&&!seen.has(n.toLowerCase())){seen.add(n.toLowerCase());out.push({name:n,category:x.category||x.cat||'Materials',qty:Number(x.qty??x.stock??1),sellPrice:Number(x.sellPrice??x.price??x.cost??0),note:x.note||'',seed:1});}
+      })}catch(e){}
+    });
+    return out;
+  }
+  window.renderAngazaShopSheet=function(){
+    const tb=document.getElementById('sm-spreadsheet-tbody'); if(!tb)return;
+    const all=rows(), q=(document.getElementById('sm-search-inp')?.value||'').trim().toLowerCase();
+    const list=q?all.filter(r=>(r.name+' '+r.category+' '+(r.note||'')).toLowerCase().includes(q)):all;
+    const c=document.getElementById('shop-dir-count'); if(c)c.textContent=String(all.length);
+    tb.innerHTML=!list.length?'<tr><td colspan="5" style="padding:12px;text-align:center;">No records found. Tap <b>Form</b> to add.</td></tr>':list.map((it,i)=>{
+      const p=Number(it.sellPrice||0);
+      return '<tr style="border-bottom:1px solid #e2e8f0;'+(it.seed?'':'background:#f0fdf4;')+'"><td style="padding:6px;"><b>'+it.name+'</b></td><td style="padding:6px;font-size:.72rem;">'+it.category+'</td><td style="padding:6px;font-weight:700;">'+it.qty+'</td><td style="padding:6px;">'+(p>0?'KES '+p.toLocaleString():'--')+'</td><td style="padding:6px;"><button type="button" onclick="v148Del(\''+it.name.replace(/'/g,"")+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:2px 6px;">✕</button></td></tr>';
+    }).join('');
+  };
+  window.v148Del=n=>{const v=rv();v.shopItems=(v.shopItems||[]).filter(x=>x.name!==n);wv(v);renderAngazaShopSheet();};
+  document.addEventListener('submit',e=>{
+    if(e.target?.id==='modal-add-item-form'){
+      e.preventDefault();e.stopImmediatePropagation();
+      const name=(document.getElementById('m-item-name')?.value||'').trim(); if(!name)return;
+      const category=document.getElementById('m-item-cat')?.value||'Materials';
+      const qty=Number(document.getElementById('m-item-qty')?.value||document.getElementById('m-item-stock')?.value||1);
+      const sellPrice=Number(document.getElementById('m-item-price')?.value||document.getElementById('m-item-cost')?.value||0);
+      const v=rv(); if(!Array.isArray(v.shopItems))v.shopItems=[];
+      v.shopItems.unshift({id:'s_'+Date.now(),name,category,qty,sellPrice}); wv(v); e.target.reset();
+      document.querySelector('[data-smview="sheet"]')?.click(); setTimeout(renderAngazaShopSheet,40);
+    }
+  },true);
+  document.addEventListener('click',e=>{if(e.target.closest('#open-shop-directory-btn,[data-smview="sheet"],#btn-open-shop-hub'))setTimeout(renderAngazaShopSheet,60);});
+  document.addEventListener('input',e=>{if(e.target?.id==='sm-search-inp')renderAngazaShopSheet();});
+  window.addEventListener('load',()=>setTimeout(renderAngazaShopSheet,400));
 })();
 </script>
 </body>
