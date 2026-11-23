@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=152" />
+  <link rel="stylesheet" href="style.css?v=153" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=152'+Date.now());})(this)">↻ v152</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=153'+Date.now());})(this)">↻ v153</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=152" defer></script>
+  <script src="app.js?v=153" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -2040,6 +2040,107 @@
       if(st) st.textContent='Added '+lines.length+' item(s) to Shop List ✓';
     }
   });
+})();
+</script>
+<script id="V153_HANDWRITING_ADAPTIVE_OCR">
+(function(){
+  function prepHandwriting(file){
+    return new Promise((res,rej)=>{
+      const img=new Image(), url=URL.createObjectURL(file);
+      img.onload=()=>{
+        const maxW=1600, sc=img.width>maxW?maxW/img.width:1;
+        const c=document.createElement('canvas');
+        c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+        const ctx=c.getContext('2d');
+        ctx.filter='grayscale(1) contrast(1.95) brightness(1.08)';
+        ctx.drawImage(img,0,0,c.width,c.height);
+        const id=ctx.getImageData(0,0,c.width,c.height), d=id.data;
+        for(let i=0;i<d.length;i+=4){ const v=d[i]<165?0:255; d[i]=d[i+1]=d[i+2]=v; }
+        ctx.putImageData(id,0,0); URL.revokeObjectURL(url); res(c);
+      };
+      img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('img'));};
+      img.src=url;
+    });
+  }
+  function normalizeHandwriting(raw){
+    return (raw||'')
+      .replace(/[|]/g,'1').replace(/—|–/g,'-')
+      .replace(/(?:f1|fi|fl)s*[-:=]?s*(d+(?:.d+)?)/gi,'FL-$1')
+      .replace(/(?:ch|6h|sh)s*[-:=]?s*(d+(?:.d+)?)/gi,'Sh-$1')
+      .replace(/(?:6d|bd)s*[-:=]?s*(d+(?:.d+)?).?/gi,'bd-$1')
+      .replace(/(?:siv|5lv|slv|sl)s*[-:=]?s*(d+(?:.d+)?)/gi,'Slv-$1')
+      .replace(/([BWH])s*[-:=]?s*(d+(?:.d+)?)/gi,(_,k,n)=>k.toUpperCase()+' '+n)
+      .replace(/
++/g,' ').replace(/s+/g,' ').trim();
+  }
+  function loadTess(){
+    if(window.Tesseract) return Promise.resolve(window.Tesseract);
+    return new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://jsdelivr.net';
+      s.onload=()=>res(window.Tesseract); s.onerror=rej;
+      document.head.appendChild(s);
+    });
+  }
+  function fillFields(rawTxt){
+    const txt=normalizeHandwriting(rawTxt);
+    const map=[
+      ['cli-chest',/(?:B|Bust|Chest)[-:s=]*(d+(?:.d+)?)/i],
+      ['cli-waist',/(?:W|Waist)[-:s=]*(d+(?:.d+)?)/i],
+      ['cli-hips',/(?:H|Hips?)[-:s=]*(d+(?:.d+)?)/i],
+      ['cli-shoulder',/(?:Sh|Shoulder)[-:s=]*(d+(?:.d+)?)/i],
+      ['cli-sleeve',/(?:Slv|Sl|Sleeve)[-:s=]*(d+(?:.d+)?)/i],
+      ['cli-length',/(?:FL|L|Length)[-:s=]*(d+(?:.d+)?)/i],
+      ['cli-outseam',/(?:Tr|Trouser|Outseam)[-:s=]*(d+(?:.d+)?)/i],
+      ['cli-neck',/(?:Nk|Neck)[-:s=]*(d+(?:/d+|.d+)?)/i]
+    ];
+    map.forEach(([id,rx])=>{
+      const m=txt.match(rx), el=document.getElementById(id);
+      if(m&&el){ el.value=m.slice(1,2).join(''); el.dispatchEvent(new Event('input',{bubbles:true})); }
+    });
+    const bd=txt.match(/bd-(d+(?:.d+)?)/i);
+    const notes=document.getElementById('cli-notes')||document.querySelector('textarea[name*="note" i]');
+    if(bd&&notes&&!notes.value.includes('bd-')) notes.value=(notes.value+' bd-'+bd.slice(1,2).join('')).trim();
+  }
+  function mountChips(){
+    const tx=document.getElementById('v128-txt');
+    if(!tx||document.getElementById('v153-chips')) return;
+    tx.addEventListener('input',()=>fillFields(tx.value));
+    const bar=document.createElement('div'); bar.id='v153-chips';
+    bar.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;';
+    ['FL-','W ','B ','Sh-','bd-','Slv-','H ','Tr-','Nk-'].forEach(tok=>{
+      const b=document.createElement('button'); b.type='button'; b.textContent=tok.trim();
+      b.style.cssText='padding:3px 7px;font-size:0.72rem;font-weight:700;border:1px solid #93c5fd;background:#eff6ff;color:#1e3a8a;border-radius:6px;';
+      b.onclick=()=>{tx.value=(tx.value?tx.value+' ':'')+tok;tx.focus();fillFields(tx.value);};
+      bar.appendChild(b);
+    });
+    tx.parentNode.insertBefore(bar,tx);
+  }
+  setInterval(mountChips,1000);
+
+  document.addEventListener('change',async function(e){
+    const t=e.target;
+    if(!t||t.id!=='ocr-meas-photo') return;
+    const f=t.files&&t.files.item(0); if(!f) return;
+    e.stopImmediatePropagation();
+    const st=document.getElementById('v128-st'), tx=document.getElementById('v128-txt');
+    if(st) st.textContent='Cleaning ink & lines...';
+    try{
+      const [T,canvas]=await Promise.all([loadTess(),prepHandwriting(f)]);
+      let out=await T.recognize(canvas,'eng',{tessedit_pageseg_mode:'6',logger:m=>{if(st&&m.status==='recognizing text')st.textContent='Handwriting OCR '+Math.round((m.progress||0)*100)+'%';}});
+      let clean=normalizeHandwriting(out?.data?.text||'');
+      if(!/(?:FL|W|B|Sh|Slv|bd)/i.test(clean)){
+        if(st) st.textContent='Deep scan pass 2...';
+        out=await T.recognize(canvas,'eng',{tessedit_pageseg_mode:'11'});
+        clean=normalizeHandwriting(out?.data?.text||'');
+      }
+      if(tx) tx.value=clean||'Tap chips above to enter fast';
+      if(clean) fillFields(clean);
+      if(st) st.textContent=clean?'Transcribed & Auto-Filled ✓':'Photo attached - tap chips above';
+    }catch(err){
+      if(st) st.textContent='Offline - tap chips above to enter fast';
+    }
+  },true);
 })();
 </script>
 </body>
