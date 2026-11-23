@@ -195,7 +195,7 @@
   });
   document.getElementById('pin-lock-btn').addEventListener('click', () => { document.getElementById('fin-lock').style.display = 'block'; document.getElementById('fin-open').style.display = 'none'; });
   document.getElementById('save-pin').addEventListener('click', () => { const np = document.getElementById('new-pin').value.trim(); if (np.length >= 4) { const v = loadVault(); v.pin = np; saveVault(v); document.getElementById('new-pin').value = ''; alert('Owner PIN updated.'); } });
-  document.getElementById('exp-form').addEventListener('submit', (e) => { e.preventDefault(); const v = loadVault(); v.expenses.push({ item: document.getElementById('exp-item').value.trim(), cost: Number(document.getElementById('exp-cost').value || 0) }); saveVault(v); e.target.reset(); renderAll(); });
+  document.getElementById('exp-form').addEventListener('submit', (e) => { e.preventDefault(); const v = loadVault(); if (!Array.isArray(v.expenses)) v.expenses = []; const _it = document.getElementById('exp-item').value.trim(); const _cs = Number(document.getElementById('exp-cost').value || 0); if (!_it || _cs <= 0) return; v.expenses.push({ id: 'exp_' + Date.now(), date: (typeof todayISO === 'function' ? todayISO() : new Date().toISOString().slice(0,10)), item: _it, cost: _cs }); saveVault(v); e.target.reset(); renderAll(); });
   document.getElementById('btn-backup').addEventListener('click', () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(loadVault(), null, 2)], { type: 'application/json' })); a.download = `angaza-tailoring-hub-${todayISO()}.json`; a.click(); });
 
   document.getElementById('ord-due').value = todayISO();
