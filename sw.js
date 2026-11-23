@@ -1,4 +1,4 @@
-const CACHE_NAME = 'angaza-hub-v167';
+const CACHE_NAME = 'angaza-hub-v168';
 const SHELL = ['/', '/index.html', '/styles.css', '/app.js',
   '/clients_seed.js', '/manifest.json'];
 self.addEventListener('install', (e) => {
