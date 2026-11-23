@@ -58,7 +58,7 @@
   }
 
   window.renderClients = function renderClients(v) {
-    document.getElementById('ord-client').innerHTML = v.clients.length
+    if(document.getElementById('ord-client')) document.getElementById('ord-client').innerHTML = v.clients.length
       ? v.clients.map((c) => `<option value="${c.id}">${c.name} (${c.group})</option>`).join('')
       : '<option value="">-- Add Client in "Clients" --</option>';
     const q = document.getElementById('client-search').value.trim().toLowerCase();
@@ -140,7 +140,7 @@
     saveVault(v); e.target.reset(); renderAll();
   });
 
-  document.getElementById('order-form').addEventListener('submit', async (e) => {
+  document.getElementById('order-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const v = loadVault();
     const c = v.clients.find((x) => x.id === document.getElementById('ord-client').value);
@@ -232,7 +232,7 @@
   });
 
   // Auto-select garment category when picking a client
-  document.getElementById('ord-client').addEventListener('change', (e) => {
+  document.getElementById('ord-client')?.addEventListener('change', (e) => {
     try {
       const vault = JSON.parse(localStorage.getItem('angaza_atelier_vault_v2') || '{}');
       const cli = (vault.clients || []).find((c) => c.id === e.target.value);
