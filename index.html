@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=162" />
+  <link rel="stylesheet" href="style.css?v=163" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 <script id="v158-offline-guardian">
@@ -35,7 +35,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if(!navigator.onLine){alert('Offline mode active: keeping your saved app & records safe.');return;}if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=162'+Date.now());})(this)">↻ v162</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if(!navigator.onLine){alert('Offline mode active: keeping your saved app & records safe.');return;}if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=163'+Date.now());})(this)">↻ v163</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -527,7 +527,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=162" defer></script>
+  <script src="app.js?v=163" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -2148,7 +2148,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
 })();
 </script>
 
-<script src="clients_seed.js?v=162"></script>
+<script src="clients_seed.js?v=163"></script>
 <script id="V160_BOOK_CLIENT_SEED">
 (function(){
   const KEY='angaza_atelier_vault_v2', BK='angaza_atelier_backup_latest';
@@ -2180,6 +2180,51 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
       if(typeof renderAll === 'function') renderAll();
     }
   }catch(e){}
+})();
+</script>
+<script id="V163_CLIENT_POPUP">
+(function(){
+  function showClientCard(c){
+    let box = document.getElementById('v163-cli-modal');
+    if(!box){
+      box = document.createElement('div');
+      box.id = 'v163-cli-modal';
+      box.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+      box.onclick = e => { if(e.target===box) box.remove(); };
+      document.body.appendChild(box);
+    }
+    const m = c.meas || c || {};
+    const rows = [
+      ['Bust / Chest (B)', m.chest || m.B],
+      ['Waist (W)', m.waist || m.W],
+      ['Hips (H)', m.hips || m.H],
+      ['Shoulder (Sh)', m.shoulder || m.Sh],
+      ['Sleeve (Slv)', m.sleeve || m.Slv || m.Sl],
+      ['Full Length (FL)', m.length || m.FL],
+      ['Trouser / Skirt (Tr)', m.outseam || m.Tr],
+      ['Neck / Thigh (Nk)', m.neck || m.Nk]
+    ].filter(r => r && String(r).trim() !== '');
+    const grid = rows.length
+      ? rows.map(r => '<div style="display:flex;justify-content:space-between;padding:6px 10px;background:#f8fafc;border-radius:8px"><span>'+r+'</span><b>'+r+' '+(c.unit||'in')+'</b></div>').join('')
+      : '<div style="color:#64748b">No measurements saved yet</div>';
+    box.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,.3)">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3 style="margin:0;font-size:18px;color:#0f172a">'+c.name+'</h3><span style="background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:99px;font-size:12px">'+(c.group||'Women')+'</span></div>'
+      + (c.phone ? '<div style="font-size:13px;color:#475569;margin-bottom:8px">📞 '+c.phone+'</div>' : '')
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0;font-size:13px">'+grid+'</div>'
+      + (c.notes ? '<div style="background:#fef9c3;color:#854d0e;padding:8px 10px;border-radius:8px;font-size:13px;margin-top:8px">📝 '+c.notes+'</div>' : '')
+      + '<div style="display:flex;gap:8px;margin-top:14px"><button type="button" onclick="document.getElementById(\'v163-cli-modal\').remove();document.getElementById(\'m-chest\')?.scrollIntoView({behavior:\'smooth\'})" style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;font-weight:600">Edit in Form</button>'
+      + '<button type="button" onclick="document.getElementById(\'v163-cli-modal\').remove()" style="flex:1;padding:10px;border:none;border-radius:10px;background:#1e3a8a;color:#fff;font-weight:600">Done</button></div></div>';
+  }
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if(!btn || btn.textContent.trim() !== 'Load') return;
+    const card = btn.closest('div');
+    const name = card?.querySelector('b,strong')?.textContent?.trim();
+    if(!name) return;
+    const v = JSON.parse(localStorage.getItem('angaza_atelier_vault_v2')||'{}');
+    const c = (v.clients||[]).find(x => (x.name||'').trim() === name);
+    if(c) setTimeout(() => showClientCard(c), 40);
+  }, true);
 })();
 </script>
 </body>
