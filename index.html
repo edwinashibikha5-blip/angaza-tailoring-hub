@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=133" />
+  <link rel="stylesheet" href="style.css?v=134" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=133'+Date.now());})(this)">↻ v133</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=134'+Date.now());})(this)">↻ v134</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=133" defer></script>
+  <script src="app.js?v=134" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1369,5 +1369,75 @@
 })();
 </script>
 <!-- /V133_CATALOG_UPGRADE -->
+<!-- V134_KNOWLEDGE_HUB -->
+<script>
+(function(){
+  const SIZES={
+    Women:[
+      ['UK 6 (XS)',32,24.5,34.5,14,21.5,54],['UK 8 (S)',34,26.5,36.5,14.5,22,55],
+      ['UK 10 (M)',36,28.5,38.5,15,22.5,56],['UK 12 (M/L)',38,30.5,40.5,15.5,23,57],
+      ['UK 14 (L)',40,32.5,42.5,16,23,58],['UK 16 (XL)',42,34.5,44.5,16.5,23.5,58],
+      ['UK 18 (2XL)',44,37,47,17,23.5,59],['UK 20-22 (3XL)',47,40.5,50.5,17.5,24,60]
+    ],
+    Men:[
+      ['XS (36)',36,29,36,16,23.5,27],['S (38)',38,31.5,38,16.5,24,28],
+      ['M (40)',40,33.5,40,17.5,24.5,29],['L (42)',42,36,42,18,25,30],
+      ['XL (44)',44,39,44,18.5,25.5,30.5],['2XL (46)',46,42,46,19,26,31],
+      ['3XL (48)',49,45,49,20,26.5,32]
+    ],
+    Kids:[
+      ['2-3 Yrs',21,20,22,9,12,21],['4-5 Yrs',23,21.5,24,10,14,24],
+      ['6-7 Yrs',25,22.5,26.5,11,16,27],['8-10 Yrs',27.5,24,29,12,18,31],
+      ['11-12 Yrs',30,25.5,32,13,19.5,35],['13-14 Yrs',32,26.5,34,13.5,21,38]
+    ]
+  };
+  const FABRICS=[
+    ['Kitenge / Ankara (100% Cotton)','KES 1,400-2,200 / 6-yd pc','Top: Vlisco Dutch Wax (World #1), Woodin, Hitarget, Rivatex Kenya'],
+    ['Chiffon (Plain & Flowered)','KES 200-350 / meter','Top: Heavy Korean & Dubai Bubble Chiffon, Silk Georgette'],
+    ['Duchess & Bridal Satin','KES 350-850 / meter','Top: Heavy Bridal Duchess Satin (structured), Lining Satin (KES 180/m)'],
+    ['Suiting (Wool & Dubai Crepe)','KES 600-2,500 / meter','Top: Italian Super 120s-150s Wool, Turkish Suiting, Dubai Freshia & Madonna'],
+    ['Corded Guipure & Bridal Lace','KES 500-3,500 / meter','Top: French Chantilly Lace, Heavy Corded Guipure (Ruracio & Bridal)'],
+    ['Shweshwe & Kente Prints','KES 1,800-3,000 / meter','Top: Da Gama Three Cats Shweshwe (SA), Woven Ghanaian Kente'],
+    ['Teteron / School Gabardine','KES 250-450 / meter','Top: Heavy Twill Gabardine (wrinkle-free uniforms & workwear)']
+  ];
+  window._v134Data={SIZES,FABRICS};
+})();
+</script>
+
+<script>
+(function(){
+  let grp='Women';
+  function drawHub(){
+    const gal=document.getElementById('tab-gallery'); if(!gal||!window._v134Data)return;
+    let card=document.getElementById('v134-hub-card');
+    if(!card){
+      card=document.createElement('div'); card.id='v134-hub-card'; card.className='card';
+      card.style.cssText='border:1.5px solid #0f766e;background:#f8fafc;margin-top:10px;';
+      gal.appendChild(card);
+    }
+    const {SIZES,FABRICS}=window._v134Data;
+    const tabs=['Women','Men','Kids'].map(g=>'<button type="button" data-v134-g="'+g+'" style="padding:4px 10px;border-radius:999px;font-size:0.74rem;font-weight:700;border:1px solid #0f766e;background:'+(grp===g?'#0f766e':'#fff')+';color:'+(grp===g?'#fff':'#0f766e')+';">'+g+'</button>').join('');
+    const rows=(SIZES[grp]||[]).map((r,i)=>'<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:5px 4px;font-weight:700;">'+r[0]+'</td><td>'+r[1]+'"</td><td>'+r[2]+'"</td><td>'+r[3]+'"</td><td>'+r[4]+'"</td><td>'+r[5]+'"</td><td>'+r[6]+'"</td><td><button type="button" data-v134-use="'+i+'" style="padding:2px 6px;font-size:0.68rem;border-radius:5px;border:1px solid #2563eb;background:#eff6ff;color:#1e40af;font-weight:700;">Use</button></td></tr>').join('');
+    const fabHtml=FABRICS.map(([n,p,q])=>'<div style="padding:6px 8px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:5px;"><div style="display:flex;justify-content:space-between;gap:6px;"><strong style="font-size:0.78rem;color:#0f172a;">'+n+'</strong><span style="font-size:0.74rem;font-weight:800;color:#0f766e;white-space:nowrap;">'+p+'</span></div><div style="font-size:0.72rem;color:#475569;margin-top:2px;">'+q+'</div></div>').join('');
+    card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><strong style="font-size:0.88rem;color:#0f766e;">Mannequin Size Charts & Fabric Guide</strong><span style="font-size:0.7rem;color:#475569;">Inches · KE Rates</span></div>'
+      +'<div style="display:flex;gap:5px;margin-bottom:6px;">'+tabs+'</div>'
+      +'<div style="overflow-x:auto;background:#fff;border:1px solid #cbd5e1;border-radius:8px;margin-bottom:10px;"><table style="width:100%;border-collapse:collapse;font-size:0.71rem;text-align:center;"><thead><tr style="background:#f1f5f9;color:#1e3a8a;"><th style="padding:5px 4px;text-align:left;">Size</th><th>B/Ch</th><th>W</th><th>H</th><th>Sh</th><th>Sl</th><th>Len</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+      +'<div style="font-size:0.8rem;font-weight:800;color:#1e3a8a;margin-bottom:5px;">Kenyan Market Prices & Top World/Local Qualities</div>'+fabHtml;
+  }
+  document.addEventListener('click',function(e){
+    const t=e.target; if(!t)return;
+    if(t.hasAttribute('data-v134-g')){grp=t.getAttribute('data-v134-g');drawHub();return;}
+    if(t.hasAttribute('data-v134-use')){
+      const r=(window._v134Data.SIZES[grp]||[])[Number(t.getAttribute('data-v134-use'))];
+      if(r){
+        const ct=document.querySelector('[data-tab="clients"], #nav-clients, button[onclick*="clients"]'); if(ct)ct.click();
+        setTimeout(()=>{[['cli-name',grp+' '+r[0]],['m-chest',r[1]],['m-waist',r[2]],['m-hips',r[3]],['m-shoulder',r[4]],['m-sleeve',r[5]],['m-length',r[6]]].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v;});},80);
+      }
+    }
+  },true);
+  drawHub(); setTimeout(drawHub,400);
+})();
+</script>
+<!-- /V134_KNOWLEDGE_HUB -->
 </body>
 </html>
