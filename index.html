@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=149" />
+  <link rel="stylesheet" href="style.css?v=150" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=149'+Date.now());})(this)">↻ v149</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=150'+Date.now());})(this)">↻ v150</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=149" defer></script>
+  <script src="app.js?v=150" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1942,6 +1942,37 @@
       if(typeof showToast==='function') showToast('Expense Logged ✓');
     }
   },true);
+})();
+</script>
+<script id="V150_FULL_FABRIC_SEARCH">
+(function(){
+  const FABRICS = [
+    'Kitenge / Ankara (100% Cotton)',
+    'Chiffon (Plain & Flowered)',
+    'Duchess & Bridal Satin',
+    'Suiting (Wool & Dubai Crepe)',
+    'Corded Guipure & Bridal Lace',
+    'Shweshwe & Kente Prints',
+    'Teteron / School Gabardine'
+  ];
+  function bindRows(){
+    document.querySelectorAll('div,li,tr').forEach(el => {
+      if (el.dataset.v150Bound) return;
+      const txt = (el.innerText || '').trim();
+      if (!txt.includes('KES ') || !txt.includes('Top:')) return;
+      const hit = FABRICS.find(f => txt.startsWith(f) || txt.includes(f));
+      if (!hit || el.querySelector('[data-v150-bound]')) return;
+      el.dataset.v150Bound = '1';
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', function(){
+        const clean = hit.replace(/[()/&]/g, ' ').replace(/s+/g, ' ').trim();
+        const inp = document.querySelector('#cat-search, #fabric-search, input[placeholder*="fabric" i], input[placeholder*="style" i]');
+        if (inp) { inp.value = clean; inp.dispatchEvent(new Event('input', {bubbles:true})); }
+        window.open('https://pinterest.com' + encodeURIComponent(clean + ' african fashion tailoring styles'), '_blank');
+      });
+    });
+  }
+  setInterval(bindRows, 1000);
 })();
 </script>
 </body>
