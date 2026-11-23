@@ -22,8 +22,8 @@
       document.body.appendChild(mBox);
     }
     const ms=c.meas||c||{};
-    const list=[['Bust/Chest',ms.chest||ms.B],['Waist',ms.waist||ms.W],['Hips',ms.hips||ms.H],['Shoulder',ms.shoulder||ms.Sh],['Sleeve',ms.sleeve||ms.Slv||ms.Sl],['Full Len',ms.length||ms.FL],['Trouser/Skirt',ms.outseam||ms.Tr],['Neck/Thigh',ms.neck||ms.Nk]].filter(x=>x&&String(x).trim());
-    const grid=list.length?list.map(x=>'<div style="display:flex;justify-content:space-between;padding:7px 9px;background:#f8fafc;border-radius:8px"><span>'+x+'</span><b>'+x+' '+(c.unit||'in')+'</b></div>').join(''):'<div style="color:#64748b">No measurements saved</div>';
+    const list=[['Bust/Chest',ms.chest||ms.B],['Waist',ms.waist||ms.W],['Hips',ms.hips||ms.H],['Shoulder',ms.shoulder||ms.Sh],['Sleeve',ms.sleeve||ms.Slv||ms.Sl],['Full Len',ms.length||ms.FL],['Trouser/Skirt',ms.outseam||ms.Tr],['Neck/Thigh',ms.neck||ms.Nk]].filter(x=>x&&x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='');
+    const grid=list.length?list.map(x=>'<div style="display:flex;justify-content:space-between;padding:7px 9px;background:#f8fafc;border-radius:8px"><span>'+x[0]+'</span><b>'+x[1]+' '+(c.unit||'in')+'</b></div>').join(''):'<div style="color:#64748b">No measurements saved</div>';
     mBox.innerHTML='<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,.4)">'
       +'<div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0;font-size:19px;color:#0f172a">'+(c.name||'Client')+'</h3><span style="background:#e0e7ff;color:#3730a3;padding:2px 9px;border-radius:99px;font-size:12px">'+(c.group||'Women')+'</span></div>'
       +(c.phone?'<div style="font-size:13px;color:#475569;margin-top:4px">📞 '+c.phone+'</div>':'')

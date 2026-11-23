@@ -1,4 +1,4 @@
-const CACHE_NAME = 'angaza-hub-v172';
+const CACHE_NAME = 'angaza-hub-v173';
 const SHELL = ['/', '/index.html', '/styles.css', '/app.js',
   '/clients_seed.js',
   '/client_directory_v172.js', '/manifest.json'];
