@@ -13,5 +13,9 @@ window.ANGAZA_BOOK_CLIENTS = [
   {"id":"bk_12_marcy","name":"Marcy","phone":"","group":"Women","unit":"in","meas":{"length":"42","waist":"28","chest":"34","shoulder":"16","sleeve":"8/13","hips":"","outseam":"","neck":""},"notes":"bd: 17, band (Book #12)"},
   {"id":"bk_13_jackline","name":"Jackline","phone":"","group":"Women","unit":"in","meas":{"length":"44","waist":"36","chest":"41","shoulder":"16","sleeve":"9/15","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #13)"},
   {"id":"bk_14_pearl","name":"Pearl","phone":"","group":"Women","unit":"in","meas":{"length":"41","waist":"26","chest":"33","shoulder":"15","sleeve":"9/10","hips":"","outseam":"","neck":""},"notes":"bd: 16 (Book #14, done)"},
-  {"id":"bk_15_rose","name":"Rose","phone":"","group":"Women","unit":"in","meas":{"length":"46","waist":"39","chest":"42.5","shoulder":"16","sleeve":"9/15","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #15)"}
+  {"id":"bk_15_rose","name":"Rose","phone":"","group":"Women","unit":"in","meas":{"length":"46","waist":"39","chest":"42.5","shoulder":"16","sleeve":"9/15","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #15)"},
+  {"id":"bk_16_moureen","name":"Moureen","phone":"","group":"Women","unit":"in","meas":{"length":"45","waist":"37","chest":"40","hips":"44","shoulder":"17","sleeve":"15/14","outseam":"","neck":"4"},"notes":"bd: 17, peplum: 25"},
+  {"id":"bk_17_euster","name":"Euster","phone":"","group":"Women","unit":"in","meas":{"length":"43","waist":"32","chest":"37","hips":"43","shoulder":"15","sleeve":"16/11","outseam":"","neck":"4"},"notes":"bd: 16, peplum: 25 (done)"},
+  {"id":"bk_18_salome","name":"Salome","phone":"","group":"Women","unit":"in","meas":{"length":"46","waist":"39","chest":"44","hips":"47","shoulder":"15","sleeve":"17/13","outseam":"","neck":""},"notes":"bd: 17, PP: 25"},
+  {"id":"bk_19_lucy_peplum","name":"Lucy (Peplum)","phone":"","group":"Women","unit":"in","meas":{"length":"45","waist":"35","chest":"40","hips":"44","shoulder":"15","sleeve":"17/11","outseam":"","neck":""},"notes":"bd: 17, PP: 25"}
 ];
