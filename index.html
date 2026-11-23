@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=140" />
+  <link rel="stylesheet" href="style.css?v=142" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=140'+Date.now());})(this)">↻ v140</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=142'+Date.now());})(this)">↻ v142</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=140" defer></script>
+  <script src="app.js?v=142" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1714,5 +1714,44 @@
 })();
 </script>
 <!-- /V140_HOME_VISUALS -->
+<!-- V142_ZERO_SCROLL -->
+<script>
+(function(){
+  const VK='angaza_atelier_vault_v2';
+  const getV=()=>{try{return JSON.parse(localStorage.getItem(VK)||'{}')}catch(e){return{}}};
+
+  window._v138BuildDashboardHtml=function(){
+    const v=getV();
+    const clis=(v.clients||[]).length, ords=(v.orders||[]).length, reps=(v.repairs||[]).length, gals=(v.gallery||[]).length, shps=(v.shopItems||[]).length;
+    const allJobs=(v.orders||[]).concat(v.repairs||[]);
+    const cntW=allJobs.filter(j=>(j.group||'')==='Women').length, cntM=allJobs.filter(j=>(j.group||'')==='Men').length, cntK=allJobs.filter(j=>['Girls','Boys','Kids'].includes(j.group||'')).length, cntR=reps;
+    const tot=Math.max(1,cntW+cntM+cntK+cntR);
+    const pW=Math.round((cntW/tot)*100), pM=Math.round((cntM/tot)*100), pK=Math.round((cntK/tot)*100), pR=Math.max(0,100-pW-pM-pK);
+    const c=157, dW=(pW/100)*c, dM=(pM/100)*c, dK=(pK/100)*c, dR=(pR/100)*c;
+    const donut='<svg viewBox="0 0 70 70" style="width:54px;height:54px;flex-shrink:0;"><circle cx="35" cy="35" r="25" fill="none" stroke="#e2e8f0" stroke-width="10"/><circle cx="35" cy="35" r="25" fill="none" stroke="#2563eb" stroke-width="10" stroke-dasharray="'+dW+' '+c+'" transform="rotate(-90 35 35)"/><circle cx="35" cy="35" r="25" fill="none" stroke="#7c3aed" stroke-width="10" stroke-dasharray="'+dM+' '+c+'" stroke-dashoffset="'+(-dW)+'" transform="rotate(-90 35 35)"/><circle cx="35" cy="35" r="25" fill="none" stroke="#10b981" stroke-width="10" stroke-dasharray="'+dK+' '+c+'" stroke-dashoffset="'+(-(dW+dM))+'" transform="rotate(-90 35 35)"/><circle cx="35" cy="35" r="25" fill="none" stroke="#f59e0b" stroke-width="10" stroke-dasharray="'+dR+' '+c+'" stroke-dashoffset="'+(-(dW+dM+dK))+'" transform="rotate(-90 35 35)"/><text x="35" y="39" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">'+allJobs.length+'</text></svg>';
+    const lineSvg='<svg viewBox="0 0 130 44" style="width:100%;height:42px;"><polyline fill="none" stroke="#2563eb" stroke-width="2.4" stroke-linecap="round" points="6,36 30,26 55,30 80,16 105,19 124,7"/><circle cx="124" cy="7" r="3" fill="#1d4ed8"/></svg>';
+    return '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:5px;text-align:center;">'
+      +'<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:3px;"><div style="font-size:0.6rem;color:#1e40af;font-weight:700;">Clients</div><div style="font-size:0.85rem;font-weight:800;">'+clis+'</div></div>'
+      +'<div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:7px;padding:3px;"><div style="font-size:0.6rem;color:#5b21b6;font-weight:700;">Jobs</div><div style="font-size:0.85rem;font-weight:800;">'+allJobs.length+'</div></div>'
+      +'<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:3px;"><div style="font-size:0.6rem;color:#92400e;font-weight:700;">Designs</div><div style="font-size:0.85rem;font-weight:800;">'+gals+'</div></div>'
+      +'<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:7px;padding:3px;"><div style="font-size:0.6rem;color:#065f46;font-weight:700;">Stock</div><div style="font-size:0.85rem;font-weight:800;color:#0f766e;">'+shps+'</div></div></div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1.15fr;gap:6px;align-items:center;">'
+      +'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:4px 6px;"><div style="font-size:0.62rem;font-weight:800;color:#1e3a8a;">Activity Trend</div>'+lineSvg+'</div>'
+      +'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:4px 6px;display:flex;align-items:center;gap:6px;">'+donut
+      +'<div style="font-size:0.62rem;line-height:1.35;"><div><span style="color:#2563eb;">●</span> W:'+pW+'%</div><div><span style="color:#7c3aed;">●</span> M:'+pM+'%</div><div><span style="color:#10b981;">●</span> K:'+pK+'%</div><div><span style="color:#f59e0b;">●</span> R:'+pR+'%</div></div></div></div>';
+  };
+
+  setInterval(function(){
+    const c=document.getElementById('v140-home-dash');
+    if(c){
+      c.style.padding='7px 9px'; c.style.margin='6px 0';
+      const home=document.getElementById('tab-orders')||document.getElementById('tab-home');
+      const s=home&&Array.from(home.children).find(el=>(el.textContent||'').includes('Shop Overview'));
+      if(s&&c.nextElementSibling!==s)home.insertBefore(c,s);
+    }
+  },500);
+})();
+</script>
+<!-- /V142_ZERO_SCROLL -->
 </body>
 </html>
