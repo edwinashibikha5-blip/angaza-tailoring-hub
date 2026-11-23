@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=136" />
+  <link rel="stylesheet" href="style.css?v=137" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=136'+Date.now());})(this)">↻ v136</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=137'+Date.now());})(this)">↻ v137</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=136" defer></script>
+  <script src="app.js?v=137" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1599,5 +1599,71 @@
 })();
 </script>
 <!-- /V136_PROFIT_SUITE -->
+<!-- V137_FABRIC_VISUALS -->
+<script>
+(function(){
+  const DETAILS=[
+    {q:'Vlisco Dutch Wax Kitenge fabric close up',drape:'Crisp, structured medium-weight 100% cotton',feel:'Smooth wax-printed finish; softens after first wash; identical colour on both sides.',check:'Check selvedge edge for printed manufacturer stamp & tight plain-weave threads (no loose gaps).',c1:'#b45309',c2:'#1e3a8a',pat:'ankara'},
+    {q:'Heavy Korean bubble chiffon fabric texture',drape:'Fluid, airy, floating drape with soft movement',feel:'Slightly pebbled matte crepe touch (Korean bubble) vs silky-smooth (Georgette).',check:'Hold to light: premium bubble chiffon resists snagging and needs less lining than sheer chiffon.',c1:'#be185d',c2:'#fbcfe8',pat:'chiffon'},
+    {q:'Heavy bridal duchess satin fabric sheen',drape:'Full-bodied, structured hold for gowns & corsets',feel:'Thick, lustrous low-gloss face with a dense matte satin weave underneath.',check:'Squeeze gently: heavy duchess satin bounces back with minimal creasing unlike thin lining satin.',c1:'#9f1239',c2:'#fecdd3',pat:'satin'},
+    {q:'Italian wool suiting fabric twill weave',drape:'Tailored, sharp crease retention for suits & trousers',feel:'Cool, smooth worsted wool/poly-viscose handfeel with fine diagonal twill lines.',check:'Scrunch in fist for 5 seconds: high-twist suiting springs back wrinkle-free immediately.',c1:'#1e293b',c2:'#64748b',pat:'twill'},
+    {q:'Corded guipure bridal lace fabric close up',drape:'Rich, sculptural 3D texture with scalloped edges',feel:'Raised corded embroidery connected by open bridges (guipure) or fine tulle mesh (Chantilly).',check:'Inspect cord edges: clean, dense embroidery threads with zero fraying when cut.',c1:'#7e22ce',c2:'#f3e8ff',pat:'lace'},
+    {q:'Da Gama Shweshwe and Ghanaian Kente fabric',drape:'Stiff starched cotton (softens beautifully) / heavy handwoven strips',feel:'Distinctive geometric discharge print (Shweshwe) or textured woven silk-cotton strips (Kente).',check:'Authentic Shweshwe has a signature crisp starch feel and fine picot geometric dots.',c1:'#0f766e',c2:'#f59e0b',pat:'kente'},
+    {q:'Heavy twill gabardine uniform fabric texture',drape:'Crisp, durable, structured daily-wear drape',feel:'Tightly woven steep diagonal twill ribs with a smooth, abrasion-resistant surface.',check:'Stretch slightly: tight warp-faced weave keeps school uniforms & trousers sharp all day.',c1:'#1d4ed8',c2:'#93c5fd',pat:'twill'}
+  ];
+
+  window._v137SwatchSvg=function(d){
+    const pats={
+      ankara:'<circle cx="30" cy="30" r="18" fill="none" stroke="'+d.c2+'" stroke-width="5" stroke-dasharray="6 4"/><circle cx="90" cy="30" r="18" fill="none" stroke="'+d.c2+'" stroke-width="5"/><path d="M0 60 Q60 20 120 60" stroke="#fbbf24" stroke-width="3" fill="none"/>',
+      chiffon:'<path d="M0 15 Q30 5 60 15 T120 15 M0 35 Q30 25 60 35 T120 35 M0 55 Q30 45 60 55 T120 55" stroke="'+d.c2+'" stroke-width="2.5" fill="none" opacity="0.85"/>',
+      satin:'<linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="'+d.c1+'"/><stop offset="50%" stop-color="'+d.c2+'"/><stop offset="100%" stop-color="'+d.c1+'"/></linearGradient><rect width="120" height="72" fill="url(#sg)"/>',
+      twill:'<path d="M-10 72 L62 0 M10 72 L82 0 M30 72 L102 0 M50 72 L122 0 M70 72 L142 0" stroke="'+d.c2+'" stroke-width="3" opacity="0.55"/>',
+      lace:'<circle cx="25" cy="24" r="12" fill="none" stroke="'+d.c2+'" stroke-width="3"/><circle cx="60" cy="24" r="12" fill="none" stroke="'+d.c2+'" stroke-width="3"/><circle cx="95" cy="24" r="12" fill="none" stroke="'+d.c2+'" stroke-width="3"/><circle cx="42" cy="48" r="12" fill="none" stroke="'+d.c2+'" stroke-width="3"/><circle cx="78" cy="48" r="12" fill="none" stroke="'+d.c2+'" stroke-width="3"/>',
+      kente:'<rect x="0" y="12" width="120" height="10" fill="'+d.c2+'"/><rect x="0" y="34" width="120" height="10" fill="#dc2626"/><rect x="20" y="0" width="14" height="72" fill="'+d.c2+'" opacity="0.7"/><rect x="75" y="0" width="14" height="72" fill="#111827" opacity="0.6"/>'
+    };
+    return '<svg viewBox="0 0 120 72" style="width:105px;height:68px;border-radius:8px;flex-shrink:0;border:1px solid #cbd5e1;background:'+d.c1+';">'+(pats[d.pat]||'')+'</svg>';
+  };
+  window._v137Details=DETAILS;
+})();
+</script>
+
+<script>
+(function(){
+  function wireFabricRows(){
+    const card=document.getElementById('v134-hub-card');
+    if(!card||!window._v137Details)return;
+    const rows=Array.from(card.children).filter(el=>el.tagName==='DIV'&&el.querySelector('strong')&&!el.id);
+    rows.forEach((row,idx)=>{
+      const d=window._v137Details[idx]; if(!d)return;
+      row.style.cursor='pointer';
+      const titleEl=row.querySelector('strong');
+      if(titleEl&&!titleEl.dataset.v137Tagged){
+        titleEl.dataset.v137Tagged='1';
+        titleEl.innerHTML=titleEl.textContent+' <span style="font-size:0.68rem;color:#2563eb;font-weight:700;">▾ Inspect</span>';
+      }
+      if(!row.dataset.v137Bound){
+        row.dataset.v137Bound='1';
+        row.addEventListener('click',function(){
+          let drawer=row.querySelector('.v137-drawer');
+          if(drawer){drawer.style.display=drawer.style.display==='none'?'block':'none';return;}
+          drawer=document.createElement('div'); drawer.className='v137-drawer';
+          drawer.style.cssText='margin-top:7px;padding-top:7px;border-top:1px dashed #cbd5e1;font-size:0.73rem;color:#1e293b;';
+          const pUrl='https://pinterest.com;
+          const jUrl='https://jumia.co.ke(d.q.replace('close up',''));
+          drawer.innerHTML='<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">'+window._v137SwatchSvg(d)
+            +'<div style="flex:1;"><div style="margin-bottom:2px;"><strong>Drape:</strong> '+d.drape+'</div><div><strong>Feel:</strong> '+d.feel+'</div></div></div>'
+            +'<div style="background:#f8fafc;padding:5px 7px;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:6px;"><strong>Quality Test:</strong> '+d.check+'</div>'
+            +'<div style="display:flex;gap:6px;">'
+            +'<a href="'+pUrl+'" target="_blank" rel="noopener" style="flex:1;text-align:center;padding:5px;border-radius:6px;background:#e11d48;color:#fff;font-weight:700;text-decoration:none;">View Real Swatches</a>'
+            +'<a href="'+jUrl+'" target="_blank" rel="noopener" style="flex:1;text-align:center;padding:5px;border-radius:6px;background:#0f766e;color:#fff;font-weight:700;text-decoration:none;">Check KE Market</a></div>';
+          row.appendChild(drawer);
+        });
+      }
+    });
+  }
+  setInterval(wireFabricRows,600);
+})();
+</script>
+<!-- /V137_FABRIC_VISUALS -->
 </body>
 </html>
