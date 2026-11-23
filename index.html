@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=145" />
+  <link rel="stylesheet" href="style.css?v=146" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=145'+Date.now());})(this)">↻ v145</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=146'+Date.now());})(this)">↻ v146</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=145" defer></script>
+  <script src="app.js?v=146" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1848,6 +1848,32 @@
     host.appendChild(box);
   }
   setInterval(mountSyncUI, 1200);
+})();
+</script>
+
+<script id="V146_AUTO_HEAL">
+(function(){
+  if (!('serviceWorker' in navigator)) return;
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing || sessionStorage.getItem('angaza_reloaded_v146')) return;
+    refreshing = true;
+    sessionStorage.setItem('angaza_reloaded_v146', '1');
+    window.location.reload();
+  });
+  function checkUpdate() {
+    if (!navigator.onLine) return;
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (!reg) return;
+      reg.update().catch(() => {});
+      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    });
+  }
+  window.addEventListener('load', () => setTimeout(checkUpdate, 1500));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkUpdate();
+  });
+  window.addEventListener('online', checkUpdate);
 })();
 </script>
 </body>
