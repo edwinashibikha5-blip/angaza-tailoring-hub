@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=130" />
+  <link rel="stylesheet" href="style.css?v=131" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=130'+Date.now());})(this)">↻ v130</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=131'+Date.now());})(this)">↻ v131</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=130" defer></script>
+  <script src="app.js?v=131" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1133,5 +1133,62 @@
 })();
 </script>
 <!-- /V130_REPAIRS -->
+<!-- V131_CLIENTS_SAVE -->
+<script>
+(function(){
+  const VK='angaza_atelier_vault_v2';
+  const getV=()=>{try{return JSON.parse(localStorage.getItem(VK)||'{}')}catch(e){return{}}};
+  const setV=(v)=>localStorage.setItem(VK,JSON.stringify(v));
+
+  function syncClientsView(){
+    const v=getV(); const list=Array.isArray(v.clients)?v.clients:[];
+    const bar=document.getElementById('client-calc-bar');
+    if(bar){
+      const w=list.filter(c=>c.group==='Women').length, m=list.filter(c=>c.group==='Men').length, g=list.filter(c=>c.group==='Girls').length, b=list.filter(c=>c.group==='Boys').length;
+      bar.innerHTML='<strong>Total Saved: '+list.length+'</strong> · Women: '+w+' · Men: '+m+' · Girls: '+g+' · Boys: '+b;
+    }
+    const dir=document.getElementById('v128-cli-dir');
+    if(dir){
+      if(!list.length){dir.innerHTML='<div style="font-size:0.76rem;color:#64748b;">No saved client profiles yet.</div>';return;}
+      dir.innerHTML=list.map((c,idx)=>{
+        const ms=[['B',c.chest],['W',c.waist],['H',c.hips],['Sh',c.shoulder],['Sl',c.sleeve],['FL',c.length],['Tr',c.outseam],['Nk',c.neck]].filter(([,val])=>val).map(([k,val])=>k+':'+val).join(' · ');
+        const img=c.photo?'<img src="'+c.photo+'" style="width:42px;height:42px;object-fit:cover;border-radius:7px;border:1px solid #cbd5e1;" />':'';
+        return '<div style="display:flex;gap:7px;align-items:center;padding:7px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:5px;">'+img
+          +'<div style="flex:1;min-width:0;"><div style="font-size:0.8rem;font-weight:700;color:#0f172a;">'+(c.name||'Client')+' <span style="font-size:0.68rem;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:999px;">'+(c.group||'Women')+'</span></div>'
+          +'<div style="font-size:0.72rem;color:#475569;">'+(c.phone||'')+'</div>'
+          +'<div style="font-size:0.72rem;color:#1e40af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(ms||c.notes||'No measurements')+'</div></div>'
+          +'<button type="button" data-v128-load="'+idx+'" class="btn-small" style="width:auto;padding:4px 7px;font-size:0.7rem;">Load</button>'
+          +'<button type="button" data-v128-del="'+idx+'" style="width:24px;height:24px;border-radius:6px;border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;font-weight:800;">×</button></div>';
+      }).join('');
+    }
+  }
+
+  document.addEventListener('submit',function(e){
+    const form=e.target; if(!form||form.id!=='client-form')return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    const val=(id)=>((document.getElementById(id)||{}).value||'').trim();
+    const name=val('cli-name')||'Client';
+    const rec={
+      id:'cli_'+Date.now(), name, phone:val('cli-phone'), group:val('cli-group')||'Women', unit:val('cli-unit')||'in',
+      chest:val('m-chest'), waist:val('m-waist'), hips:val('m-hips'), shoulder:val('m-shoulder'),
+      sleeve:val('m-sleeve'), length:val('m-length'), outseam:val('m-outseam'), neck:val('m-neck'),
+      notes:val('cli-notes'), photo:window._v128Photo||''
+    };
+    const v=getV(); if(!Array.isArray(v.clients))v.clients=[];
+    const ei=v.clients.findIndex(c=>c.name&&c.name.toLowerCase()===name.toLowerCase());
+    if(ei>=0){const prev=v.clients.slice(ei,ei+1).pop();v.clients.splice(ei,1,Object.assign({},prev,rec,{photo:rec.photo||prev.photo||''}));}
+    else v.clients.unshift(rec);
+    setV(v); syncClientsView();
+    const st=document.getElementById('v128-st'); if(st)st.textContent='Saved '+name+' ✓';
+  },true);
+
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.closest('[data-tab="clients"], #nav-clients, button[onclick*="clients"]'))setTimeout(syncClientsView,60);
+  },true);
+
+  syncClientsView(); setTimeout(syncClientsView,450);
+})();
+</script>
+<!-- /V131_CLIENTS_SAVE -->
 </body>
 </html>
