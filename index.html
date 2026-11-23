@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=165" />
+  <link rel="stylesheet" href="style.css?v=166" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 <script id="v158-offline-guardian">
@@ -35,7 +35,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if(!navigator.onLine){alert('Offline mode active: keeping your saved app & records safe.');return;}if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=165'+Date.now());})(this)">↻ v165</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if(!navigator.onLine){alert('Offline mode active: keeping your saved app & records safe.');return;}if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=166'+Date.now());})(this)">↻ v166</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -527,7 +527,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=165" defer></script>
+  <script src="app.js?v=166" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -2148,7 +2148,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
 })();
 </script>
 
-<script src="clients_seed.js?v=165"></script>
+<script src="clients_seed.js?v=166"></script>
 <script id="V160_BOOK_CLIENT_SEED">
 (function(){
   const KEY='angaza_atelier_vault_v2', BK='angaza_atelier_backup_latest';
@@ -2186,11 +2186,13 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
 (function(){
   function hideRowX(){
     document.querySelectorAll('button').forEach(b=>{
-      if(b.textContent.trim()==='Load' && b.nextElementSibling && b.nextElementSibling.textContent.trim()==='×'){
-        b.nextElementSibling.style.display='none';
+      const nx = b.nextElementSibling;
+      if(b.textContent.trim()==='Load' && nx && ['x','×'].includes(nx.textContent.trim().toLowerCase())){
+        nx.style.display='none';
       }
     });
   }
+  hideRowX();
   new MutationObserver(hideRowX).observe(document.documentElement,{childList:true,subtree:true});
   window.angazaDeleteClientById = function(id, name){
     if(!confirm('Delete client "' + name + '" permanently?')) return;
@@ -2235,10 +2237,13 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     const btn = e.target.closest('button');
     if(!btn || btn.textContent.trim()!=='Load') return;
     const row = btn.parentElement?.parentElement || btn.closest('div');
-    const name = row?.querySelector('b,strong')?.textContent?.trim();
-    if(!name) return;
+    const head = (row?.innerText||'').split('
+').trim();
     const v = JSON.parse(localStorage.getItem('angaza_atelier_vault_v2')||'{}');
-    const c = (v.clients||[]).find(x => (x.name||'').trim()===name);
+    const c = (v.clients||[]).find(x => {
+      const n = (x.name||'').trim();
+      return n && (head === n || head.startsWith(n + ' '));
+    });
     if(c) setTimeout(()=>showClientCard(c), 30);
   }, true);
 })();
