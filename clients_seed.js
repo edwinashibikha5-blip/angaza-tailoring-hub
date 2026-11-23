@@ -1,0 +1,17 @@
+window.ANGAZA_BOOK_CLIENTS = [
+  {"id":"bk_1_jane","name":"Jane","phone":"","group":"Women","unit":"in","meas":{"length":"43","waist":"27","chest":"34","shoulder":"15","sleeve":"8/11","hips":"","outseam":"","neck":""},"notes":"bd: 16 (Book #1, done)"},
+  {"id":"bk_2_mary","name":"Mary","phone":"","group":"Women","unit":"in","meas":{"length":"41","waist":"31","chest":"38","shoulder":"15","sleeve":"9/14","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #2, done)"},
+  {"id":"bk_3_bricky","name":"Bricky","phone":"","group":"Women","unit":"in","meas":{"length":"42","waist":"33","chest":"38","shoulder":"15","sleeve":"7/15","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #3, done)"},
+  {"id":"bk_4_betrine","name":"Betrine","phone":"","group":"Women","unit":"in","meas":{"length":"44","waist":"37","chest":"42","shoulder":"16","sleeve":"10/14","hips":"","outseam":"","neck":""},"notes":"bd: 16 (Book #4, done)"},
+  {"id":"bk_5_sally","name":"Sally","phone":"","group":"Women","unit":"in","meas":{"length":"44","waist":"32","chest":"37.5","shoulder":"14","sleeve":"11/12","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #5)"},
+  {"id":"bk_6_otingo","name":"Otingo","phone":"0728520566","group":"Women","unit":"in","meas":{"length":"48","waist":"39.5","chest":"43","shoulder":"16.5","sleeve":"10/15","hips":"","outseam":"","neck":""},"notes":"bd: 16.5, Pocket (Book #6)"},
+  {"id":"bk_7_pricillah","name":"Pricillah","phone":"","group":"Women","unit":"in","meas":{"length":"40","waist":"31","chest":"36","shoulder":"15","sleeve":"10/13","hips":"","outseam":"","neck":""},"notes":"bd: 15 (Book #7)"},
+  {"id":"bk_8_sharon","name":"Sharon","phone":"","group":"Women","unit":"in","meas":{"length":"44","waist":"29","chest":"36","shoulder":"16","sleeve":"10/14","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #8)"},
+  {"id":"bk_9_salma","name":"Salma","phone":"","group":"Women","unit":"in","meas":{"length":"40","waist":"31","chest":"36","shoulder":"15","sleeve":"10/13","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #9)"},
+  {"id":"bk_10_lucy","name":"Lucy","phone":"","group":"Women","unit":"in","meas":{"length":"47","waist":"38","chest":"42","shoulder":"16","sleeve":"10/16","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #10)"},
+  {"id":"bk_11_gladys","name":"Gladys","phone":"","group":"Women","unit":"in","meas":{"length":"42","waist":"32","chest":"37","shoulder":"16","sleeve":"8/14","hips":"","outseam":"","neck":""},"notes":"bd: 16 (Book #11)"},
+  {"id":"bk_12_marcy","name":"Marcy","phone":"","group":"Women","unit":"in","meas":{"length":"42","waist":"28","chest":"34","shoulder":"16","sleeve":"8/13","hips":"","outseam":"","neck":""},"notes":"bd: 17, band (Book #12)"},
+  {"id":"bk_13_jackline","name":"Jackline","phone":"","group":"Women","unit":"in","meas":{"length":"44","waist":"36","chest":"41","shoulder":"16","sleeve":"9/15","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #13)"},
+  {"id":"bk_14_pearl","name":"Pearl","phone":"","group":"Women","unit":"in","meas":{"length":"41","waist":"26","chest":"33","shoulder":"15","sleeve":"9/10","hips":"","outseam":"","neck":""},"notes":"bd: 16 (Book #14, done)"},
+  {"id":"bk_15_rose","name":"Rose","phone":"","group":"Women","unit":"in","meas":{"length":"46","waist":"39","chest":"42.5","shoulder":"16","sleeve":"9/15","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #15)"}
+];

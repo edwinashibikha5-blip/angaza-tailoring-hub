@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=160" />
+  <link rel="stylesheet" href="style.css?v=162" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 <script id="v158-offline-guardian">
@@ -35,7 +35,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if(!navigator.onLine){alert('Offline mode active: keeping your saved app & records safe.');return;}if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=160'+Date.now());})(this)">↻ v160</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if(!navigator.onLine){alert('Offline mode active: keeping your saved app & records safe.');return;}if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=162'+Date.now());})(this)">↻ v162</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -527,7 +527,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=160" defer></script>
+  <script src="app.js?v=162" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1849,7 +1849,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     box.style.cssText = 'margin-top:10px;padding:10px;border-radius:10px;background:#f0fdf4;border:1px solid #86efac;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;';
     box.innerHTML = '<div style="font-size:12px;font-weight:700;color:#166534;width:100%;">📲 Phone-to-Phone WhatsApp Sync</div>' +
       '<button type="button" onclick="angazaSendWaSync()" style="flex:1;padding:8px 10px;border:none;border-radius:8px;background:#16a34a;color:#fff;font-weight:700;font-size:12px;">📤 Send Sync (WA)</button>' +
-      '<button type="button" onclick="angazaMergeSync()" style="flex:1;padding:8px 10px;border:none;border-radius:8px;background:#0f172a;color:#fff;font-weight:700;font-size:12px;">📥 Merge Sync Code</button>';
+      '<button type="button" onclick="angazaMergeSync()" style="flex:1;padding:8px 10px;border:none;border-radius:8px;background:#0f172a;color:#fff;font-weight:700;font-size:12px;">📥 Merge Sync Code</button> <button type="button" class="btn-secondary" onclick="angazaDownloadPhoneBackup()">💾 Save Phone Backup (.json)</button>';
     host.appendChild(box);
   }
   setInterval(mountSyncUI, 1200);
@@ -2068,16 +2068,15 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     });
   }
   function normalizeHandwriting(raw){
-    return (raw||'')
-      .replace(/[|]/g,'1').replace(/—|–/g,'-')
-      .replace(/(?:f1|fi|fl)s*[-:=]?s*(d+(?:.d+)?)/gi,'FL-$1')
-      .replace(/(?:ch|6h|sh)s*[-:=]?s*(d+(?:.d+)?)/gi,'Sh-$1')
-      .replace(/(?:6d|bd)s*[-:=]?s*(d+(?:.d+)?).?/gi,'bd-$1')
-      .replace(/(?:siv|5lv|slv|sl)s*[-:=]?s*(d+(?:.d+)?)/gi,'Slv-$1')
-      .replace(/([BWH])s*[-:=]?s*(d+(?:.d+)?)/gi,(_,k,n)=>k.toUpperCase()+' '+n)
-      .replace(/
-+/g,' ').replace(/s+/g,' ').trim();
-  }
+  return (raw||'')
+    .replace(/½/g,'.5').replace(/\b(\d+)\s+1\/2\b/g,'$1.5')
+    .replace(/(?:f1|fi|fl|ft|1l)\s*[-:=.]?\s*(\d+(?:\.\d+)?)/gi,'FL-$1')
+    .replace(/(?:ch|6h|shi|sh1|sh)\s*[-:=.]?\s*(\d+(?:\.\d+)?)/gi,'Sh-$1')
+    .replace(/(?:6d|ld|bcl|bd)\s*[-:=.]?\s*(\d+(?:\.\d+)?)/gi,'bd-$1')
+    .replace(/(?:siv|5lv|slw|6lv|slv|sl)\s*[-:=.]?\s*(\d+(?:\.\d+)?(?:[\/|]\d+(?:\.\d+)?)?)/gi,(_,n)=>'Slv-'+n.replace('|','/'))
+    .replace(/\b([BWH])\s*[-:=.]?\s*(\d+(?:\.\d+)?)/gi,(_,k,n)=>k.toUpperCase()+' '+n)
+    .replace(/\s+/g,' ').trim();
+}
   function loadTess(){
     if(window.Tesseract) return Promise.resolve(window.Tesseract);
     return new Promise((res,rej)=>{
@@ -2088,7 +2087,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     });
   }
   function fillFields(rawTxt){
-    const txt=normalizeHandwriting(rawTxt);
+    const txt=normalizeHandwriting(rawTxt); const bdM=txt.match(/\bbd-(\d+(?:\.\d+)?)/i); const nEl=document.getElementById('cli-notes'); if(bdM&&nEl&&!nEl.value.includes('bd:')) nEl.value=(nEl.value?nEl.value+', ':'')+'bd: '+bdM[1];
     const map=[
       ['m-chest',/(?:B|Bust|Chest)[-:s=]*(d+(?:.d+)?)/i],
       ['m-waist',/(?:W|Waist)[-:s=]*(d+(?:.d+)?)/i],
@@ -2149,38 +2148,36 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
 })();
 </script>
 
+<script src="clients_seed.js?v=162"></script>
 <script id="V160_BOOK_CLIENT_SEED">
 (function(){
-  const KEY='angaza_atelier_vault_v2', SEED=[
-  {"id":"bk_1_jane","name":"Jane","phone":"","group":"Women","unit":"in","meas":{"length":"43","waist":"27","chest":"34","shoulder":"15","sleeve":"8/11","hips":"","outseam":"","neck":""},"notes":"bd: 16 (Book #1, done)"},
-  {"id":"bk_2_mary","name":"Mary","phone":"","group":"Women","unit":"in","meas":{"length":"41","waist":"31","chest":"38","shoulder":"15","sleeve":"9/14","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #2, done)"},
-  {"id":"bk_3_bricky","name":"Bricky","phone":"","group":"Women","unit":"in","meas":{"length":"42","waist":"33","chest":"38","shoulder":"15","sleeve":"7/15","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #3, done)"},
-  {"id":"bk_4_betrine","name":"Betrine","phone":"","group":"Women","unit":"in","meas":{"length":"44","waist":"37","chest":"42","shoulder":"16","sleeve":"10/14","hips":"","outseam":"","neck":""},"notes":"bd: 16 (Book #4, done)"},
-  {"id":"bk_5_sally","name":"Sally","phone":"","group":"Women","unit":"in","meas":{"length":"44","waist":"32","chest":"37.5","shoulder":"14","sleeve":"11/12","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #5)"},
-  {"id":"bk_6_otingo","name":"Otingo","phone":"0728520566","group":"Women","unit":"in","meas":{"length":"48","waist":"39.5","chest":"43","shoulder":"16.5","sleeve":"10/15","hips":"","outseam":"","neck":""},"notes":"bd: 16.5, Pocket (Book #6)"},
-  {"id":"bk_7_pricillah","name":"Pricillah","phone":"","group":"Women","unit":"in","meas":{"length":"40","waist":"31","chest":"36","shoulder":"15","sleeve":"10/13","hips":"","outseam":"","neck":""},"notes":"bd: 15 (Book #7)"},
-  {"id":"bk_8_sharon","name":"Sharon","phone":"","group":"Women","unit":"in","meas":{"length":"44","waist":"29","chest":"36","shoulder":"16","sleeve":"10/14","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #8)"},
-  {"id":"bk_9_salma","name":"Salma","phone":"","group":"Women","unit":"in","meas":{"length":"40","waist":"31","chest":"36","shoulder":"15","sleeve":"10/13","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #9)"},
-  {"id":"bk_10_lucy","name":"Lucy","phone":"","group":"Women","unit":"in","meas":{"length":"47","waist":"38","chest":"42","shoulder":"16","sleeve":"10/16","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #10)"},
-  {"id":"bk_11_gladys","name":"Gladys","phone":"","group":"Women","unit":"in","meas":{"length":"42","waist":"32","chest":"37","shoulder":"16","sleeve":"8/14","hips":"","outseam":"","neck":""},"notes":"bd: 16 (Book #11)"},
-  {"id":"bk_12_marcy","name":"Marcy","phone":"","group":"Women","unit":"in","meas":{"length":"42","waist":"28","chest":"34","shoulder":"16","sleeve":"8/13","hips":"","outseam":"","neck":""},"notes":"bd: 17, band (Book #12)"},
-  {"id":"bk_13_jackline","name":"Jackline","phone":"","group":"Women","unit":"in","meas":{"length":"44","waist":"36","chest":"41","shoulder":"16","sleeve":"9/15","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #13)"},
-  {"id":"bk_14_pearl","name":"Pearl","phone":"","group":"Women","unit":"in","meas":{"length":"41","waist":"26","chest":"33","shoulder":"15","sleeve":"9/10","hips":"","outseam":"","neck":""},"notes":"bd: 16 (Book #14, done)"},
-  {"id":"bk_15_rose","name":"Rose","phone":"","group":"Women","unit":"in","meas":{"length":"46","waist":"39","chest":"42.5","shoulder":"16","sleeve":"9/15","hips":"","outseam":"","neck":""},"notes":"bd: 17 (Book #15)"}
-];
+  const KEY='angaza_atelier_vault_v2', BK='angaza_atelier_backup_latest';
+  window.angazaDownloadPhoneBackup = function(){
+    const raw = localStorage.getItem(KEY) || localStorage.getItem(BK) || '{}';
+    const d = new Date().toISOString().slice(0,10);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([raw], {type:'application/json'}));
+    a.download = 'angaza-tailoring-backup-' + d + '.json';
+    a.click();
+  };
   try{
-    const v=JSON.parse(localStorage.getItem(KEY)||'{}');
-    if(!Array.isArray(v.clients)) v.clients=[];
-    const seen=new Set(v.clients.map(c=>(c.id||'')+'|'+(c.name||'').trim().toLowerCase()));
-    let added=0;
+    const raw0 = localStorage.getItem(KEY);
+    if(raw0) localStorage.setItem(BK, raw0);
+    const v = JSON.parse(raw0 || '{}');
+    if(!Array.isArray(v.clients)) v.clients = [];
+    const SEED = window.ANGAZA_BOOK_CLIENTS || [];
+    const seen = new Set(v.clients.map(c => (c.id||'') + '|' + (c.name||'').trim().toLowerCase()));
+    let added = 0;
     for(const c of SEED){
-      const k1=c.id+'|'+c.name.toLowerCase();
-      const hasName=v.clients.some(x=>(x.name||'').trim().toLowerCase()===c.name.toLowerCase());
-      if(!seen.has(k1)&&!hasName){ v.clients.push(c); seen.add(k1); added++; }
+      const k1 = c.id + '|' + c.name.toLowerCase();
+      const hasName = v.clients.some(x => (x.name||'').trim().toLowerCase() === c.name.toLowerCase());
+      if(!seen.has(k1) && !hasName){ v.clients.push(c); seen.add(k1); added++; }
     }
-    if(added>0){
-      localStorage.setItem(KEY,JSON.stringify(v));
-      if(typeof renderAll==='function') renderAll();
+    if(added > 0){
+      const next = JSON.stringify(v);
+      localStorage.setItem(KEY, next);
+      localStorage.setItem(BK, next);
+      if(typeof renderAll === 'function') renderAll();
     }
   }catch(e){}
 })();

@@ -1,5 +1,6 @@
-const CACHE_NAME = 'angaza-hub-v160';
-const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/manifest.json'];
+const CACHE_NAME = 'angaza-hub-v162';
+const SHELL = ['/', '/index.html', '/styles.css', '/app.js',
+  '/clients_seed.js', '/manifest.json'];
 self.addEventListener('install', (e) => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE_NAME).then((c) => Promise.allSettled(SHELL.map((u) => fetch(u, { cache: 'no-store' }).then((r) => r.ok && c.put(u, r))))));
