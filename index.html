@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=170" />
+  <link rel="stylesheet" href="style.css?v=171" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 <script id="v158-offline-guardian">
@@ -35,7 +35,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if(!navigator.onLine){alert('Offline mode active: keeping your saved app & records safe.');return;}if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=170'+Date.now());})(this)">↻ v170</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if(!navigator.onLine){alert('Offline mode active: keeping your saved app & records safe.');return;}if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=171'+Date.now());})(this)">↻ v171</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -527,7 +527,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=170" defer></script>
+  <script src="app.js?v=171" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -991,14 +991,15 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     const box=document.getElementById('v128-cli-dir'); if(!box)return;
     const list=Array.isArray(getV().clients)?getV().clients:[];
     if(!list.length){box.innerHTML='<div style="font-size:0.76rem;color:#64748b;">No transcribed clients yet.</div>';return;}
-    box.innerHTML=list.slice(0,15).map((c,idx)=>{
-      const m=[['B',c.chest],['W',c.waist],['H',c.hips],['Sh',c.shoulder],['Sl',c.sleeve],['FL',c.length],['Tr',c.outseam],['Nk',c.neck]].filter(([,v])=>v).map(([k,v])=>k+':'+v).join(' · ');
-      const img=c.photo?'<img src="'+c.photo+'" style="width:42px;height:42px;object-fit:cover;border-radius:7px;border:1px solid #cbd5e1;" />':'';
-      return '<div style="display:flex;gap:7px;align-items:center;padding:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:5px;">'+img
-        +'<div style="flex:1;min-width:0;"><div style="font-size:0.8rem;font-weight:700;color:#0f172a;">'+(c.name||'Client')+' <span style="font-weight:400;color:#475569;">'+(c.phone||'')+'</span></div><div style="font-size:0.72rem;color:#1e40af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(m||c.notes||'')+'</div></div>'
-        +'<button type="button" data-v128-load="'+idx+'" class="btn-small" style="width:auto;padding:4px 7px;font-size:0.7rem;">Load</button>'
-        +'</div>';
-    }).join('');
+    box.innerHTML=list.map((c,idx)=>{
+    const ms=c.meas||c||{};
+    const m=[['B',ms.chest],['W',ms.waist],['H',ms.hips],['Sh',ms.shoulder],['Sl',ms.sleeve],['FL',ms.length],['Tr',ms.outseam],['Nk',ms.neck]].filter(([,v])=>v).map(([k,v])=>k+':'+v).join(' · ');
+    const img=c.photo?'<img src="'+c.photo+'" style="width:42px;height:42px;object-fit:cover;border-radius:7px;border:1px solid #cbd5e1;" />':'';
+    return '<div style="display:flex;gap:7px;align-items:center;padding:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:5px;">'+img
+      +'<div style="flex:1;min-width:0;"><div style="font-size:0.8rem;font-weight:700;color:#0f172a;">'+(c.name||'Client')+' <span style="font-weight:400;color:#475569;">'+(c.phone||'')+'</span></div><div style="font-size:0.72rem;color:#1e40af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(m||c.notes||'')+'</div></div>'
+      +'<button type="button" onclick="angazaShowClientModal('+idx+')" data-v128-load="'+idx+'" class="btn-small" style="width:auto;padding:4px 9px;font-size:0.72rem;">Load</button>'
+      +'</div>';
+  }).join('');
   }
 
   function saveClients(raw,photo){
@@ -1013,7 +1014,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
       if(name.length<2)name=((document.getElementById('cli-name')||{}).value||'').trim()||('Scanned Client '+(idx+1));
       const rec={id:'cli_'+Date.now()+'_'+idx,name,phone:pm?pm.slice(0,1).join(''):((document.getElementById('cli-phone')||{}).value||'0700000000'),group:(document.getElementById('cli-group')||{}).value||'Women',unit:(document.getElementById('cli-unit')||{}).value||'in',chest:'',waist:'',hips:'',shoulder:'',sleeve:'',length:'',outseam:'',neck:'',photo:photo||'',notes:ch};
       rules.forEach(([k,rx])=>{const m=ch.match(rx);if(m){const[,val]=m;if(val)rec[k]=val;}});
-      v.clients.unshift(rec);
+      v.clients.push(rec);
       if(cnt===0)[['cli-name',rec.name],['cli-phone',rec.phone],['m-chest',rec.chest],['m-waist',rec.waist],['m-hips',rec.hips],['m-shoulder',rec.shoulder],['m-sleeve',rec.sleeve],['m-length',rec.length],['m-outseam',rec.outseam],['m-neck',rec.neck]].forEach(([id,val])=>{const el=document.getElementById(id);if(el&&val)el.value=val;});
       cnt+=1;
     });
@@ -1182,7 +1183,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
     const v=getV(); if(!Array.isArray(v.clients))v.clients=[];
     const ei=v.clients.findIndex(c=>c.name&&c.name.toLowerCase()===name.toLowerCase());
     if(ei>=0){const prev=v.clients.slice(ei,ei+1).pop();v.clients.splice(ei,1,Object.assign({},prev,rec,{photo:rec.photo||prev.photo||''}));}
-    else v.clients.unshift(rec);
+    else v.clients.push(rec);
     setV(v); syncClientsView();
     const st=document.getElementById('v128-st'); if(st)st.textContent='Saved '+name+' ✓';
   },true);
@@ -2148,7 +2149,7 @@ if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().cat
 })();
 </script>
 
-<script src="clients_seed.js?v=170"></script>
+<script src="clients_seed.js?v=171"></script>
 <script id="V160_BOOK_CLIENT_SEED">
 (function(){
   const KEY='angaza_atelier_vault_v2', BK='angaza_atelier_backup_latest';
