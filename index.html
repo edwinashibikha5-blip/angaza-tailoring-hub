@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#17224d" />
-  <link rel="stylesheet" href="style.css?v=131" />
+  <link rel="stylesheet" href="style.css?v=132" />
 <style id="angaza-tab-isolation">body[data-active-tab]:not([data-active-tab="tab-orders"]) #naomi-welcome-card,body[data-active-tab]:not([data-active-tab="tab-orders"]) #shop-overview-card{display:none!important}.tab-section{display:none!important}.tab-section.active{display:block!important}</style>
 <style id="angaza-fin-fix">#fin-open .card-head-row{flex-wrap:wrap!important;gap:6px!important}#fin-open .card-head-row>div{display:flex;flex-wrap:wrap;gap:6px}</style>
 </head>
@@ -30,7 +30,7 @@
   
       <div class="header-bottom-actions">
         <label id="btn-quick-scan" style="display:none;" for="v124-global-scan-input" class="hdr-scan-btn" title="Scan Measurements" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">📷 Scan</label><input type="file" id="v124-global-scan-input" accept="image/*" capture="environment" style="display:none;" />
-        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=131'+Date.now());})(this)">↻ v131</button>
+        <button type="button" id="btn-sync-app" class="btn-sm" title="Refresh App" style="padding:4px 8px;font-size:.72rem;" onclick="(async function(b){b.textContent='⚡';try{if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}}catch(e){}location.replace(location.pathname+'?v=132'+Date.now());})(this)">↻ v132</button>
         <button type="button" id="btn-share-app" class="btn-gold" style="padding:4px 9px;font-size:.68rem;">Share</button>
       </div>
     </header>
@@ -522,7 +522,7 @@
     <button type="button" data-nav="tab-gallery">Catalog</button>
     <button type="button" id="nav-fin-btn" data-nav="tab-finance">Finance 🔒</button>
   </nav>
-  <script src="app.js?v=131" defer></script>
+  <script src="app.js?v=132" defer></script>
 
   <div id="shop-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9500;padding:12px;overflow-y:auto;">
     <div style="max-width:540px;margin:10px auto;background:#ffffff;border-radius:16px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
@@ -1190,5 +1190,92 @@
 })();
 </script>
 <!-- /V131_CLIENTS_SAVE -->
+<!-- V132_IDB_VAULT -->
+<script>
+(function(){
+  const DB_NAME='AngazaPhotoVaultDB', STORE='photos', VK='angaza_atelier_vault_v2';
+  const memCache=Object.create(null);
+
+  function openDB(){
+    return new Promise((res,rej)=>{
+      const req=indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(STORE))req.result.createObjectStore(STORE);};
+      req.onsuccess=()=>res(req.result);
+      req.onerror=()=>rej(req.error);
+    });
+  }
+
+  window._angazaPutPhoto=async function(id,dataUrl){
+    if(!dataUrl||!String(dataUrl).startsWith('data:image'))return dataUrl;
+    memCache[id]=dataUrl;
+    const db=await openDB();
+    return new Promise((res,rej)=>{
+      const tx=db.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).put(dataUrl,id);
+      tx.oncomplete=()=>res('idb://'+id);
+      tx.onerror=()=>rej(tx.error);
+    });
+  };
+
+  window._angazaGetPhoto=async function(ref){
+    if(!ref)return '';
+    if(!String(ref).startsWith('idb://'))return ref;
+    const id=String(ref).slice(6);
+    if(memCache[id])return memCache[id];
+    const db=await openDB();
+    return new Promise((res)=>{
+      const tx=db.transaction(STORE,'readonly');
+      const r=tx.objectStore(STORE).get(id);
+      r.onsuccess=()=>{if(r.result)memCache[id]=r.result;res(r.result||'');};
+      r.onerror=()=>res('');
+    });
+  };
+})();
+</script>
+
+<script>
+(function(){
+  const VK='angaza_atelier_vault_v2';
+  async function offloadVaultPhotos(){
+    let v; try{v=JSON.parse(localStorage.getItem(VK)||'{}');}catch(e){return;}
+    let changed=false;
+    const buckets=['clients','gallery'];
+    for(const b of buckets){
+      if(!Array.isArray(v[b]))continue;
+      for(let i=0;i<v[b].length;i++){
+        const it=v[b][i]; if(!it)continue;
+        for(const k of ['photo','img','image','dataUrl']){
+          if(typeof it[k]==='string'&&it[k].startsWith('data:image')){
+            const pid=(it.id||b+'_'+i)+'_'+k;
+            it[k]=await window._angazaPutPhoto(pid,it[k]);
+            changed=true;
+          }
+        }
+      }
+    }
+    if(changed)localStorage.setItem(VK,JSON.stringify(v));
+  }
+
+  function hydrateDomImages(){
+    document.querySelectorAll('img').forEach(async(img)=>{
+      const raw=img.getAttribute('src')||'';
+      if(raw.startsWith('idb://')){
+        const url=await window._angazaGetPhoto(raw);
+        if(url)img.src=url;
+      }
+    });
+  }
+
+  const origSetItem=localStorage.setItem.bind(localStorage);
+  localStorage.setItem=function(k,val){
+    origSetItem(k,val);
+    if(k===VK){offloadVaultPhotos().then(hydrateDomImages);}
+  };
+
+  offloadVaultPhotos().then(hydrateDomImages);
+  setInterval(hydrateDomImages,700);
+})();
+</script>
+<!-- /V132_IDB_VAULT -->
 </body>
 </html>
